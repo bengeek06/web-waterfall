@@ -1,4 +1,11 @@
 {
     "welcome": "Welcome to Waterfall",
-    "description": "A project management application that helps users manage projects, milestones, and deliverables effectively."
+    "description": "A project management application that helps users manage projects, milestones, and deliverables effectively.",
+    "login_component": {
+        "login": "Login",
+        "email": "Email Address",
+        "password": "Password",
+        "submit": "Submit",
+        "register": "Register"
+    }
 }

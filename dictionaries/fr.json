@@ -1,4 +1,11 @@
 {
     "welcome": "Bienvenue sur Waterfall",
-    "description": "Une application de gestion de projet qui aide les utilisateurs à gérer efficacement les projets, les jalons et les livrables."
+    "description": "Une application de gestion de projet qui aide les utilisateurs à gérer efficacement les projets, les jalons et les livrables.",
+    "login_component": {
+        "login": "Se connecter",
+        "email": "Adresse e-mail",
+        "password": "Mot de passe",
+        "submit": "Soumettre",
+        "register": "S'inscrire"
+    }
 }
