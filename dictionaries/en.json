@@ -7,5 +7,20 @@
         "password": "Password",
         "submit": "Submit",
         "register": "Register"
+    },
+    "init_app": {
+        "title": "Initialize Application",
+        "company": "Company",
+        "company_desc": "Enter your company name",
+        "user": "User",
+        "user_desc": "Enter your username",
+        "password": "Password",
+        "password_desc": "Enter your password",
+        "password_confirm": "(confirmation)",
+        "submit": "Initialize",
+        "success": "Initialization successful!",
+        "error_company": "Failed to create company",
+        "error_user": "Failed to create user",
+        "loading": "Initializing..."
     }
 }

@@ -8,15 +8,9 @@
  */
 import pino from "pino";
 
-const logger = pino({
-    transport: {
-        target: "pino-pretty",
-        options: {
-            colorize: true,
-        },
-    },
-  level: process.env.LOG_LEVEL || "info",
-});
+const logger = pino();
+
+logger.level = process.env.LOG_LEVEL || "info";
 
 logger.info(`Logger initialized with level: ${logger.level}`);
 

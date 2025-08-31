@@ -7,5 +7,20 @@
         "password": "Mot de passe",
         "submit": "Soumettre",
         "register": "S'inscrire"
+    },
+    "init_app": {
+        "title": "Initialiser l'application",
+        "company": "Entreprise",
+        "company_desc": "Indiquez le nom de votre entreprise",
+        "user": "Utilisateur",
+        "user_desc": "Indiquez votre nom d'utilisateur",
+        "password": "Mot de passe",
+        "password_desc": "Indiquez votre mot de passe",
+        "password_confirm": "(confirmation)",
+        "submit": "Initialiser",
+        "success": "Initialisation réussie !",
+        "error_company": "Échec de la création de l'entreprise",
+        "error_user": "Échec de la création de l'utilisateur",
+        "loading": "Initialisation..."
     }
 }

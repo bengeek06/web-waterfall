@@ -1,26 +1,14 @@
-import Image from "next/image";
-import { getDictionary } from "@/lib/dictionaries";
-import Login from "@/components/login";
+import { redirect } from "next/navigation";
 
-export default async function Home() {
-  const dictionary = await getDictionary('fr')
-
-
-  return (
-    <div className="flex min-h-screen flex-col items-center p-12">
-      <Image
-        src="/fr/waterfall_logo.png"
-        alt="Waterfall Logo"
-        width={400}
-        height={104}
-        priority
-      />
-      <p className="mt-4 text-lg text-gray-600">
-        {dictionary.description}
-      </p>
-      <div className="mt-0 w-full max-w-sm">
-        <Login dictionary={dictionary.login_component} />
-      </div>
-    </div>
-  );
+export default async function InitRedirectPage() {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const res = await fetch(`${baseUrl}/api/identity/init-app`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to fetch initialization status");
+  const data = await res.json();
+  if (data.initialized === true) {
+    redirect("/login");
+  } else {
+    redirect("/init-app");
+  }
+  return null;
 }
