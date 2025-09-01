@@ -50,12 +50,11 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     url.pathname = "/api/identity/init-app";
-    const response = await fetch(url.toString(), {
+    const response = await fetch(`${IDENTITY_SERVICE_URL}/api/identity/init-app`, {
         method: "GET",
-        headers: {
-            ...req.headers,
-        host: new URL(IDENTITY_SERVICE_URL).host,
-        },
+        headers: Object.fromEntries(
+            Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+        ),
     });
 
     const contentType = response.headers.get("content-type");
