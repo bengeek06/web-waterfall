@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 
     if (process.env.NODE_ENV == "development") {
         logger.warn("Running in development mode: returning initialized: false");
-        return NextResponse.json({ initialized: true });
+        return NextResponse.json({ initialized: false });
     }
 
     if (!IDENTITY_SERVICE_URL) {

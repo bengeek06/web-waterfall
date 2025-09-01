@@ -7,13 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import Image from "next/image";
+import { Building2, User, KeyRound } from "lucide-react";
 
 interface InitAppDictionary {
   title: string;
-  company: string;
-  company_desc: string;
-  user: string;
-  user_desc: string;
+  company: { title: string; label: string; desc: string };
+  user: { title: string; label: string; desc: string };
   password: string;
   password_confirm: string;
   password_desc: string;
@@ -76,61 +75,93 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
     <Card className="w-full max-w-md">
       <CardHeader>
         <div className="flex flex-col items-center">
-          <Image src="/fr/waterfall_logo.svg" alt="Waterfall Logo" width={120} height={32} className="mb-2" />
+          <Image src="/fr/waterfall_logo.svg" alt="Waterfall Logo" width={160} height={44} className="mb-2" />
           <CardTitle>{dictionary.title}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem className="mb-4">
-                  <FormLabel>{dictionary.company}</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} required placeholder={dictionary.company_desc} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="user"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{dictionary.user}</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} required placeholder={dictionary.user_desc} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{dictionary.password}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} required placeholder={dictionary.password_desc} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="passwordConfirm"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{dictionary.password} {dictionary.password_confirm}</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} required placeholder={dictionary.password_desc} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {/* Card Entreprise */}
+            <Card className="mb-4">
+              <CardHeader>
+                <div className="text-base text-waterfall-description text-center italic">
+                  {dictionary.company.title}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="company"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{dictionary.company.label}</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-5 h-5 text-waterfall-icon" />
+                          <Input type="text" {...field} required placeholder={dictionary.company.desc} />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+            {/* Card Utilisateur */}
+            <Card>
+              <CardHeader>
+                <div className="text-base text-waterfall-description text-center italic">
+                  {dictionary.user.title}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="user"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{dictionary.user.label}</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <User className="w-5 h-5 text-waterfall-icon" />
+                          <Input type="text" {...field} required placeholder={dictionary.user.desc} />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{dictionary.password}</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <KeyRound className="w-5 h-5 text-waterfall-icon" />
+                          <Input type="password" {...field} required placeholder={dictionary.password_desc} />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="passwordConfirm"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{dictionary.password} {dictionary.password_confirm}</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <KeyRound className="w-5 h-5 text-waterfall-icon" />
+                          <Input type="password" {...field} required placeholder={dictionary.password_desc} />
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? dictionary.loading : dictionary.submit}
             </Button>

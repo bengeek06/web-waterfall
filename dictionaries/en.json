@@ -10,10 +10,16 @@
     },
     "init_app": {
         "title": "Initialize Application",
-        "company": "Company",
-        "company_desc": "Enter your company name",
-        "user": "User",
-        "user_desc": "Enter your username",
+        "company": {
+            "title": "Enter your company name. You will be able to configure it with more details later",
+            "label": "Company Name",
+            "desc": "Enter your company name"
+        },
+        "user": {
+            "title": "Create a user. This user will be the administrator of the company",
+            "label": "User Name",
+            "desc": "Enter the user's name"
+        },
         "password": "Password",
         "password_desc": "Enter your password",
         "password_confirm": "(confirmation)",

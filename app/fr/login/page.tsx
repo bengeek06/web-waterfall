@@ -15,10 +15,10 @@ export default async function Home() {
         height={104}
         priority
       />
-      <p className="mt-4 text-lg text-gray-600">
+      <p className="mt-4 text-lg text-waterfall-description">
         {dictionary.description}
       </p>
-      <div className="mt-0 w-full max-w-sm">
+      <div className="mt-8 w-full max-w-sm">
         <Login dictionary={dictionary.login_component} />
       </div>
     </div>
