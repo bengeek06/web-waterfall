@@ -75,7 +75,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
     <Card className="w-full max-w-md">
       <CardHeader>
         <div className="flex flex-col items-center">
-          <Image src="/fr/waterfall_logo.svg" alt="Waterfall Logo" width={160} height={44} className="mb-2" />
+          <Image src="/waterfall_logo.svg" alt="Waterfall Logo" width={160} height={44} className="mb-2" />
           <CardTitle>{dictionary.title}</CardTitle>
         </div>
       </CardHeader>

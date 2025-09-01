@@ -9,7 +9,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center p-12">
       <Image
-        src="/fr/waterfall_logo.png"
+        src="/waterfall_logo.png"
         alt="Waterfall Logo"
         width={400}
         height={104}
