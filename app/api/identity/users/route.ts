@@ -35,7 +35,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   logger.info("GET request to /api/identity/users");
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Running in development/test mode: returning mock user list");
     return NextResponse.json([
       {
@@ -161,6 +161,28 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   logger.info("POST request to /api/identity/users");
+
+  if (process.env.MOCK_API === 'true') {
+    logger.warn("Running in development mode");
+    return NextResponse.json(
+      {
+        id: "1",
+        company_id: "c1",
+        email: "alice@example.com",
+        first_name: "Alice",
+        last_name: "Smith",
+        phone_number: "+33123456789",
+        avatar_url: "https://randomuser.me/api/portraits/women/1.jpg",
+        is_active: true,
+        is_verified: true,
+        role_id: "admin",
+        position_id: "ceo",
+        last_login_at: "2024-06-01T10:00:00Z",
+        created_at: "2024-01-01T09:00:00Z",
+        updated_at: "2024-06-01T10:00:00Z"
+      }
+    );
+  }
 
   if (!IDENTITY_SERVICE_URL) {
     logger.error("IDENTITY_SERVICE_URL is not defined");

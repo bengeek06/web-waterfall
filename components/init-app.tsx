@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import Image from "next/image";
 import { Building2, User, KeyRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface InitAppDictionary {
   title: string;
@@ -32,6 +33,7 @@ interface InitAppForm {
 
 export default function InitApp({ dictionary }: { dictionary: InitAppDictionary }) {
   const form = useForm<InitAppForm>({ defaultValues: { company: "", user: "", password: "", passwordConfirm: "" } });
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -47,23 +49,32 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
     }
     setLoading(true);
     try {
-      // 1. Créer la company
-      const companyRes = await fetch("/api/identity/companies", {
+      // 1. Appel à l'init du service identity
+      const identityRes = await fetch("/api/identity/init-app", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.company }),
+        body: JSON.stringify({
+          company: data.company,
+          user: data.user,
+          password: data.password,
+          passwordConfirm: data.passwordConfirm,
+        }),
       });
-      if (!companyRes.ok) throw new Error(dictionary.error_company);
-      const companyData = await companyRes.json();
-      const company_id = companyData.id;
-      // 2. Créer l'utilisateur avec le company_id
-      const userRes = await fetch("/api/identity/users", {
+      if (!identityRes.ok) throw new Error("Erreur lors de l'initialisation de l'identité");
+      // 2. Appel à l'init du service guardian
+      const guardianRes = await fetch("/api/guardian/init-app", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: data.user, password: data.password, company_id }),
+        body: JSON.stringify({
+          company: data.company,
+          user: data.user,
+          password: data.password,
+          passwordConfirm: data.passwordConfirm,
+        }),
       });
-      if (!userRes.ok) throw new Error(dictionary.error_user);
+      if (!guardianRes.ok) throw new Error("Erreur lors de l'initialisation de Guardian");
       setSuccess(true);
+      router.push("/login");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

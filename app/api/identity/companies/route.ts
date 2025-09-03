@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   logger.info("GET request to /api/identity/companies");
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Running in development/test mode: returning mock company list");
     return NextResponse.json([
       {
@@ -63,7 +63,8 @@ export async function GET(req: NextRequest) {
 
   if (!IDENTITY_SERVICE_URL) {
     logger.error("IDENTITY_SERVICE_URL is not defined");
-    return NextResponse.json({ error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
+    return NextResponse.json(
+      { error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
   }
   logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
@@ -96,6 +97,27 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   logger.info("POST request to /api/identity/companies");
+
+  if (process.env.MOCK_API === 'true') {
+    logger.warn("Mocking identity service response");
+    return NextResponse.json(
+      {
+        company_id: "c1",
+        name: "Acme Corp",
+        description: "A leading provider of widgets.",
+        address: "123 Main St",
+        phone_number: "+33123456789",
+        email: "contact@acme.com",
+        website: "https://acme.com",
+        logo_url: "https://logo.clearbit.com/acme.com",
+        country: "France",
+        city: "Paris",
+        postal_code: "75001",
+        created_at: "2024-01-01T09:00:00Z",
+        updated_at: "2024-06-01T10:00:00Z"
+      }
+    );
+  }
 
   if (!IDENTITY_SERVICE_URL) {
     logger.error("IDENTITY_SERVICE_URL is not defined");

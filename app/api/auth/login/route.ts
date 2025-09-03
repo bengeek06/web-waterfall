@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   logger.info("POST request to /api/auth/login");
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Mocking authentication service response");
     const res = NextResponse.json({ success: true, user_id: "mock-user-id", message: "Login successful" });
     res.headers.set(

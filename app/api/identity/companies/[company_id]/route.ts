@@ -21,7 +21,7 @@ async function proxyRequest(
   }
   logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Running in development/test mode: returning mock company");
     if (method === "GET" || method === "PUT" || method === "PATCH") {
       return NextResponse.json({

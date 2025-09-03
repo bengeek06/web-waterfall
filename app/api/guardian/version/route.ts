@@ -1,10 +1,10 @@
 /**
- * Handles GET requests to the `/api/identity/version` endpoint.
+ * Handles GET requests to the `/api/guardian/version` endpoint.
  *
- * Proxies the request to the configured identity service's `/version` endpoint,
+ * Proxies the request to the configured guardian service's `/version` endpoint,
  * forwarding all headers except "host" and including credentials.
  *
- * Logs the request and the target identity service URL for debugging purposes.
+ * Logs the request and the target guardian service URL for debugging purposes.
  *
  * 
  * Responds with the proxied response, preserving the status code and content type.
@@ -16,33 +16,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
 
-const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
+const GUARDIAN_SERVICE_URL = process.env.GUARDIAN_SERVICE_URL;
 export const dynamic = "force-dynamic";
 
 /**
- * Handles GET requests to /api/identity/version endpoint.
+ * Handles GET requests to /api/guardian/version endpoint.
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the authentication service.
  */
 export async function GET(req: NextRequest) {
-  logger.info("GET request to /api/identity/version");
+  logger.info("GET request to /api/auth/version");
 
   if (process.env.MOCK_API === 'true') {
-    logger.warn("Mocking identity service response");
+    logger.warn("Mocking guardian service response");
     const res = NextResponse.json({ version: "1.0.0" });
     return res;
   }
 
-  if (!IDENTITY_SERVICE_URL) {
-    logger.error("IDENTITY_SERVICE_URL is not defined");
-    return NextResponse.json({ error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
+  if (!GUARDIAN_SERVICE_URL) {
+    logger.error("GUARDIAN_SERVICE_URL is not defined");
+    return NextResponse.json({ error: "GUARDIAN_SERVICE_URL is not defined" }, { status: 500 });
   }
 
-  logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
+  logger.debug(`Environment GUARDIAN_SERVICE_URL: ${GUARDIAN_SERVICE_URL}`);
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
-  logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}`);
+  logger.debug(`Forwarding ${req.url} to ${GUARDIAN_SERVICE_URL}`);
 
-  const res = await fetch(`${IDENTITY_SERVICE_URL}/version`, {
+  const res = await fetch(`${GUARDIAN_SERVICE_URL}/version`, {
     method: "GET",
     headers: Object.fromEntries(
       Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")

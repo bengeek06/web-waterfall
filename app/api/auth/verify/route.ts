@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   logger.info("GET request to /api/auth/verify");
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Mocking authentication service response");
     const res = NextResponse.json({ user_id: "some-id", company_id: "another-id", email: "user@domain", valid: true });
     res.headers.set(

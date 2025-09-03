@@ -35,8 +35,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request) {
     logger.info("GET request to /api/identity/init-app");
 
-    if (process.env.NODE_ENV == "development") {
-        logger.warn("Running in development mode: returning initialized: false");
+    if (process.env.MOCK_API === 'true') {
+        logger.warn("Running in development mode");
         return NextResponse.json({ initialized: false });
     }
 
@@ -81,6 +81,18 @@ export async function GET(req: Request) {
  */
 export async function POST(req: NextRequest) {
   logger.info("POST request to /api/identity/init_db");
+
+  if (process.env.MOCK_API === 'true') {
+    logger.warn("Running in development mode");
+    return NextResponse.json(
+      {
+        "company": { "company_id": "c1", "name": "Acme Corp" },
+        "organization_unit": { "org_unit_id": "ou1", "name": "Engineering" },
+        "position": { "position_id": "p1", "title": "Software Engineer" },
+        "user": { "user_id": "u1", "email": "user@example.com" }
+      }
+    );
+  }
 
   if (!IDENTITY_SERVICE_URL) {
     logger.error("IDENTITY_SERVICE_URL is not defined");

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { User, KeyRound } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface LoginProps {
 	dictionary: {
@@ -19,10 +20,22 @@ interface LoginProps {
 export default function Login({ dictionary }: LoginProps) {
 		const [login, setLogin] = useState("");
 		const [password, setPassword] = useState("");
+		const router = useRouter();
 
-		const handleSubmit = (e: React.FormEvent) => {
+		const handleSubmit = async (e: React.FormEvent) => {
 			e.preventDefault();
-			// Handle login logic here
+			try {
+				const res = await fetch("/api/auth/login", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email: login, password }),
+				});
+				if (!res.ok) throw new Error("Login failed");
+				router.push("/welcome");
+			} catch (err) {
+				// Gérer l'erreur (affichage, etc.)
+				console.error(err);
+			}
 		};
 
 		return (

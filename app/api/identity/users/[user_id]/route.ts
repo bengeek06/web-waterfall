@@ -55,13 +55,8 @@ async function proxyRequest(
   user_id: string
 ) {
   logger.info(`${method} request to /api/identity/users/${user_id}`);
-  if (!IDENTITY_SERVICE_URL) {
-    logger.error("IDENTITY_SERVICE_URL is not defined");
-    return NextResponse.json({ error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
-  }
-  logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
-
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+  
+  if (process.env.MOCK_API === 'true') {
     logger.warn("Running in development/test mode: returning mock user");
     if (method === "GET" || method === "PUT" || method === "PATCH") {
       return NextResponse.json({
@@ -86,6 +81,14 @@ async function proxyRequest(
       return NextResponse.json({ success: true });
     }
   }
+
+  if (!IDENTITY_SERVICE_URL) {
+    logger.error("IDENTITY_SERVICE_URL is not defined");
+    return NextResponse.json({ error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
+  }
+  logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
+  logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
+  logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}/users/${user_id}`);
 
   let body: string | undefined = undefined;
   if (["PUT", "PATCH"].includes(method)) {
