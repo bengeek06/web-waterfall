@@ -6,7 +6,9 @@
         "email": "Email Address",
         "password": "Password",
         "submit": "Submit",
-        "register": "Register"
+        "register": "Register",
+        "invalid_email": "Invalid email format.",
+        "login_failed": "Login failed. Please check your credentials."
     },
     "init_app": {
         "title": "Initialize Application",

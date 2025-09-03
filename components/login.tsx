@@ -14,6 +14,8 @@ interface LoginProps {
 		password: string;
 		submit: string;
 		register: string;
+		invalid_email: string;
+		login_failed: string;
 	};
 }
 
@@ -28,7 +30,7 @@ export default function Login({ dictionary }: LoginProps) {
 			setError(null);
 			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 			if (!emailRegex.test(login)) {
-				setError("Format d'email invalide");
+				setError(dictionary.invalid_email);
 				return;
 			}
 			try {
@@ -37,10 +39,10 @@ export default function Login({ dictionary }: LoginProps) {
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ email: login, password }),
 				});
-				if (!res.ok) throw new Error("Login failed");
+				if (!res.ok) throw new Error(dictionary.login_failed);
 				router.push("/welcome");
 			} catch (err) {
-				setError("Erreur lors de la connexion");
+				setError(dictionary.login_failed);
 				console.error(err);
 			}
 		};
