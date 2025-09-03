@@ -20,10 +20,17 @@ interface LoginProps {
 export default function Login({ dictionary }: LoginProps) {
 		const [login, setLogin] = useState("");
 		const [password, setPassword] = useState("");
+		const [error, setError] = useState<string | null>(null);
 		const router = useRouter();
 
 		const handleSubmit = async (e: React.FormEvent) => {
 			e.preventDefault();
+			setError(null);
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			if (!emailRegex.test(login)) {
+				setError("Format d'email invalide");
+				return;
+			}
 			try {
 				const res = await fetch("/api/auth/login", {
 					method: "POST",
@@ -33,7 +40,7 @@ export default function Login({ dictionary }: LoginProps) {
 				if (!res.ok) throw new Error("Login failed");
 				router.push("/welcome");
 			} catch (err) {
-				// Gérer l'erreur (affichage, etc.)
+				setError("Erreur lors de la connexion");
 				console.error(err);
 			}
 		};
@@ -70,6 +77,7 @@ export default function Login({ dictionary }: LoginProps) {
 								{dictionary.submit}
 							</Button>
 						</form>
+						{error && <div className="text-red-500 text-sm mt-2">{error}</div>}
 						<Button
 							type="button"
 							variant="outline"
