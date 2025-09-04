@@ -38,13 +38,24 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ company?: string; user?: string; password?: string; passwordConfirm?: string }>({});
 
   const handleSubmit = async (data: InitAppForm) => {
     setError(null);
     setSuccess(false);
     setPasswordError(null);
+    setFieldErrors({});
+    const errors: { company?: string; user?: string; password?: string; passwordConfirm?: string } = {};
+    if (!data.company) errors.company = "Le nom de l'entreprise est requis.";
+    if (!data.user) errors.user = "L'email utilisateur est requis.";
+    if (!data.password) errors.password = "Le mot de passe est requis.";
+    if (!data.passwordConfirm) errors.passwordConfirm = "La confirmation du mot de passe est requise.";
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
     if (data.password !== data.passwordConfirm) {
-      setPasswordError("Passwords do not match");
+      setPasswordError("Les mots de passe ne correspondent pas.");
       return;
     }
     setLoading(true);
@@ -54,10 +65,8 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: data.company,
-          user: data.user,
-          password: data.password,
-          passwordConfirm: data.passwordConfirm,
+          company: { name: data.company },
+          user: { email: data.user, password: data.password },
         }),
       });
       if (!identityRes.ok) throw new Error("Erreur lors de l'initialisation de l'identité");
@@ -66,10 +75,8 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: data.company,
-          user: data.user,
-          password: data.password,
-          passwordConfirm: data.passwordConfirm,
+          company: { name: data.company },
+          user: { email: data.user, password: data.password },
         }),
       });
       if (!guardianRes.ok) throw new Error("Erreur lors de l'initialisation de Guardian");
@@ -113,6 +120,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                           <Input type="text" {...field} required placeholder={dictionary.company.desc} />
                         </div>
                       </FormControl>
+                      {fieldErrors.company && <div className="text-red-500 text-sm mt-1">{fieldErrors.company}</div>}
                     </FormItem>
                   )}
                 />
@@ -138,6 +146,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                           <Input type="text" {...field} required placeholder={dictionary.user.desc} />
                         </div>
                       </FormControl>
+                      {fieldErrors.user && <div className="text-red-500 text-sm mt-1">{fieldErrors.user}</div>}
                     </FormItem>
                   )}
                 />
@@ -153,6 +162,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                           <Input type="password" {...field} required placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
+                      {fieldErrors.password && <div className="text-red-500 text-sm mt-1">{fieldErrors.password}</div>}
                     </FormItem>
                   )}
                 />
@@ -168,6 +178,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                           <Input type="password" {...field} required placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
+                      {fieldErrors.passwordConfirm && <div className="text-red-500 text-sm mt-1">{fieldErrors.passwordConfirm}</div>}
                     </FormItem>
                   )}
                 />
