@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-//import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-/*
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-*/
+let geistSans, geistMono;
+if (process.env.OFFLINE_MODE === 'true') {
+  const { Geist, Geist_Mono } = await import("next/font/google");
+  geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+  geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+}
+
 export const metadata: Metadata = {
   title: "Waterfall - Gestion de projet",
   description: "Une application de gestion de projet qui permet aux utilisateurs de gérer efficacement les projets, les jalons et les livrables.",
