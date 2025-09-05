@@ -81,17 +81,17 @@ export async function GET(req: Request) {
 export async function POST(req: NextRequest) {
     logger.info("POST request to /api/guardian/init-app");
 
+    if (process.env.MOCK_API === 'true') {
+        logger.warn("Running in development/test mode: returning mock guardian initialized");
+        return NextResponse.json({ message: "Guardian initialized successfully" });
+    }
+
     if (!GUARDIAN_SERVICE_URL) {
         logger.error("GUARDIAN_SERVICE_URL is not defined");
         return NextResponse.json({ error: "GUARDIAN_SERVICE_URL is not defined" }, { status: 500 });
     }
     logger.debug(`Environment GUARDIAN_SERVICE_URL:${GUARDIAN_SERVICE_URL}`);
     logger.debug(`Forwarding ${req.url} to ${GUARDIAN_SERVICE_URL}/init-db`);
-
-    if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
-        logger.warn("Running in development/test mode: returning mock guardian initialized");
-        return NextResponse.json({ message: "Guardian initialized successfully" });
-    }
 
     let body;
     try {

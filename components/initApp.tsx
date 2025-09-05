@@ -70,13 +70,16 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
         }),
       });
       if (!identityRes.ok) throw new Error("Erreur lors de l'initialisation de l'identité");
+      const identityData = await identityRes.json();
+      const company_id = identityData.company.id;
+      const user_id = identityData.user.id;
       // 2. Appel à l'init du service guardian
       const guardianRes = await fetch("/api/guardian/init-app", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: { name: data.company },
-          user: { email: data.user, password: data.password },
+          company: { name: data.company, company_id },
+          user: { email: data.user, password: data.password, user_id },
         }),
       });
       if (!guardianRes.ok) throw new Error("Erreur lors de l'initialisation de Guardian");
