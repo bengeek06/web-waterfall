@@ -16,8 +16,8 @@ export default async function TopBar() {
   const dictionary = await getDictionary('fr');
 
   return (
-    <nav className="w-full bg-waterfall-accent px-6 py-3 mb-6 shadow">
-      <div className="flex items-center gap-6 max-w-4xl w-full mx-auto">
+    <nav className="w-full bg-waterfall-accent pl-4 py-3 mb-6 shadow">
+      <div className="flex items-center gap-6 w-full">
         <div className="flex-shrink-0">
           <Link href="/welcome">
             <Image
@@ -25,13 +25,14 @@ export default async function TopBar() {
               alt="Waterfall Logo"
               width={32}
               height={32}
-              className="h-8 w-auto mr-4"
+              className="h-8 w-auto"
               priority
             />
           </Link>
         </div>
         <div className="flex-1" />
         {/* Avatar à droite */}
+        <div className="pr-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="rounded-full overflow-hidden border border-waterfall-icon bg-white w-10 h-10 flex items-center justify-center">
@@ -54,6 +55,7 @@ export default async function TopBar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
     </nav>
   );
