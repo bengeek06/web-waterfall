@@ -30,5 +30,6 @@
         "error_company": "Failed to create company",
         "error_user": "Failed to create user",
         "loading": "Initializing..."
-    }
+    },
+    "profile": "Your profile"
 }

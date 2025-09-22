@@ -30,5 +30,6 @@
         "error_company": "Échec de la création de l'entreprise",
         "error_user": "Échec de la création de l'utilisateur",
         "loading": "Initialisation..."
-    }
+    },
+    "profile": "Votre profil"
 }

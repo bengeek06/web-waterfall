@@ -2,8 +2,19 @@ import Image from "next/image";
 import { getDictionary } from "@/lib/dictionaries";
 import Login from "@/components/login";
 
+function getLocaleFromHeaders(headers: Headers): "fr" | "en" {
+  const acceptLang = headers.get("accept-language");
+  if (!acceptLang) return "fr";
+  if (acceptLang.toLowerCase().startsWith("en")) return "en";
+  return "fr";
+}
+
 export default async function Home() {
-  const dictionary = await getDictionary('fr')
+  // Utilise les headers du serveur Next.js (import { headers } from "next/headers";)
+  const { headers } = await import("next/headers");
+  const headersObj = await headers(); // <-- Ajoute await ici
+  const locale = getLocaleFromHeaders(headersObj);
+  const dictionary = await getDictionary(locale);
 
 
   return (
