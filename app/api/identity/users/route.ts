@@ -201,12 +201,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
+  const headers = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(
+      ([key]) => key.toLowerCase() !== "host" && key.toLowerCase() !== "content-length"
+    )
+  );
+
   const res = await fetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "POST",
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
-    body,
+    headers,
+    body: JSON.stringify(body),
     credentials: "include",
   });
 

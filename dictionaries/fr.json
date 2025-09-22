@@ -31,5 +31,8 @@
         "error_user": "Échec de la création de l'utilisateur",
         "loading": "Initialisation..."
     },
-    "profile": "Votre profil"
+    "profile": "Votre profil",
+    "users": "Utilisateurs",
+    "manage_users": "Gérer les utilisateurs"
+
 }

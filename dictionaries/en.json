@@ -31,5 +31,7 @@
         "error_user": "Failed to create user",
         "loading": "Initializing..."
     },
-    "profile": "Your profile"
+    "profile": "Your profile",
+    "users": "Users",
+    "manage_users": "Manage Users"
 }
