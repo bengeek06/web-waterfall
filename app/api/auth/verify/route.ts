@@ -43,12 +43,13 @@ export async function GET(req: NextRequest) {
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${AUTH_SERVICE_URL}`);
 
+  const headers = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+  );
+
   const res = await fetch(`${AUTH_SERVICE_URL}/verify`, {
     method: "GET",
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
-    credentials: "include",
+    headers,
   });
   
   const setCookie = res.headers.get("set-cookie");

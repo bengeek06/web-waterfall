@@ -37,6 +37,10 @@ export default function AdminUsersPage() {
   async function fetchUsers() {
     setLoading(true);
     const res = await fetch("/api/identity/users");
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
     if (res.ok) {
       const data = await res.json();
       setUsers(data);
@@ -102,6 +106,10 @@ export default function AdminUsersPage() {
       body: JSON.stringify(payload),
     });
 
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       setFormError(data.error || data.message || "Erreur lors de l'enregistrement.");
@@ -113,7 +121,11 @@ export default function AdminUsersPage() {
 
   async function handleDeleteUser() {
     if (!deleteUserId) return;
-    await fetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
+    const res = await fetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
     setDeleteUserId(null);
     fetchUsers();
   }

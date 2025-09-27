@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import React from "react";
 import { getAvatarUrl } from "@/lib/user";
-import { UserCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -23,8 +22,9 @@ export default async function TopBar() {
             <Image
               src="/waterfall_logo.svg"
               alt="Waterfall Logo"
-              width={32}
-              height={32}
+              width={120}
+              height={40}
+              
               className="h-8 w-auto"
               priority
             />

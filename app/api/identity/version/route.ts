@@ -15,6 +15,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
+import { checkSessionAndFetch } from "@/lib/sessionFetch";
 
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -42,12 +43,13 @@ export async function GET(req: NextRequest) {
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}`);
 
-  const res = await fetch(`${IDENTITY_SERVICE_URL}/version`, {
+  const headers = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+  );
+
+  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/version`, {
     method: "GET",
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
-    credentials: "include",
+    headers,
   });
 
   const contentType = res.headers.get("content-type");

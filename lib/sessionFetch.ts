@@ -1,24 +1,21 @@
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 /**
  * Vérifie la session utilisateur, tente un refresh si besoin, puis exécute le fetch demandé.
- * Redirige vers /login si la session ne peut pas être rafraîchie.
+ * Retourne une réponse 401 si la session ne peut pas être rafraîchie.
  *
  * @param input - URL ou Request info pour fetch
  * @param init - options fetch (headers, method, body, etc.)
- * @returns La réponse fetch si session valide, sinon redirige vers /login
+ * @returns La réponse fetch si session valide, sinon une réponse 401
  */
 export async function checkSessionAndFetch(input: RequestInfo | URL, init?: RequestInit) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   let cookieHeader = "";
   if (typeof window === "undefined") {
-    // On est côté serveur, on récupère tous les cookies de la requête entrante
     const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
     cookieHeader = allCookies.map(c => `${c.name}=${c.value}`).join("; ");
   }
-  // Vérification de la session
   const verifyUrl = typeof window === "undefined" ? `${baseUrl}/api/auth/verify` : "/api/auth/verify";
   const verifyRes = await fetch(verifyUrl, {
     method: "GET",
@@ -28,7 +25,6 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
   if (verifyRes.ok) {
     const data = await verifyRes.json();
     if (data.valid) {
-      // Si input est une URL relative côté serveur, la rendre absolue
       let realInput = input;
       if (typeof input === "string" && typeof window === "undefined" && input.startsWith("/")) {
         realInput = baseUrl + input;
@@ -59,6 +55,6 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
       });
     }
   }
-  // Redirection si la session n'est pas récupérable
-  redirect("/login");
+  // Retourne une réponse 401 si la session n'est pas récupérable
+  return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 }

@@ -19,6 +19,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
+import { checkSessionAndFetch } from "@/lib/sessionFetch";
 
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -129,12 +130,13 @@ export async function GET(req: NextRequest) {
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}`);
 
-  const res = await fetch(`${IDENTITY_SERVICE_URL}/users`, {
+  const headers = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+  );
+
+  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "GET",
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
-    credentials: "include",
+    headers,
   });
 
   const contentType = res.headers.get("content-type");
@@ -207,11 +209,10 @@ export async function POST(req: NextRequest) {
     )
   );
 
-  const res = await fetch(`${IDENTITY_SERVICE_URL}/users`, {
+  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),
-    credentials: "include",
   });
 
   const contentType = res.headers.get("content-type");

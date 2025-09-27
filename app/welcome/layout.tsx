@@ -10,3 +10,5 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
     </div>
   );
 }
+
+

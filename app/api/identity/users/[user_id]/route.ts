@@ -22,6 +22,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
+import { checkSessionAndFetch } from "@/lib/sessionFetch";
 
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -95,13 +96,14 @@ async function proxyRequest(
     body = await req.text();
   }
 
-  const res = await fetch(`${IDENTITY_SERVICE_URL}/users/${user_id}`, {
+  const headers = Object.fromEntries(
+    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+  );
+
+  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users/${user_id}`, {
     method,
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
+    headers,
     ...(body ? { body } : {}),
-    credentials: "include",
   });
 
   const setCookie = res.headers.get("set-cookie");
