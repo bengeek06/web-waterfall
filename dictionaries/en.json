@@ -33,5 +33,7 @@
     },
     "profile": "Your profile",
     "users": "Users",
-    "manage_users": "Manage Users"
+    "manage_users": "Manage Users",
+    "roles": "Roles",
+    "manage_roles": "Manage Roles"
 }

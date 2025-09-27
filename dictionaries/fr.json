@@ -33,6 +33,8 @@
     },
     "profile": "Votre profil",
     "users": "Utilisateurs",
-    "manage_users": "Gérer les utilisateurs"
+    "manage_users": "Gérer les utilisateurs",
+    "roles": "Rôles",
+    "manage_roles": "Gérer les rôles"
 
 }
