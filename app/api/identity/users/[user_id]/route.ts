@@ -96,9 +96,19 @@ async function proxyRequest(
     body = await req.text();
   }
 
-  const headers = Object.fromEntries(
-    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+  // Correction : retire tous les content-type avant d'ajouter le bon
+  const rawHeaders = Array.from(req.headers.entries()).filter(
+    ([key]) =>
+      key.toLowerCase() !== "host" &&
+      key.toLowerCase() !== "content-length" &&
+      key.toLowerCase() !== "content-type"
   );
+  const headers: Record<string, string> = {
+    ...Object.fromEntries(rawHeaders),
+  };
+  if (["PUT", "PATCH"].includes(method)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users/${user_id}`, {
     method,
