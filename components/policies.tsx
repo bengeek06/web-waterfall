@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus, Edit } from "lucide-react";
+import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 // Types
@@ -244,6 +244,7 @@ export default function Policies() {
       if (!res.ok) throw new Error("Erreur lors de la suppression de la permission");
       fetchData();
     } catch (err) {
+      console.error("handleRemovePermission error:", err);
       setError("Erreur lors de la suppression de la permission");
     }
   }
@@ -280,6 +281,7 @@ export default function Policies() {
       setShowPermissionDialog(false);
       fetchData();
     } catch (err) {
+      console.error("handleAddPermissionsToPolicy error:", err);
       setError("Erreur lors de l'ajout des permissions");
     }
   }
@@ -305,7 +307,7 @@ export default function Policies() {
               Ajouter une policy
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent aria-describedby={void 0} aria-label="add_policy-dialog">
             <DialogTitle>
               {editingPolicy ? "Éditer la policy" : "Créer une policy"}
             </DialogTitle>
@@ -441,7 +443,7 @@ export default function Policies() {
             maxHeight: "80vh",
             display: "flex",
             flexDirection: "column",
-          }}
+          }} aria-describedby={void 0} aria-label="add_permissions-dialog"
         >
           <DialogTitle>
             Ajouter des permissions à {selectedPolicy?.name}

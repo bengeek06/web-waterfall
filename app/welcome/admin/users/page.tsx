@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { columns, User } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
@@ -23,31 +23,30 @@ const emptyUser: UserForm = {
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState<UserForm>(emptyUser);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const fetchUsers = React.useCallback(
+    async () => {
+      const res = await fetch("/api/identity/users");
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     fetchUsers();
-  }, []);
-
-  async function fetchUsers() {
-    setLoading(true);
-    const res = await fetch("/api/identity/users");
-    if (res.status === 401) {
-      window.location.href = "/login";
-      return;
-    }
-    if (res.ok) {
-      const data = await res.json();
-      setUsers(data);
-    }
-    setLoading(false);
-  }
-
+  }, [fetchUsers]);
   function openCreateModal() {
     setEditingUser(null);
     setForm(emptyUser);
@@ -148,10 +147,15 @@ export default function AdminUsersPage() {
       />
       {/* Modal for create/edit */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
+        <DialogContent aria-describedby={void 0} aria-label={`user-dialog-description`}>
           <DialogHeader>
             <DialogTitle>{editingUser ? "Modifier l'utilisateur" : "Créer un utilisateur"}</DialogTitle>
           </DialogHeader>
+          <DialogDescription id="user-dialog-description" className="sr-only">
+            {editingUser
+              ? "Formulaire pour modifier un utilisateur existant."
+              : "Formulaire pour créer un nouvel utilisateur."}
+          </DialogDescription>
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <Input
               placeholder="Email"
@@ -212,11 +216,13 @@ export default function AdminUsersPage() {
       </Dialog>
       {/* Delete confirmation */}
       <Dialog open={!!deleteUserId} onOpenChange={v => !v && setDeleteUserId(null)}>
-        <DialogContent>
+        <DialogContent aria-describedby={void 0} aria-label={`delete-dialog-description`}>
           <DialogHeader>
             <DialogTitle>Supprimer l&#39;utilisateur ?</DialogTitle>
           </DialogHeader>
-          <div>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</div>
+          <DialogDescription id="delete-dialog-description" className="sr-only">
+            Êtes-vous sûr de vouloir supprimer cet utilisateur ?
+          </DialogDescription>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteUserId(null)}>Annuler</Button>
             <Button variant="destructive" onClick={handleDeleteUser}>Supprimer</Button>

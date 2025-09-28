@@ -98,7 +98,7 @@ async function proxyRequest(
   };
   if (req.body) {
     fetchOptions.body = req.body;
-    // @ts-ignore
+    // @ts-expect-error Node.js fetch requires duplex for streaming body
     fetchOptions.duplex = "half";
   }
 
@@ -117,20 +117,30 @@ async function proxyRequest(
 
   return NextResponse.json({ message: "Success" });
 }
-export async function GET(req: NextRequest, context: { params: { policy_id?: string } }) {
-  const params = await context.params;
+
+function extractParams(params: { policy_id?: string } | Promise<{ policy_id?: string }>) {
+  if (typeof (params as Promise<unknown>).then === "function") {
+    // params is a Promise
+    return params as Promise<{ policy_id?: string }>;
+  }
+  // params is an object
+  return Promise.resolve(params as { policy_id?: string });
+}
+
+export async function GET(req: NextRequest, context: { params: { policy_id?: string } } | { params: Promise<{ policy_id?: string }> }) {
+  const params = await extractParams(context.params);
   const policy_id = getPolicyIdFromParams(params);
   return proxyRequest(req, "GET", policy_id);
 }
 
-export async function POST(req: NextRequest, context: { params: { policy_id?: string } }) {
-  const params = await context.params;
+export async function POST(req: NextRequest, context: { params: { policy_id?: string } } | { params: Promise<{ policy_id?: string }> }) {
+  const params = await extractParams(context.params);
   const policy_id = getPolicyIdFromParams(params);
   return proxyRequest(req, "POST", policy_id);
 }
 
-export async function DELETE(req: NextRequest, context: { params: { policy_id?: string } }) {
-  const params = await context.params;
+export async function DELETE(req: NextRequest, context: { params: { policy_id?: string } } | { params: Promise<{ policy_id?: string }> }) {
+  const params = await extractParams(context.params);
   const policy_id = getPolicyIdFromParams(params);
   return proxyRequest(req, "DELETE", policy_id);
 }

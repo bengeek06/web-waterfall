@@ -9,6 +9,9 @@ export default async function WelcomePage() {
   const firstname = await getFirstnameFromCookie();
   return (
     <div>
+      <h2 className="text-2xl font-semibold text-center mb-8">
+        {firstname ? `Bienvenue, ${firstname} !` : "Bienvenue !"}
+      </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {/* Card Administration */}
         <Card>

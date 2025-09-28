@@ -30,12 +30,10 @@ function ProfileForm({ dictionary, user }: { dictionary: Dictionary; user: User 
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || "");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
-      setAvatarFile(e.target.files[0]);
       setAvatarUrl(URL.createObjectURL(e.target.files[0]));
     }
   }
@@ -43,11 +41,9 @@ function ProfileForm({ dictionary, user }: { dictionary: Dictionary; user: User 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setAvatarFile(e.dataTransfer.files[0]);
       setAvatarUrl(URL.createObjectURL(e.dataTransfer.files[0]));
     }
   }
-
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
   }
