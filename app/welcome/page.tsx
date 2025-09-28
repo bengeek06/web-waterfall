@@ -1,17 +1,26 @@
 import React from "react";
-import { getFirstnameFromCookie } from "@/lib/user";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Building2, FolderKanban } from "lucide-react";
 import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+} from "@/components/ui/breadcrumb";
 
 export default async function WelcomePage() {
-  const firstname = await getFirstnameFromCookie();
   return (
     <div>
-      <h2 className="text-2xl font-semibold text-center mb-8">
-        {firstname ? `Bienvenue, ${firstname} !` : "Bienvenue !"}
-      </h2>
+      <div className="flex justify-center mb-4">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <span>Welcome</span>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {/* Card Administration */}
         <Card>

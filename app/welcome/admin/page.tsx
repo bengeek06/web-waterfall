@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { KeyRound, Users } from "lucide-react";
 import { getDictionary } from "@/lib/dictionaries";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 
 export default async function AdminPage() {
@@ -11,6 +18,19 @@ export default async function AdminPage() {
     
   return (
     <div>
+      <div className="flex justify-center mb-4">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/welcome">Welcome</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <span>Administration</span>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {/* Card Users */}
             <Card>

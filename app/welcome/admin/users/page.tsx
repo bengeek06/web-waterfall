@@ -4,9 +4,23 @@ import React, { useEffect, useState } from "react";
 import { columns, User } from "./columns";
 import { DataTable } from "./data-table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 type UserForm = Partial<User> & { password?: string };
 
@@ -29,20 +43,17 @@ export default function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const fetchUsers = React.useCallback(
-    async () => {
-      const res = await fetch("/api/identity/users");
-      if (res.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data);
-      }
-    },
-    []
-  );
+  const fetchUsers = React.useCallback(async () => {
+    const res = await fetch("/api/identity/users");
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+    if (res.ok) {
+      const data = await res.json();
+      setUsers(data);
+    }
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -131,6 +142,23 @@ export default function AdminUsersPage() {
 
   return (
     <div className="p-6">
+      <div className="flex justify-center mb-4">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/welcome">Welcome</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/welcome/admin">Administration</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <span>Utilisateurs</span>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Gestion des utilisateurs</h1>
         <Button onClick={openCreateModal}>Créer un utilisateur</Button>
