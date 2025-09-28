@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
       Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
     ),
     body,
-    credentials: "include",
   });
 
   const setCookie = res.headers.get("set-cookie");

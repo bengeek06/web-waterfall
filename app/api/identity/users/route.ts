@@ -193,6 +193,7 @@ export async function POST(req: NextRequest) {
   logger.debug(`Environment IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL}`);
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}/users`);
+  logger.debug(`Authorization header: ${req.headers.get("authorization")}`);
 
   let body;
   try {
@@ -203,11 +204,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const headers = Object.fromEntries(
-    Array.from(req.headers.entries()).filter(
-      ([key]) => key.toLowerCase() !== "host" && key.toLowerCase() !== "content-length"
-    )
+  // Correction : retire tous les content-type avant d'ajouter le bon
+  const rawHeaders = Array.from(req.headers.entries()).filter(
+    ([key]) =>
+      key.toLowerCase() !== "host" &&
+      key.toLowerCase() !== "content-length" &&
+      key.toLowerCase() !== "content-type"
   );
+  const headers: Record<string, string> = {
+    ...Object.fromEntries(rawHeaders),
+    "Content-Type": "application/json"
+  };
+
+  // Ajoute Authorization si access_token présent dans le cookie
+  const accessToken = req.cookies.get("access_token")?.value;
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+    logger.debug(`Added Authorization header: Bearer ${accessToken}`);
+  } else {
+    logger.debug("No access_token cookie found, Authorization header not set");
+  }
 
   const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "POST",

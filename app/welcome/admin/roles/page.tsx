@@ -32,87 +32,87 @@ export default function RolesAdminPage() {
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
   const [formName, setFormName] = useState("");
   const [formDescription, setFormDescription] = useState("");
-  const [formPermissions, setFormPermissions] = useState<string>("");
+  //const [formPermissions, setFormPermissions] = useState<string>("");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [permissionsRes, policiesRes] = await Promise.all([
-          fetch("/api/guardian/permissions"),
-          fetch("/api/guardian/policies"),
-        ]);
-        console.log("permissionsRes status:", permissionsRes.status);
-        console.log("policiesRes status:", policiesRes.status);
+  async function fetchData() {
+    try {
+      const [permissionsRes, policiesRes] = await Promise.all([
+        fetch("/api/guardian/permissions"),
+        fetch("/api/guardian/policies"),
+      ]);
+      console.log("permissionsRes status:", permissionsRes.status);
+      console.log("policiesRes status:", policiesRes.status);
 
-        if (permissionsRes.status === 401 || policiesRes.status === 401) {
-          window.location.href = "/login";
-          return;
-        }
+      if (permissionsRes.status === 401 || policiesRes.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
-        if (!permissionsRes.ok) {
-          console.error("Erreur lors de la récupération des permissions.");
-          throw new Error("Erreur lors de la récupération des permissions.");
-        }
+      if (!permissionsRes.ok) {
+        console.error("Erreur lors de la récupération des permissions.");
+        throw new Error("Erreur lors de la récupération des permissions.");
+      }
 
-        if (!policiesRes.ok) {
-          console.error("Erreur lors de la récupération des policies.");
-          throw new Error("Erreur lors de la récupération des policies.");
-        }
+      if (!policiesRes.ok) {
+        console.error("Erreur lors de la récupération des policies.");
+        throw new Error("Erreur lors de la récupération des policies.");
+      }
 
-        // Vérification du content-type avant de parser en JSON
-        const permissionsContentType = permissionsRes.headers.get("content-type") || "";
-        const policiesContentType = policiesRes.headers.get("content-type") || "";
+      // Vérification du content-type avant de parser en JSON
+      const permissionsContentType = permissionsRes.headers.get("content-type") || "";
+      const policiesContentType = policiesRes.headers.get("content-type") || "";
 
-        if (!permissionsContentType.includes("application/json")) {
-          const text = await permissionsRes.text();
-          throw new Error("Réponse permissions non JSON: " + text.slice(0, 200));
-        }
-        if (!policiesContentType.includes("application/json")) {
-          const text = await policiesRes.text();
-          throw new Error("Réponse policies non JSON: " + text.slice(0, 200));
-        }
+      if (!permissionsContentType.includes("application/json")) {
+        const text = await permissionsRes.text();
+        throw new Error("Réponse permissions non JSON: " + text.slice(0, 200));
+      }
+      if (!policiesContentType.includes("application/json")) {
+        const text = await policiesRes.text();
+        throw new Error("Réponse policies non JSON: " + text.slice(0, 200));
+      }
 
-        const permissionsData = await permissionsRes.json();
-        const policiesData = await policiesRes.json();
-        console.log("permissionsData:", permissionsData);
-        console.log("policiesData:", policiesData);
+      const permissionsData = await permissionsRes.json();
+      const policiesData = await policiesRes.json();
+      console.log("permissionsData:", permissionsData);
+      console.log("policiesData:", policiesData);
 
-        // S'assurer que permissionsData est un tableau
-        let permissionsArray: Permission[] = [];
-        if (Array.isArray(permissionsData)) {
-          permissionsArray = permissionsData;
-        } else if (permissionsData && typeof permissionsData === "object") {
-          if (Array.isArray(permissionsData.permissions)) {
-            permissionsArray = permissionsData.permissions;
-          } else {
-            permissionsArray = [permissionsData];
-          }
-        }
-
-        setPermissions(permissionsArray);
-
-        // S'assurer que policiesData est un tableau
-        let policiesArray: Policy[] = [];
-        if (Array.isArray(policiesData)) {
-          policiesArray = policiesData;
-        } else if (policiesData && typeof policiesData === "object") {
-          if (Array.isArray(policiesData.policies)) {
-            policiesArray = policiesData.policies;
-          } else {
-            policiesArray = [policiesData];
-          }
-        }
-        setPolicies(policiesArray);
-      } catch (err) {
-        console.error("fetchData error:", err);
-        if (err instanceof Error) {
-          setError(err.message);
+      // S'assurer que permissionsData est un tableau
+      let permissionsArray: Permission[] = [];
+      if (Array.isArray(permissionsData)) {
+        permissionsArray = permissionsData;
+      } else if (permissionsData && typeof permissionsData === "object") {
+        if (Array.isArray(permissionsData.permissions)) {
+          permissionsArray = permissionsData.permissions;
         } else {
-          setError("Erreur inconnue.");
+          permissionsArray = [permissionsData];
         }
       }
-    }
 
+      setPermissions(permissionsArray);
+
+      // S'assurer que policiesData est un tableau
+      let policiesArray: Policy[] = [];
+      if (Array.isArray(policiesData)) {
+        policiesArray = policiesData;
+      } else if (policiesData && typeof policiesData === "object") {
+        if (Array.isArray(policiesData.policies)) {
+          policiesArray = policiesData.policies;
+        } else {
+          policiesArray = [policiesData];
+        }
+      }
+      setPolicies(policiesArray);
+    } catch (err) {
+      console.error("fetchData error:", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erreur inconnue.");
+      }
+    }
+  }
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -120,7 +120,7 @@ export default function RolesAdminPage() {
     setEditingPolicy(null);
     setFormName("");
     setFormDescription("");
-    setFormPermissions("");
+    //setFormPermissions("");
     setShowPolicyDialog(true);
   }
 
@@ -128,9 +128,9 @@ export default function RolesAdminPage() {
     setEditingPolicy(policy);
     setFormName(policy.name);
     setFormDescription(policy.description || "");
-    setFormPermissions(
-      policy.permissions?.map(p => p.id).join(",") || ""
-    );
+    //setFormPermissions(
+    //  policy.permissions?.map(p => p.id).join(",") || ""
+    //);
     setShowPolicyDialog(true);
   }
 
@@ -139,32 +139,33 @@ export default function RolesAdminPage() {
     const payload = {
       name: formName,
       description: formDescription,
-      permissions: formPermissions.split(",").map(s => s.trim()).filter(Boolean),
+      //permissions: formPermissions.split(",").map(s => s.trim()).filter(Boolean),
     };
     try {
       let res;
+      const options = {
+        method: editingPolicy ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      };
       if (editingPolicy) {
-        res = await fetch(`/api/guardian/policies/${editingPolicy.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        res = await fetch(`/api/guardian/policies/${editingPolicy.id}`, options);
       } else {
-        res = await fetch("/api/guardian/policies", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        res = await fetch("/api/guardian/policies", options);
       }
       if (res.status === 401) {
         window.location.href = "/login";
         return;
       }
-      if (!res.ok) throw new Error("Erreur lors de l'enregistrement");
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Erreur API policies:", errorText);
+        throw new Error("Erreur lors de l'enregistrement");
+      }
       setShowPolicyDialog(false);
-      // Refresh policies
       fetchData();
     } catch (err) {
+      console.error("handlePolicySubmit error:", err);
       setError("Erreur lors de l'enregistrement de la policy");
     }
   }
@@ -183,6 +184,7 @@ export default function RolesAdminPage() {
       // Refresh policies
       fetchData();
     } catch (err) {
+      console.error("handleDeletePolicy error:", err);
       setError("Erreur lors de la suppression de la policy");
     }
   }
@@ -211,10 +213,6 @@ export default function RolesAdminPage() {
                 <div>
                   <label className="block text-sm mb-1">Description</label>
                   <input className="border rounded px-2 py-1 w-full" value={formDescription} onChange={e => setFormDescription(e.target.value)} />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Permissions (ids séparés par des virgules)</label>
-                  <input className="border rounded px-2 py-1 w-full" value={formPermissions} onChange={e => setFormPermissions(e.target.value)} />
                 </div>
                 <div className="flex gap-2 justify-end mt-4">
                   <Button type="button" variant="outline" onClick={() => setShowPolicyDialog(false)}>Annuler</Button>

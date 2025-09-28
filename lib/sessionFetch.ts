@@ -29,10 +29,58 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
       if (typeof input === "string" && typeof window === "undefined" && input.startsWith("/")) {
         realInput = baseUrl + input;
       }
-      return fetch(realInput, {
-        ...init,
-        ...(typeof window === "undefined" ? { headers: { ...(init?.headers || {}), Cookie: cookieHeader } } : {})
-      });
+      // Correction: conserve le type d'origine des headers
+      const finalInit = { ...(init || {}) };
+      if (
+        finalInit.body &&
+        finalInit.method &&
+        ["POST", "PUT", "PATCH"].includes(finalInit.method.toUpperCase())
+      ) {
+        if (finalInit.headers instanceof Headers) {
+          finalInit.headers.set("Content-Type", "application/json");
+        } else if (Array.isArray(finalInit.headers)) {
+          // tableau de paires [clé, valeur]
+          let found = false;
+          finalInit.headers = finalInit.headers.map(([k, v]) => {
+            if (k.toLowerCase() === "content-type") {
+              found = true;
+              return ["Content-Type", "application/json"];
+            }
+            return [k, v];
+          });
+          if (!found) {
+            finalInit.headers.push(["Content-Type", "application/json"]);
+          }
+        } else {
+          // objet simple
+          finalInit.headers = {
+            ...(finalInit.headers || {}),
+            "Content-Type": "application/json",
+          };
+        }
+      }
+      // Ajoute le cookie côté serveur
+      if (typeof window === "undefined") {
+        if (finalInit.headers instanceof Headers) {
+          finalInit.headers.set("Cookie", cookieHeader);
+        } else if (Array.isArray(finalInit.headers)) {
+          finalInit.headers.push(["Cookie", cookieHeader]);
+        } else {
+          finalInit.headers = {
+            ...(finalInit.headers || {}),
+            Cookie: cookieHeader,
+          };
+        }
+      }
+      // LOGS DEBUG
+      // Affiche les headers et le body transmis à fetch
+      console.log("checkSessionAndFetch: URL", realInput);
+      console.log("checkSessionAndFetch: method", finalInit.method);
+      console.log("checkSessionAndFetch: headers", finalInit.headers);
+      if (finalInit.body) {
+        console.log("checkSessionAndFetch: body", finalInit.body);
+      }
+      return fetch(realInput, finalInit);
     }
   }
   // Tentative de refresh
@@ -49,10 +97,58 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
       if (typeof input === "string" && typeof window === "undefined" && input.startsWith("/")) {
         realInput = baseUrl + input;
       }
-      return fetch(realInput, {
-        ...init,
-        ...(typeof window === "undefined" ? { headers: { ...(init?.headers || {}), Cookie: cookieHeader } } : {})
-      });
+      // Avant d'appeler fetch, s'assurer que Content-Type est bien "application/json" si body présent
+      const finalInit = { ...(init || {}) };
+      if (
+        finalInit.body &&
+        finalInit.method &&
+        ["POST", "PUT", "PATCH"].includes(finalInit.method.toUpperCase())
+      ) {
+        if (finalInit.headers instanceof Headers) {
+          finalInit.headers.set("Content-Type", "application/json");
+        } else if (Array.isArray(finalInit.headers)) {
+          // tableau de paires [clé, valeur]
+          let found = false;
+          finalInit.headers = finalInit.headers.map(([k, v]) => {
+            if (k.toLowerCase() === "content-type") {
+              found = true;
+              return ["Content-Type", "application/json"];
+            }
+            return [k, v];
+          });
+          if (!found) {
+            finalInit.headers.push(["Content-Type", "application/json"]);
+          }
+        } else {
+          // objet simple
+          finalInit.headers = {
+            ...(finalInit.headers || {}),
+            "Content-Type": "application/json",
+          };
+        }
+      }
+      // Ajoute le cookie côté serveur
+      if (typeof window === "undefined") {
+        if (finalInit.headers instanceof Headers) {
+          finalInit.headers.set("Cookie", cookieHeader);
+        } else if (Array.isArray(finalInit.headers)) {
+          finalInit.headers.push(["Cookie", cookieHeader]);
+        } else {
+          finalInit.headers = {
+            ...(finalInit.headers || {}),
+            Cookie: cookieHeader,
+          };
+        }
+      }
+      // LOGS DEBUG
+      // Affiche les headers et le body transmis à fetch
+      console.log("checkSessionAndFetch (refresh): URL", realInput);
+      console.log("checkSessionAndFetch (refresh): method", finalInit.method);
+      console.log("checkSessionAndFetch (refresh): headers", finalInit.headers);
+      if (finalInit.body) {
+        console.log("checkSessionAndFetch (refresh): body", finalInit.body);
+      }
+      return fetch(realInput, finalInit);
     }
   }
   // Retourne une réponse 401 si la session n'est pas récupérable
