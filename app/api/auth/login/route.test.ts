@@ -29,37 +29,68 @@ jest.mock("@/lib/logger", () => ({
 }));
 
 describe("POST /api/auth/login", () => {
-    const AUTH_SERVICE_URL = "http://auth_service:5001";
-    let req: NextRequest;
-    let mockFetch: jest.Mock;
-    let POSTFn: (req: NextRequest) => Promise<Response>; // dynamic handler reference
+  const AUTH_SERVICE_URL = "http://auth_service:5001";
+  let req: NextRequest;
+  let mockFetch: jest.Mock;
+  let POSTFn: (req: NextRequest) => Promise<Response>;
 
+  const buildReq = () => {
+    // @ts-expect-error mock request
+    return {
+      text: jest.fn(),
+      headers: {
+        entries: jest.fn(),
+        append: jest.fn(),
+        delete: jest.fn(),
+        get: jest.fn(),
+        getSetCookie: jest.fn(),
+        has: jest.fn(),
+        set: jest.fn(),
+        forEach: jest.fn(),
+        keys: jest.fn(),
+        values: jest.fn(),
+        [Symbol.iterator]: jest.fn(),
+      },
+    };
+  };
+
+  describe("MOCK_API=true (mode sans backend)", () => {
     beforeEach(async () => {
-        jest.resetModules();
-        process.env.AUTH_SERVICE_URL = AUTH_SERVICE_URL;
-        process.env.MOCK_API = "false"; // ensure proxy path
-        // dynamic import AFTER env vars are set so constant is populated
-        ({ POST: POSTFn } = await import("./route"));
+      jest.resetModules();
+      process.env.AUTH_SERVICE_URL = ""; // pas nécessaire en mode mock
+      process.env.MOCK_API = "true";
+      ({ POST: POSTFn } = await import("./route"));
+      // @ts-expect-error
+      req = buildReq();
+      (req.text as jest.Mock).mockResolvedValue('{"username":"u","password":"p"}');
+      mockFetch = jest.fn();
+      global.fetch = mockFetch as any;
+    });
 
-        // @ts-expect-error mock request
-        req = {
-            text: jest.fn(),
-            headers: {
-                entries: jest.fn(),
-                append: jest.fn(),
-                delete: jest.fn(),
-                get: jest.fn(),
-                getSetCookie: jest.fn(),
-                has: jest.fn(),
-                set: jest.fn(),
-                forEach: jest.fn(),
-                keys: jest.fn(),
-                values: jest.fn(),
-                [Symbol.iterator]: jest.fn(),
-            },
-        };
-        mockFetch = jest.fn();
-        global.fetch = mockFetch as unknown as typeof fetch;
+    it("retourne la réponse mock et n'appelle pas fetch", async () => {
+      const res = await POSTFn(req as unknown as NextRequest);
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(res.constructor.name).toBe("NextResponse");
+      const json = await res.json();
+      expect(json).toEqual({
+        success: true,
+        user_id: "mock-user-id",
+        message: "Login successful",
+      });
+      expect(res.headers.get("set-cookie")).toContain("auth_token=mocktoken");
+    });
+  });
+
+  describe("MOCK_API=false (proxy vers service)", () => {
+    beforeEach(async () => {
+      jest.resetModules();
+      process.env.AUTH_SERVICE_URL = AUTH_SERVICE_URL;
+      process.env.MOCK_API = "false";
+      ({ POST: POSTFn } = await import("./route"));
+      // @ts-expect-error
+      req = buildReq();
+      mockFetch = jest.fn();
+      global.fetch = mockFetch as any;
     });
 
     it("proxies request and returns JSON response", async () => {
@@ -151,4 +182,5 @@ describe("POST /api/auth/login", () => {
         const response = await POSTFn(req as unknown as NextRequest);
         expect(response.headers.get("set-cookie")).toBe(cookieValue);
     });
+  });
 });

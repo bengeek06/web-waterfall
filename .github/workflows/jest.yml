@@ -12,6 +12,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      MOCK_API: "true"        # Active le mode mock pour les routes pendant les tests
+      NODE_ENV: "test"
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Jest tests
+      - name: Run Jest tests (mock mode)
         run: npm test -- --ci --runInBand
 
       # - name: Upload coverage artifact (optionnel)
