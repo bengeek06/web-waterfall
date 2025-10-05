@@ -2,9 +2,9 @@ name: CI Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, guardian_staging ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, guardian_staging ]
 
 permissions:
   contents: read
