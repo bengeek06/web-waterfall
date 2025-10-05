@@ -59,6 +59,7 @@ export default function Login({ dictionary }: LoginProps) {
 								<User className="w-5 h-5 text-waterfall-icon" />
 								<Input
 									type="text"
+									id="email"
 									placeholder={dictionary.email}
 									value={login}
 									onChange={(e) => setLogin(e.target.value)}
@@ -69,13 +70,14 @@ export default function Login({ dictionary }: LoginProps) {
 								<KeyRound className="w-5 h-5 text-waterfall-icon" />
 								<Input
 									type="password"
+									id="password"
 									placeholder={dictionary.password}
 									value={password}
 									onChange={(e) => setPassword(e.target.value)}
 									required
 								/>
 							</div>
-							<Button type="submit" className="w-full">
+							<Button id="submit" type="submit" className="w-full">
 								{dictionary.submit}
 							</Button>
 						</form>

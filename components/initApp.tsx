@@ -120,7 +120,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Building2 className="w-5 h-5 text-waterfall-icon" />
-                          <Input type="text" {...field} required placeholder={dictionary.company.desc} />
+                          <Input id="company" type="text" {...field} required placeholder={dictionary.company.desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.company && <div className="text-red-500 text-sm mt-1">{fieldErrors.company}</div>}
@@ -146,7 +146,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <User className="w-5 h-5 text-waterfall-icon" />
-                          <Input type="text" {...field} required placeholder={dictionary.user.desc} />
+                          <Input id="user" type="text" {...field} required placeholder={dictionary.user.desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.user && <div className="text-red-500 text-sm mt-1">{fieldErrors.user}</div>}
@@ -162,7 +162,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input type="password" {...field} required placeholder={dictionary.password_desc} />
+                          <Input id="password" type="password" {...field} required placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.password && <div className="text-red-500 text-sm mt-1">{fieldErrors.password}</div>}
@@ -178,7 +178,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input type="password" {...field} required placeholder={dictionary.password_desc} />
+                          <Input id="passwordConfirm" type="password" {...field} required placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.passwordConfirm && <div className="text-red-500 text-sm mt-1">{fieldErrors.passwordConfirm}</div>}
@@ -187,7 +187,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                 />
               </CardContent>
             </Card>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button id="submit" type="submit" className="w-full" disabled={loading}>
               {loading ? dictionary.loading : dictionary.submit}
             </Button>
             {passwordError && <div className="text-red-500 text-sm mt-2">{passwordError}</div>}
