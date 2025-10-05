@@ -9,7 +9,9 @@
     "lint": "eslint",
     "jest": "jest",
     "jest:ext": "jest --config jest.config.js --",
+    "jest:runInBand": "jest --runInBand --",
     "jest:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
+    "jest:debug:watch": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
