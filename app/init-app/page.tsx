@@ -1,4 +1,4 @@
-import InitApp from "@/components/init-app";
+import InitApp from "@/components/initApp";
 import { getDictionary } from "@/lib/dictionaries";
 
 export default async function InitAppPage() {

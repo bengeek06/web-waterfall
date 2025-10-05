@@ -6,7 +6,9 @@
         "email": "Adresse e-mail",
         "password": "Mot de passe",
         "submit": "Soumettre",
-        "register": "S'inscrire"
+        "register": "S'inscrire",
+        "invalid_email": "Format d'e-mail invalide.",
+        "login_failed": "Échec de la connexion. Vérifiez vos identifiants."
     },
     "init_app": {
         "title": "Initialiser l'application",
@@ -28,5 +30,11 @@
         "error_company": "Échec de la création de l'entreprise",
         "error_user": "Échec de la création de l'utilisateur",
         "loading": "Initialisation..."
-    }
+    },
+    "profile": "Votre profil",
+    "users": "Utilisateurs",
+    "manage_users": "Gérer les utilisateurs",
+    "roles": "Rôles",
+    "manage_roles": "Gérer les rôles"
+
 }
