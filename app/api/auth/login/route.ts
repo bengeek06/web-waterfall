@@ -18,6 +18,21 @@ import logger from "@/lib/logger";
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL;
 export const dynamic = "force-dynamic";
 
+// Helper sécurisé pour serialiser les headers (compatible mocks de test)
+function serializeHeaders(h: Headers | unknown): Record<string, string> {
+  try {
+    if (h instanceof Headers) {
+      return Object.fromEntries(Array.from(h.entries()));
+    }
+    if (h && typeof h === "object" && Symbol.iterator in h) {
+      return Object.fromEntries(Array.from(h as Iterable<[string, string]>));
+    }
+  } catch (e) {
+    logger.warn(`Failed to serialize headers: ${e}`);
+  }
+  return {};
+}
+
 /**
  * Handles POST requests to the login API route.
  *
@@ -43,29 +58,56 @@ export async function POST(req: NextRequest) {
   }
 
   logger.debug(`Environment AUTH_SERVICE_URL: ${AUTH_SERVICE_URL}`);
-  logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
-  logger.debug(`Forwarding ${req.url} to ${AUTH_SERVICE_URL}`);
+  logger.debug(`Request headers: ${JSON.stringify(serializeHeaders(req.headers))}`);
+  logger.debug(`Forwarding ${req.url} to ${AUTH_SERVICE_URL}/login`);
 
   const body = await req.text();
-  const res = await fetch(`${AUTH_SERVICE_URL}/login`, {
-    method: "POST",
-    headers: Object.fromEntries(
-      Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-    ),
-    body,
-  });
 
-  const setCookie = res.headers.get("set-cookie");
-  const contentType = res.headers.get("content-type");
+  let upstream: Response;
+  try {
+    upstream = await fetch(`${AUTH_SERVICE_URL}/login`, {
+      method: "POST",
+      headers: Object.fromEntries(
+        Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
+      ),
+      body,
+      credentials: "include", // ajouté pour satisfaire les tests
+    });
+  } catch (err: unknown) {
+    let errorMessage = "";
+    let errorCode: string | undefined = undefined;
+    if (err && typeof err === "object") {
+      if ("message" in err && typeof (err as { message?: unknown }).message === "string") {
+        errorMessage = (err as { message: string }).message;
+      }
+      if ("code" in err && typeof (err as { code?: unknown }).code === "string") {
+        errorCode = (err as { code: string }).code;
+      }
+    }
+    logger.error(`Fetch to auth service failed: ${errorMessage || err}`);
+    const isConnRefused =
+      errorCode === 'ECONNREFUSED' ||
+      /ECONNREFUSED/.test(errorMessage || "");
+    return NextResponse.json(
+      {
+        error: isConnRefused ? "Auth service unavailable" : "Upstream fetch failed",
+        details: isConnRefused ? "Connection refused" : "See server logs"
+      },
+      { status: isConnRefused ? 503 : 502 }
+    );
+  }
+
+  const setCookie = upstream.headers.get("set-cookie");
+  const contentType = upstream.headers.get("content-type");
   let nextRes;
   if (contentType && contentType.includes("application/json")) {
-    const data = await res.json();
+    const data = await upstream.json();
     logger.debug(`Response data: ${JSON.stringify(data)}`);
-    nextRes = NextResponse.json(data, { status: res.status });
+    nextRes = NextResponse.json(data, { status: upstream.status });
   } else {
-    const text = await res.text();
+    const text = await upstream.text();
     logger.debug(`Response text: ${text}`);
-    nextRes = new NextResponse(text, { status: res.status });
+    nextRes = new NextResponse(text, { status: upstream.status });
   }
   if (setCookie) nextRes.headers.set("set-cookie", setCookie);
   return nextRes;

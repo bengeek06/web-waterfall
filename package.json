@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "jest": "jest",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
@@ -25,9 +26,9 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.544.0",
     "next": "15.5.4",
-    "pino": "^9.12.0",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "pino": "^10.0.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
     "react-hook-form": "^7.63.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.11"
