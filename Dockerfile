@@ -1,26 +1,32 @@
-# Use the official Node.js runtime as a parent image
-FROM node:18-alpine
-
-# Set the working directory
+# --- deps stage: installe toutes les deps (incluant dev) ---
+FROM node:24.9.0-slim AS deps
 WORKDIR /app
-
-# Copy package.json and package-lock.json (if available)
 COPY package*.json ./
+# Remplace npm ci (qui échoue si lock désynchronisé)
+RUN npm install --no-audit --no-fund
 
-# Install ALL dependencies (including devDependencies needed for build)
-RUN npm ci
-
-# Copy the rest of the application code
+# --- builder stage: build Next.js (next.config.ts nécessite typescript présent) ---
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Build the Next.js application
+# Production build (prend en compte NODE_ENV=production pour l'output)
+ENV NODE_ENV=production
 RUN npm run build
+# Supprime les devDependencies pour réduire l'image finale
+RUN npm prune --omit=dev
 
-# Remove devDependencies after build to reduce image size
-RUN npm prune --production
-
-# Expose the port the app runs on
+# --- runner stage: runtime minimal ---
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+# Copier uniquement ce qui est nécessaire à l'exécution
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+# (Optionnel) si vous avez un next.config.* qui doit être présent à runtime:
+COPY --from=builder /app/next.config.* ./ 
 EXPOSE 3000
-
-# Define the command to run the application
-CMD ["npm", "start"]
+# Démarre le serveur Next.js
+CMD ["node","node_modules/next/dist/bin/next","start","-p","3000"]

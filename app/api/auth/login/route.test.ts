@@ -19,6 +19,20 @@
  * - Asserts that the proxied request is constructed correctly.
  * - Asserts that the response from the handler matches the expected output, including headers and body.
  */
+// Types used only for tests to avoid `any`
+interface LoginSuccessResponse {
+  token: string
+  user: {
+    id: string
+    email: string
+    [k: string]: unknown
+  }
+}
+interface LoginErrorResponse {
+  error: string
+}
+type LoginResponse = LoginSuccessResponse | LoginErrorResponse
+
 import { NextRequest } from "next/server";
 
 jest.mock("@/lib/logger", () => ({
@@ -35,7 +49,6 @@ describe("POST /api/auth/login", () => {
   let POSTFn: (req: NextRequest) => Promise<Response>;
 
   const buildReq = () => {
-    // @ts-expect-error mock request
     return {
       text: jest.fn(),
       headers: {
@@ -60,19 +73,20 @@ describe("POST /api/auth/login", () => {
       process.env.AUTH_SERVICE_URL = ""; // pas nécessaire en mode mock
       process.env.MOCK_API = "true";
       ({ POST: POSTFn } = await import("./route"));
-      // @ts-expect-error
+      // @ts-expect-error: mock request
       req = buildReq();
       (req.text as jest.Mock).mockResolvedValue('{"username":"u","password":"p"}');
       mockFetch = jest.fn();
-      global.fetch = mockFetch as any;
+      // assign mock without using 'any' to satisfy lint rule
+      global.fetch = mockFetch as unknown as typeof fetch;
     });
 
     it("retourne la réponse mock et n'appelle pas fetch", async () => {
       const res = await POSTFn(req as unknown as NextRequest);
       expect(mockFetch).not.toHaveBeenCalled();
       expect(res.constructor.name).toBe("NextResponse");
-      const json = await res.json();
-      expect(json).toEqual({
+      const json1 = (await res.json()) as LoginResponse;
+      expect(json1).toEqual({
         success: true,
         user_id: "mock-user-id",
         message: "Login successful",
@@ -87,10 +101,11 @@ describe("POST /api/auth/login", () => {
       process.env.AUTH_SERVICE_URL = AUTH_SERVICE_URL;
       process.env.MOCK_API = "false";
       ({ POST: POSTFn } = await import("./route"));
-      // @ts-expect-error
+      // @ts-expect-error: mock request
       req = buildReq();
       mockFetch = jest.fn();
-      global.fetch = mockFetch as any;
+      // assign mock without using 'any' to satisfy lint rule
+      global.fetch = mockFetch as unknown as typeof fetch;
     });
 
     it("proxies request and returns JSON response", async () => {

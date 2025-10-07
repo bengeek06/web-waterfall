@@ -40,16 +40,21 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
           finalInit.headers.set("Content-Type", "application/json");
         } else if (Array.isArray(finalInit.headers)) {
           // tableau de paires [clé, valeur]
-          let found = false;
-          finalInit.headers = finalInit.headers.map(([k, v]) => {
-            if (k.toLowerCase() === "content-type") {
-              found = true;
-              return ["Content-Type", "application/json"];
+          // FIX: use Headers to avoid invalid string[][] assignment
+          {
+            const hdrs = new Headers(finalInit.headers as HeadersInit | undefined);
+            let found = false;
+            hdrs.forEach((_v, k) => {
+              if (k.toLowerCase() === "content-type") {
+                found = true;
+              }
+            });
+            // Always enforce application/json
+            hdrs.set("Content-Type", "application/json");
+            if (!found) {
+              // already set above; kept for clarity
             }
-            return [k, v];
-          });
-          if (!found) {
-            finalInit.headers.push(["Content-Type", "application/json"]);
+            finalInit.headers = hdrs;
           }
         } else {
           // objet simple
@@ -108,16 +113,21 @@ export async function checkSessionAndFetch(input: RequestInfo | URL, init?: Requ
           finalInit.headers.set("Content-Type", "application/json");
         } else if (Array.isArray(finalInit.headers)) {
           // tableau de paires [clé, valeur]
-          let found = false;
-          finalInit.headers = finalInit.headers.map(([k, v]) => {
-            if (k.toLowerCase() === "content-type") {
-              found = true;
-              return ["Content-Type", "application/json"];
+          // FIX: use Headers to avoid invalid string[][] assignment
+          {
+            const hdrs = new Headers(finalInit.headers as HeadersInit | undefined);
+            let found = false;
+            hdrs.forEach((_v, k) => {
+              if (k.toLowerCase() === "content-type") {
+                found = true;
+              }
+            });
+            // Always enforce application/json
+            hdrs.set("Content-Type", "application/json");
+            if (!found) {
+              // already set above; kept for clarity
             }
-            return [k, v];
-          });
-          if (!found) {
-            finalInit.headers.push(["Content-Type", "application/json"]);
+            finalInit.headers = hdrs;
           }
         } else {
           // objet simple
