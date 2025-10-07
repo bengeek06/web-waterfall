@@ -87,6 +87,7 @@ async function handleSubmit(e: React.FormEvent) {
             message?: string;
         }
 
+        // Can't use checkSessionAndFetch here because it's client-side
         const res: Response = await fetch(`/api/identity/users/${user.id}`, {
             method: "PATCH",
             headers: {

@@ -44,6 +44,7 @@ export default function AdminUsersPage() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const fetchUsers = React.useCallback(async () => {
+    // Can't use checkSessionAndFetch here because it's client-side
     const res = await fetch("/api/identity/users");
     if (res.status === 401) {
       window.location.href = "/login";
@@ -131,7 +132,7 @@ export default function AdminUsersPage() {
 
   async function handleDeleteUser() {
     if (!deleteUserId) return;
-    const res = await fetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
+    const res = await checkSessionAndFetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
     if (res.status === 401) {
       window.location.href = "/login";
       return;
