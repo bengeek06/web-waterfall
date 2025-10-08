@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN npm install --no-audit --no-fund
 
 # --- builder stage: build Next.js (next.config.ts nécessite typescript présent) ---
-FROM node:20-alpine AS builder
+FROM node:24.9.0-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -17,7 +17,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # --- runner stage: runtime minimal ---
-FROM node:20-alpine AS runner
+FROM node:24.9.0-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 # Copier uniquement ce qui est nécessaire à l'exécution
