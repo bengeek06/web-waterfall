@@ -18,7 +18,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
-import { checkSessionAndFetch } from "@/lib/sessionFetch";
+import { serverSessionFetch } from "@/lib/sessionFetch.server";
 import { cookies } from "next/headers";
 
 const GUARDIAN_SERVICE_URL = process.env.GUARDIAN_SERVICE_URL;
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
   }
   logger.debug(`Forwarded cookie header: ${headers.Cookie}`);
 
-  const res = await checkSessionAndFetch(`${GUARDIAN_SERVICE_URL}/permissions`, {
+  const res = await serverSessionFetch(`${GUARDIAN_SERVICE_URL}/permissions`, {
     method: "GET",
     headers,
   });

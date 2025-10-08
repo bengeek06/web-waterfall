@@ -21,6 +21,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { clientSessionFetch } from "@/lib/sessionFetch.client";
 
 type UserForm = Partial<User> & { password?: string };
 
@@ -45,7 +46,7 @@ export default function AdminUsersPage() {
 
   const fetchUsers = React.useCallback(async () => {
     // Can't use checkSessionAndFetch here because it's client-side
-    const res = await fetch("/api/identity/users");
+    const res = await clientSessionFetch("/api/identity/users");
     if (res.status === 401) {
       window.location.href = "/login";
       return;
@@ -111,7 +112,7 @@ export default function AdminUsersPage() {
       ? `/api/identity/users/${editingUser.id}`
       : "/api/identity/users";
 
-    const res = await fetch(url, {
+    const res = await clientSessionFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -133,7 +134,7 @@ export default function AdminUsersPage() {
   async function handleDeleteUser() {
     if (!deleteUserId) return;
     // Can't use checkSessionAndFetch here because it's client-side
-    const res = await fetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
+    const res = await clientSessionFetch(`/api/identity/users/${deleteUserId}`, { method: "DELETE" });
     if (res.status === 401) {
       window.location.href = "/login";
       return;

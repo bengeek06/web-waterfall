@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { clientSessionFetch } from "@/lib/sessionFetch.client";
 
 // Update the Dictionary type to allow nested objects
 type Dictionary = {
@@ -88,7 +89,7 @@ async function handleSubmit(e: React.FormEvent) {
         }
 
         // Can't use checkSessionAndFetch here because it's client-side
-        const res: Response = await fetch(`/api/identity/users/${user.id}`, {
+        const res: Response = await clientSessionFetch(`/api/identity/users/${user.id}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

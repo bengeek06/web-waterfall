@@ -22,7 +22,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
-import { checkSessionAndFetch } from "@/lib/sessionFetch";
+import { serverSessionFetch } from "@/lib/sessionFetch.server";
 
 const GUARDIAN_SERVICE_URL = process.env.GUARDIAN_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -97,7 +97,7 @@ async function proxyRequest(
     );
   }
 
-  const res = await checkSessionAndFetch(`${GUARDIAN_SERVICE_URL}/policies/${policy_id}`, {
+  const res = await serverSessionFetch(`${GUARDIAN_SERVICE_URL}/policies/${policy_id}`, {
     method,
     headers,
     ...(body ? { body } : {}),

@@ -19,7 +19,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
-import { checkSessionAndFetch } from "@/lib/sessionFetch";
+import { serverSessionFetch } from "@/lib/sessionFetch.server";
 
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
     Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
   );
 
-  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users`, {
+  const res = await serverSessionFetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "GET",
     headers,
   });
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
     logger.debug("No access_token cookie found, Authorization header not set");
   }
 
-  const res = await checkSessionAndFetch(`${IDENTITY_SERVICE_URL}/users`, {
+  const res = await serverSessionFetch(`${IDENTITY_SERVICE_URL}/users`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),

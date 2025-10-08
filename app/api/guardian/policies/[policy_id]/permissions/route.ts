@@ -21,7 +21,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import logger from "@/lib/logger";
-import { checkSessionAndFetch } from "@/lib/sessionFetch";
+import { serverSessionFetch } from "@/lib/sessionFetch.server";
 
 const GUARDIAN_SERVICE_URL = process.env.GUARDIAN_SERVICE_URL;
 export const dynamic = "force-dynamic";
@@ -102,7 +102,7 @@ async function proxyRequest(
     fetchOptions.duplex = "half";
   }
 
-  const response = await checkSessionAndFetch(url, fetchOptions);
+  const response = await serverSessionFetch(url, fetchOptions);
 
   if (!response.ok) {
     logger.error(`Error ${method} /policies/${policy_id}/permissions: ${response.statusText}`);
