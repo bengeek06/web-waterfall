@@ -83,7 +83,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ user
 }
 
 /**
- * Handles POST requests to `/api/identity/users`.
+ * Handles POST requests to `/api/identity/users/[user_id]/roles`.
  *
  * Proxies the request body and headers to the identity service and returns the response.
  *
@@ -101,17 +101,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ use
   logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}`);
 
-  const headers = Object.fromEntries(
-    Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-  );
+  // Parse le body JSON
+  let body;
+  try {
+    body = await req.json();
+    logger.debug(`POST body: ${JSON.stringify(body)}`);
+  } catch (err) {
+    logger.error(`Erreur lors du parsing du body JSON: ${err}`);
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  // Construit les headers de manière propre
+  const forwardedHeaders = new Headers();
+  
+  // Forward tous les headers sauf ceux qui causent des conflits
+  req.headers.forEach((value, key) => {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey !== "host" && lowerKey !== "content-length" && lowerKey !== "content-type") {
+      forwardedHeaders.set(key, value);
+    }
+  });
+  
+  // Force les headers nécessaires pour le POST JSON
+  forwardedHeaders.set("Content-Type", "application/json");
 
   const resolvedParams = await params;
   const user_id = getUserIdFromParams(resolvedParams);
 
   const res = await serverSessionFetch(`${IDENTITY_SERVICE_URL}/users/${user_id}/roles`, {
     method: "POST",
-    headers,
-    body: req.body,
+    headers: forwardedHeaders,
+    body: JSON.stringify(body),
   });
 
   const contentType = res.headers.get("content-type");
