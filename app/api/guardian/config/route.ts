@@ -1,7 +1,7 @@
 /**
- * Handles GET requests to the `/api/guardian/health` endpoint.
+ * Handles GET requests to the `/api/guardian/config` endpoint.
  *
- * Returns comprehensive health information including database connectivity.
+ * Returns current application configuration (non-sensitive data only).
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the guardian service.
@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'GUARDIAN_SERVICE_URL',
-    path: '/health',
+    path: '/config',
     method: 'GET',
-    mock: guardianMocks.health
+    mock: guardianMocks.config
   });
 }

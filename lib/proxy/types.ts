@@ -23,7 +23,7 @@ export interface MockResponse {
   /** HTTP status code */
   status: number;
   /** Response body (will be JSON stringified) */
-  body: Record<string, unknown> | string;
+  body: Record<string, unknown> | string | Array<unknown>;
   /** Optional Set-Cookie headers to include */
   cookies?: string[];
   /** Optional additional headers */

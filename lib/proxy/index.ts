@@ -154,7 +154,11 @@ export async function proxyRequest(
   
   let nextRes: NextResponse;
   
-  if (contentType && contentType.includes("application/json")) {
+  // Handle 204 No Content - must not have a body
+  if (upstream.status === 204) {
+    logger.debug("204 No Content response");
+    nextRes = new NextResponse(null, { status: 204 });
+  } else if (contentType && contentType.includes("application/json")) {
     const data = await upstream.json();
     logger.debug(`Response data: ${JSON.stringify(data)}`);
     nextRes = NextResponse.json(data, { status: upstream.status });

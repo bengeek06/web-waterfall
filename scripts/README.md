@@ -60,6 +60,66 @@ PASSWORD="securepassword" \
 
 ---
 
+### 🛡️ `test-integration-guardian.sh`
+**Tests d'intégration détaillés pour l'API Guardian (RBAC)**
+
+Script de test complet qui valide tous les endpoints de l'API Guardian.
+
+```bash
+# Usage direct
+API_BASE="http://localhost:3000/api/guardian" \
+LOGIN="testuser@example.com" \
+PASSWORD="securepassword" \
+COMPANY_ID="test-company-123" \
+USER_ID="test-user-123" \
+./scripts/test-integration-guardian.sh
+```
+
+**Tests effectués :**
+1. Health check (GET /health)
+2. Version (GET /version)
+3. Configuration (GET /config)
+4. Liste permissions (GET /permissions)
+5. Liste rôles (GET /roles)
+6. Créer rôle (POST /roles)
+7. Récupérer rôle par ID (GET /roles/{id})
+8. Modifier rôle (PUT /roles/{id})
+9. Liste policies (GET /policies)
+10. Créer policy (POST /policies)
+11. Vérifier accès (POST /check-access)
+12. Liste user-roles (GET /users-roles)
+13. Supprimer rôle (DELETE /roles/{id})
+14. Supprimer policy (DELETE /policies/{id})
+
+**Résultat attendu :** 14/14 tests passent ✅ (avec authentification)
+
+---
+
+### 🎯 `test-integration-all.sh`
+**Lance tous les tests d'intégration (Auth + Guardian)**
+
+Script maître qui exécute tous les tests d'intégration en séquence.
+
+```bash
+# Usage
+./scripts/test-integration-all.sh
+```
+
+**Exécute :**
+- Tests Auth complets
+- Tests Guardian complets
+- Fournit un résumé global
+
+**Résumé fourni :**
+```
+  Auth Service:     ✓ PASS
+  Guardian Service: ✓ PASS
+
+🎉 ALL INTEGRATION TESTS PASSED!
+```
+
+---
+
 ### 🚀 `run-integration-tests.sh`
 **Lance Next.js et exécute les tests** *(Pour environnement local)*
 
@@ -125,6 +185,23 @@ PASSWORD="securepassword" \
 ```bash
 LOGIN="email@example.com"     # Email de test (défaut: testuser@example.com)
 PASSWORD="password"            # Mot de passe (défaut: securepassword)
+```
+
+### Pour `test-integration-auth.sh`
+```bash
+API_BASE="http://localhost:3000/api/auth"  # Base URL de l'API Auth
+LOGIN="email@example.com"                   # Email de test
+PASSWORD="password"                         # Mot de passe
+```
+
+### Pour `test-integration-guardian.sh`
+```bash
+API_BASE="http://localhost:3000/api/guardian"  # Base URL de l'API Guardian
+AUTH_BASE="http://localhost:3000/api/auth"     # Base URL pour l'authentification
+LOGIN="email@example.com"                       # Email de test
+PASSWORD="password"                             # Mot de passe
+COMPANY_ID="test-company-123"                   # ID de la compagnie de test
+USER_ID="test-user-123"                         # ID de l'utilisateur de test
 ```
 
 ### Pour `run-integration-tests.sh`
