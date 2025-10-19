@@ -31,6 +31,9 @@ interface InitAppForm {
   passwordConfirm: string;
 }
 
+const IDENTITY_INIT_DB_URL = "/api/identity/init-app";
+const GUARDIAN_INIT_DB_URL = "/api/guardian/init-app";
+
 export default function InitApp({ dictionary }: { dictionary: InitAppDictionary }) {
   const form = useForm<InitAppForm>({ defaultValues: { company: "", user: "", password: "", passwordConfirm: "" } });
   const router = useRouter();
@@ -61,7 +64,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
     setLoading(true);
     try {
       // 1. Appel à l'init du service identity
-      const identityRes = await fetch("/api/identity/init-app", {
+      const identityRes = await fetch(IDENTITY_INIT_DB_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -74,7 +77,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
       const company_id = identityData.company.id;
       const user_id = identityData.user.id;
       // 2. Appel à l'init du service guardian
-      const guardianRes = await fetch("/api/guardian/init-app", {
+      const guardianRes = await fetch(GUARDIAN_INIT_DB_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -120,7 +123,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Building2 className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="company" type="text" {...field} required placeholder={dictionary.company.desc} />
+                          <Input id="company" type="text" {...field} placeholder={dictionary.company.desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.company && <div className="text-red-500 text-sm mt-1">{fieldErrors.company}</div>}
@@ -146,7 +149,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <User className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="user" type="text" {...field} required placeholder={dictionary.user.desc} />
+                          <Input id="user" type="text" {...field} placeholder={dictionary.user.desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.user && <div className="text-red-500 text-sm mt-1">{fieldErrors.user}</div>}
@@ -162,7 +165,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="password" type="password" {...field} required placeholder={dictionary.password_desc} />
+                          <Input id="password" type="password" {...field} placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.password && <div className="text-red-500 text-sm mt-1">{fieldErrors.password}</div>}
@@ -178,7 +181,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="passwordConfirm" type="password" {...field} required placeholder={dictionary.password_desc} />
+                          <Input id="passwordConfirm" type="password" {...field} placeholder={dictionary.password_desc} />
                         </div>
                       </FormControl>
                       {fieldErrors.passwordConfirm && <div className="text-red-500 text-sm mt-1">{fieldErrors.passwordConfirm}</div>}
