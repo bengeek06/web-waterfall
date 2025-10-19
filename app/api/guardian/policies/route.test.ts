@@ -59,7 +59,7 @@ describe("/api/guardian/policies", () => {
     });
 
     it("retourne la liste des policies mock", async () => {
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq();
       const res = await GETFn(req as unknown as NextRequest);
       
@@ -88,7 +88,7 @@ describe("/api/guardian/policies", () => {
     });
 
     it("proxies request and returns policies list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockJson = [
@@ -135,7 +135,7 @@ describe("/api/guardian/policies", () => {
           name: "New Policy", 
           description: "Test policy" 
         });
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         
         const mockJson = {

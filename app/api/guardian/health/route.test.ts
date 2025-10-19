@@ -52,7 +52,7 @@ describe("GET /api/guardian/health", () => {
       process.env.GUARDIAN_SERVICE_URL = "";
       process.env.MOCK_API = "true";
       ({ GET: GETFn } = await import("./route"));
-      // @ts-expect-error: mock request
+      // Mock request object
       req = buildReq();
       mockFetch = jest.fn();
       global.fetch = mockFetch as unknown as typeof fetch;
@@ -83,7 +83,7 @@ describe("GET /api/guardian/health", () => {
     });
 
     it("proxies request and returns healthy status", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         req = buildReq();
         
         const mockJson = { 
@@ -120,7 +120,7 @@ describe("GET /api/guardian/health", () => {
     });
 
     it("returns degraded status when database has issues", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         req = buildReq();
         
         const mockJson = { 
@@ -152,7 +152,7 @@ describe("GET /api/guardian/health", () => {
     });
 
     it("handles connection refused error", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         req = buildReq();
         
         const error = new Error("connect ECONNREFUSED") as Error & { code: string };
@@ -175,7 +175,7 @@ describe("GET /api/guardian/health", () => {
         process.env.MOCK_API = "false";
         ({ GET: GETFn } = await import("./route"));
         
-        // @ts-expect-error: mock request
+        // Mock request object
         req = buildReq();
         
         const response = await GETFn(req as unknown as NextRequest);

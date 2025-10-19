@@ -59,7 +59,7 @@ describe("/api/guardian/users-roles", () => {
     });
 
     it("retourne la liste des user-roles mock", async () => {
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq();
       const res = await GETFn(req as unknown as NextRequest);
       
@@ -88,7 +88,7 @@ describe("/api/guardian/users-roles", () => {
     });
 
     it("proxies request and returns user-roles list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockJson = [
@@ -135,7 +135,7 @@ describe("/api/guardian/users-roles", () => {
           user_id: "user-123", 
           role_id: "role-456"
         });
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         
         const mockJson = {
@@ -175,7 +175,7 @@ describe("/api/guardian/users-roles", () => {
           user_id: "user-123", 
           role_id: "role-456"
         });
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         
         const mockJson = { error: "User-role association already exists" };

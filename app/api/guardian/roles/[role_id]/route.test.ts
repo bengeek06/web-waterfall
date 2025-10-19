@@ -68,7 +68,7 @@ describe("/api/guardian/roles/[role_id]", () => {
     });
 
     it("retourne un rôle mock par ID", async () => {
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq();
       const context = buildContext();
       const res = await GETFn(req as unknown as NextRequest, context);
@@ -96,7 +96,7 @@ describe("/api/guardian/roles/[role_id]", () => {
     });
 
     it("proxies request and returns role by ID", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         const context = buildContext();
         
@@ -131,7 +131,7 @@ describe("/api/guardian/roles/[role_id]", () => {
     });
 
     it("handles 404 when role not found", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         const context = buildContext();
         
@@ -169,7 +169,7 @@ describe("/api/guardian/roles/[role_id]", () => {
           name: "Updated Admin", 
           description: "Updated description" 
         });
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         const context = buildContext();
         
@@ -217,7 +217,7 @@ describe("/api/guardian/roles/[role_id]", () => {
     });
 
     it("proxies request and deletes role", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         const context = buildContext();
         
@@ -244,7 +244,7 @@ describe("/api/guardian/roles/[role_id]", () => {
     });
 
     it("handles 403 when user lacks permission", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         const context = buildContext();
         

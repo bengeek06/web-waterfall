@@ -59,7 +59,7 @@ describe("/api/guardian/roles", () => {
     });
 
     it("retourne la liste des rôles mock", async () => {
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq();
       const res = await GETFn(req as unknown as NextRequest);
       
@@ -88,7 +88,7 @@ describe("/api/guardian/roles", () => {
     });
 
     it("proxies request and returns roles list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockJson = [
@@ -120,7 +120,7 @@ describe("/api/guardian/roles", () => {
     });
 
     it("handles empty roles list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockRes = {
@@ -154,7 +154,7 @@ describe("/api/guardian/roles", () => {
 
     it("retourne un nouveau rôle mock", async () => {
       const body = JSON.stringify({ name: "New Role", description: "Test role" });
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq(body);
       const res = await POSTFn(req as unknown as NextRequest);
       
@@ -185,7 +185,7 @@ describe("/api/guardian/roles", () => {
           name: "Project Manager", 
           description: "Manages projects" 
         });
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         
         const mockJson = {
@@ -222,7 +222,7 @@ describe("/api/guardian/roles", () => {
 
     it("handles validation errors", async () => {
         const requestBody = JSON.stringify({ name: "" }); // Invalid: empty name
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq(requestBody);
         
         const mockJson = { error: "Name is required" };

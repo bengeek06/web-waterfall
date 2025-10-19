@@ -55,7 +55,7 @@ describe("GET /api/guardian/permissions", () => {
     });
 
     it("retourne la liste des permissions mock", async () => {
-      // @ts-expect-error: mock request
+      // Mock request object
       const req = buildReq();
       const res = await GETFn(req as unknown as NextRequest);
       
@@ -85,7 +85,7 @@ describe("GET /api/guardian/permissions", () => {
     });
 
     it("proxies request and returns permissions list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockJson = [
@@ -127,7 +127,7 @@ describe("GET /api/guardian/permissions", () => {
     });
 
     it("handles empty permissions list", async () => {
-        // @ts-expect-error: mock request
+        // Mock request object
         const req = buildReq();
         
         const mockRes = {
