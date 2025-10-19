@@ -54,8 +54,11 @@ docs/
 ├── MOCK_MODE_GUIDE.md      # Guide d'utilisation des mocks
 └── MIGRATION_GUIDE.md      # Guide pour Guardian & Identity
 
-PROXY_IMPLEMENTATION.md      # Documentation globale
-IMPLEMENTATION_SUMMARY.md    # Ce fichier
+scripts/
+└── README.md               # Documentation des tests d'intégration
+
+PROXY_IMPLEMENTATION.md     # Documentation globale
+IMPLEMENTATION_SUMMARY.md   # Ce fichier
 ```
 
 ---
@@ -181,11 +184,15 @@ MOCK_API=true
 
 ### Commandes utiles
 ```bash
-# Tests
+# Tests unitaires
 npm test -- app/api/auth
 
 # Couverture
 npm test -- --coverage app/api/auth lib/proxy
+
+# Tests d'intégration
+npm run test:integration           # Docker environment
+npm run test:integration:local     # Local environment
 
 # Mode mock
 MOCK_API=true npm run dev
@@ -193,6 +200,20 @@ MOCK_API=true npm run dev
 # Mode backend réel
 MOCK_API=false npm run dev
 ```
+
+### Scripts d'intégration
+```bash
+# Tests complets avec Docker
+./scripts/run-docker-tests.sh
+
+# Avec credentials personnalisés
+./scripts/run-docker-tests.sh admin@company.com MyPass123
+
+# Tests locaux
+./scripts/run-integration-tests.sh
+```
+
+> 📖 Documentation complète : [scripts/README.md](./scripts/README.md)
 
 ---
 
@@ -232,12 +253,16 @@ MOCK_API=false npm run dev
 - [x] 7/7 endpoints Auth implémentés
 - [x] 37/37 tests unitaires réussis
 - [x] 88.67% de couverture globale
+- [x] 9/9 tests d'intégration réussis
+- [x] Transmission cookies validée ✨
+- [x] Transmission body validée ✨
 - [x] 0 erreur ESLint
 - [x] 0 erreur TypeScript
 - [x] Mode mock fonctionnel
 - [x] Mode proxy fonctionnel
 - [x] Documentation complète
 - [x] Mocks conformes à OpenAPI
+- [x] Scripts organisés dans scripts/
 - [x] Code review ready ✨
 
 ---

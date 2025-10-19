@@ -15,7 +15,9 @@
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:coverage": "npx jest --coverage",
-    "test:ci": "npx jest --ci --coverage --watchAll=false"
+    "test:ci": "npx jest --ci --coverage --watchAll=false",
+    "test:integration": "./scripts/run-docker-tests.sh",
+    "test:integration:local": "./scripts/run-integration-tests.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

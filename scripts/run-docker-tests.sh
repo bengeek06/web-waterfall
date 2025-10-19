@@ -37,9 +37,10 @@ echo "  Password: $LOGIN_PASSWORD"
 echo ""
 
 # Run the integration tests
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 API_BASE="http://localhost:3000/api/auth" \
 LOGIN="$LOGIN_EMAIL" \
 PASSWORD="$LOGIN_PASSWORD" \
-./test-integration-auth.sh
+"$SCRIPT_DIR/test-integration-auth.sh"
 
 exit $?

@@ -46,7 +46,8 @@ echo ""
 echo ""
 
 # Run integration tests
-LOGIN="$LOGIN_EMAIL" PASSWORD="$LOGIN_PASSWORD" ./test-integration-auth.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOGIN="$LOGIN_EMAIL" PASSWORD="$LOGIN_PASSWORD" "$SCRIPT_DIR/test-integration-auth.sh"
 TEST_EXIT_CODE=$?
 
 # Cleanup: stop Next.js
