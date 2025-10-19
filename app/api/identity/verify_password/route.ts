@@ -1,7 +1,8 @@
 /**
- * Handles GET requests to the `/api/identity/version` endpoint.
+ * Handles POST requests to the `/api/identity/verify_password` endpoint.
  *
- * Returns the current version of the Identity Service API.
+ * Verifies if the provided password matches the user's password.
+ * Used by Authentication Service to create tokens.
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the identity service.
@@ -12,11 +13,11 @@ import { identityMocks } from "@/lib/proxy/mocks";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: NextRequest) {
+export async function POST(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/version',
-    method: 'GET',
-    mock: identityMocks.version
+    path: '/verify_password',
+    method: 'POST',
+    mock: identityMocks.verifyPassword
   });
 }

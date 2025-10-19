@@ -1,7 +1,7 @@
 /**
- * Handles GET requests to the `/api/identity/version` endpoint.
+ * Handles GET requests to the `/api/identity/config` endpoint.
  *
- * Returns the current version of the Identity Service API.
+ * Returns current application configuration (non-sensitive data only).
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the identity service.
@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/version',
+    path: '/config',
     method: 'GET',
-    mock: identityMocks.version
+    mock: identityMocks.config
   });
 }

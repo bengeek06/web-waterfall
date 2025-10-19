@@ -1,7 +1,8 @@
 /**
- * Handles GET requests to the `/api/identity/version` endpoint.
+ * Handles requests to the `/api/identity/customers` endpoint.
  *
- * Returns the current version of the Identity Service API.
+ * GET: Returns the list of all customers.
+ * POST: Creates a new customer with the provided data.
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the identity service.
@@ -15,8 +16,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/version',
+    path: '/customers',
     method: 'GET',
-    mock: identityMocks.version
+    mock: identityMocks.customers
+  });
+}
+
+export async function POST(req: NextRequest) {
+  return proxyRequest(req, {
+    service: 'IDENTITY_SERVICE_URL',
+    path: '/customers',
+    method: 'POST',
+    mock: identityMocks.customerCreate
   });
 }

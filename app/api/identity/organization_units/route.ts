@@ -1,8 +1,8 @@
 /**
- * Handles requests to the `/api/identity/users` endpoint.
+ * Handles requests to the `/api/identity/organization_units` endpoint.
  *
- * GET: Returns the list of all users for the authenticated company.
- * POST: Creates a new user with the provided data.
+ * GET: Returns the list of all organization units.
+ * POST: Creates a new organization unit with the provided data.
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the identity service.
@@ -16,17 +16,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/users',
+    path: '/organization_units',
     method: 'GET',
-    mock: identityMocks.users
+    mock: identityMocks.organizationUnits
   });
 }
 
 export async function POST(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/users',
+    path: '/organization_units',
     method: 'POST',
-    mock: identityMocks.userCreate
+    mock: identityMocks.organizationUnitCreate
   });
 }

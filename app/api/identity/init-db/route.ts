@@ -1,7 +1,8 @@
 /**
- * Handles GET requests to the `/api/identity/version` endpoint.
+ * Handles requests to the `/api/identity/init-db` endpoint.
  *
- * Returns the current version of the Identity Service API.
+ * GET: Returns whether the Identity Service has been initialized.
+ * POST: Initialize the database with default data if not already done.
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the identity service.
@@ -15,8 +16,17 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'IDENTITY_SERVICE_URL',
-    path: '/version',
+    path: '/init-db',
     method: 'GET',
-    mock: identityMocks.version
+    mock: identityMocks.initDbGet
+  });
+}
+
+export async function POST(req: NextRequest) {
+  return proxyRequest(req, {
+    service: 'IDENTITY_SERVICE_URL',
+    path: '/init-db',
+    method: 'POST',
+    mock: identityMocks.initDbPost
   });
 }
