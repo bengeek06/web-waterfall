@@ -45,7 +45,7 @@ describe("/api/guardian/roles", () => {
         values: jest.fn(),
         [Symbol.iterator]: jest.fn(),
       },
-    };
+    } as Partial<NextRequest>;
   };
 
   describe("GET /api/guardian/roles - MOCK_API=true", () => {

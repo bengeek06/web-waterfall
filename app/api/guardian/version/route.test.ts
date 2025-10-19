@@ -22,11 +22,10 @@ jest.mock("@/lib/logger", () => ({
 
 describe("GET /api/guardian/version", () => {
   const GUARDIAN_SERVICE_URL = "http://guardian_service:5000";
-  let req: NextRequest;
   let mockFetch: jest.Mock;
   let GETFn: (req: NextRequest) => Promise<Response>;
 
-  const buildReq = () => {
+  const buildReq = (): Partial<NextRequest> => {
     return {
       text: jest.fn().mockResolvedValue(""),
       url: "http://localhost:3000/api/guardian/version",
@@ -43,7 +42,7 @@ describe("GET /api/guardian/version", () => {
         values: jest.fn(),
         [Symbol.iterator]: jest.fn(),
       },
-    };
+    } as Partial<NextRequest>;
   };
 
   describe("MOCK_API=true (mode sans backend)", () => {
@@ -52,13 +51,12 @@ describe("GET /api/guardian/version", () => {
       process.env.GUARDIAN_SERVICE_URL = "";
       process.env.MOCK_API = "true";
       ({ GET: GETFn } = await import("./route"));
-      // Mock request object
-      req = buildReq();
       mockFetch = jest.fn();
       global.fetch = mockFetch as unknown as typeof fetch;
     });
 
     it("retourne la réponse mock avec la version", async () => {
+      const req = buildReq();
       const res = await GETFn(req as unknown as NextRequest);
       expect(mockFetch).not.toHaveBeenCalled();
       expect(res.constructor.name).toBe("NextResponse");
@@ -82,7 +80,7 @@ describe("GET /api/guardian/version", () => {
 
     it("proxies request and returns version information", async () => {
         // Mock request object
-        req = buildReq();
+        const req = buildReq();
         
         const mockJson = { version: "0.0.1", service: "guardian" };
         const mockRes = {
@@ -112,7 +110,7 @@ describe("GET /api/guardian/version", () => {
 
     it("handles connection refused error", async () => {
         // Mock request object
-        req = buildReq();
+        const req = buildReq();
         
         const error = new Error("connect ECONNREFUSED") as Error & { code: string };
         error.code = "ECONNREFUSED";
@@ -135,7 +133,7 @@ describe("GET /api/guardian/version", () => {
         ({ GET: GETFn } = await import("./route"));
         
         // Mock request object
-        req = buildReq();
+        const req = buildReq();
         
         const response = await GETFn(req as unknown as NextRequest);
         

@@ -50,7 +50,7 @@ describe("/api/guardian/roles/[role_id]", () => {
         values: jest.fn(),
         [Symbol.iterator]: jest.fn(),
       },
-    };
+    } as Partial<NextRequest>;
   };
 
   const buildContext = () => ({

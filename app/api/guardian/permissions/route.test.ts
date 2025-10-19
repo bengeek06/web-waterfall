@@ -24,7 +24,7 @@ describe("GET /api/guardian/permissions", () => {
   let mockFetch: jest.Mock;
   let GETFn: (req: NextRequest) => Promise<Response>;
 
-  const buildReq = () => {
+  const buildReq = (): Partial<NextRequest> => {
     return {
       text: jest.fn().mockResolvedValue(""),
       url: "http://localhost:3000/api/guardian/permissions",
@@ -41,7 +41,7 @@ describe("GET /api/guardian/permissions", () => {
         values: jest.fn(),
         [Symbol.iterator]: jest.fn(),
       },
-    };
+    } as Partial<NextRequest>;
   };
 
   describe("MOCK_API=true", () => {
