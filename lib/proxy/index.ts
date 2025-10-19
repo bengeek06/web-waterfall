@@ -35,6 +35,11 @@ function serializeHeaders(h: Headers | unknown): Record<string, string> {
  * Create a NextResponse from a mock response
  */
 function createMockResponse(mock: MockResponse): NextResponse {
+  // 204 No Content cannot have a body
+  if (mock.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
+  
   const response = typeof mock.body === 'string'
     ? new NextResponse(mock.body, { status: mock.status })
     : NextResponse.json(mock.body, { status: mock.status });
