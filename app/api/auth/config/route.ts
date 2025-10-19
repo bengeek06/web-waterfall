@@ -1,7 +1,10 @@
 /**
- * Handles GET requests to verify authentication by proxying the request to the AUTH_SERVICE_URL.
+ * Handles GET requests to the `/api/auth/config` endpoint.
  * 
- * Verifies the validity of the JWT access token from the cookies.
+ * Returns the current application configuration including environment variables and settings.
+ * 
+ * Note: This endpoint may expose sensitive information and should be restricted 
+ * to authorized users only in production environments.
  * 
  * @param req - The incoming Next.js request object.
  * @returns A NextResponse object containing the proxied response from the authentication service.
@@ -15,8 +18,8 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   return proxyRequest(req, {
     service: 'AUTH_SERVICE_URL',
-    path: '/verify',
+    path: '/config',
     method: 'GET',
-    mock: authMocks.verify
+    mock: authMocks.config
   });
 }

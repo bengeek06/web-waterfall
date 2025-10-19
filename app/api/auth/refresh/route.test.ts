@@ -2,22 +2,14 @@
  * @jest-environment node
  */
 /**
- * Test suite for the `POST` handler in `/api/auth/login`.
+ * Test suite for the `POST` handler in `/api/auth/refresh`.
  *
- * This suite verifies the following behaviors:
- * - Proxies the login request to the authentication service and returns a JSON response.
- * - Proxies the login request and returns a plain text response when appropriate.
- * - Correctly sets the `set-cookie` header on the response if present in the proxied response.
- *
- * Mocks:
- * - Mocks the logger module to prevent actual logging during tests.
- * - Mocks the `fetch` global to intercept and inspect outgoing requests.
- * - Mocks the `NextRequest` object to simulate incoming requests.
- *
- * Each test:
- * - Prepares a mock request and response.
- * - Asserts that the proxied request is constructed correctly.
- * - Asserts that the response from the handler matches the expected output, including headers and body.
+ * This suite verifies:
+ * - Proxies the refresh request to the authentication service
+ * - Returns new tokens in response
+ * - Sets new cookies properly
+ * - Handles mock mode when MOCK_API=true
+ * - Handles errors (missing refresh token, invalid token, etc.)
  */
 
 import { NextRequest } from "next/server";
@@ -29,23 +21,23 @@ jest.mock("@/lib/logger", () => ({
     error: jest.fn(),
 }));
 
-describe("POST /api/auth/login", () => {
+describe("POST /api/auth/refresh", () => {
   const AUTH_SERVICE_URL = "http://auth_service:5001";
   let req: NextRequest;
   let mockFetch: jest.Mock;
   let POSTFn: (req: NextRequest) => Promise<Response>;
 
-  const buildReq = (body = '{"email":"test@example.com","password":"pass123"}') => {
+  const buildReq = (cookies = "refresh_token=valid-refresh-token") => {
     return {
-      text: jest.fn().mockResolvedValue(body),
-      url: "http://localhost:3000/api/auth/login",
+      text: jest.fn().mockResolvedValue(""),
+      url: "http://localhost:3000/api/auth/refresh",
       headers: {
         entries: jest.fn().mockReturnValue([
-          ["content-type", "application/json"],
+          ["cookie", cookies],
         ]),
         append: jest.fn(),
         delete: jest.fn(),
-        get: jest.fn(),
+        get: jest.fn((key: string) => key === "cookie" ? cookies : null),
         getSetCookie: jest.fn(),
         has: jest.fn(),
         set: jest.fn(),
@@ -69,14 +61,14 @@ describe("POST /api/auth/login", () => {
       global.fetch = mockFetch as unknown as typeof fetch;
     });
 
-    it("retourne la réponse mock et n'appelle pas fetch", async () => {
+    it("retourne la réponse mock avec nouveaux tokens", async () => {
       const res = await POSTFn(req as unknown as NextRequest);
       expect(mockFetch).not.toHaveBeenCalled();
       expect(res.constructor.name).toBe("NextResponse");
       
       const json = await res.json();
       expect(json).toMatchObject({
-        message: "Login successful",
+        message: "Token refreshed",
         access_token: expect.any(String),
         refresh_token: expect.any(String),
       });
@@ -97,86 +89,18 @@ describe("POST /api/auth/login", () => {
       global.fetch = mockFetch as unknown as typeof fetch;
     });
 
-    it("proxies request and returns JSON response", async () => {
-        const requestBody = '{"email":"user@test.com","password":"pass"}';
+    it("proxies request with refresh token and returns new tokens", async () => {
+        const cookies = "refresh_token=valid-refresh-token";
         // @ts-expect-error: mock request
-        req = buildReq(requestBody);
+        req = buildReq(cookies);
         
         const mockJson = { 
-          message: "Login successful",
-          access_token: "token123",
-          refresh_token: "refresh123"
+          message: "Token refreshed",
+          access_token: "new-access-token",
+          refresh_token: "new-refresh-token",
+          _dev_note: "Tokens visible in development mode only"
         };
-        const mockRes = {
-            status: 200,
-            headers: {
-                get: (key: string) => (key === "content-type" ? "application/json" : null),
-            },
-            json: jest.fn().mockResolvedValue(mockJson),
-            text: jest.fn(),
-        };
-        mockFetch.mockResolvedValue(mockRes);
-        
-        const response = await POSTFn(req as unknown as NextRequest);
-        
-        expect(global.fetch).toHaveBeenCalledWith(
-            `${AUTH_SERVICE_URL}/login`,
-            expect.objectContaining({
-                method: "POST",
-                body: requestBody,
-                credentials: "include",
-                headers: {
-                    "content-type": "application/json",
-                },
-            })
-        );
-        expect(response.constructor.name).toBe("NextResponse");
-        expect(response.headers.get("content-type")).toContain("application/json");
-        const json = await response.json();
-        expect(json).toEqual(mockJson);
-    });
-
-    it("proxies request and returns text response", async () => {
-        const requestBody = "plain text body";
-        // @ts-expect-error: mock request
-        req = buildReq(requestBody);
-        (req.headers.entries as jest.Mock).mockReturnValue([["content-type", "text/plain"]]);
-        
-        const mockText = "plain response";
-        const mockRes = {
-            status: 401,
-            headers: {
-                get: (key: string) => (key === "content-type" ? "text/plain" : null),
-            },
-            json: jest.fn(),
-            text: jest.fn().mockResolvedValue(mockText),
-        };
-        mockFetch.mockResolvedValue(mockRes);
-        
-        const response = await POSTFn(req as unknown as NextRequest);
-        
-        expect(global.fetch).toHaveBeenCalledWith(
-            `${AUTH_SERVICE_URL}/login`,
-            expect.objectContaining({
-                method: "POST",
-                body: requestBody,
-                credentials: "include",
-                headers: { "content-type": "text/plain" },
-            })
-        );
-        expect(response.constructor.name).toBe("NextResponse");
-        expect(response.status).toBe(401);
-        const text = await response.text();
-        expect(text).toBe(mockText);
-    });
-
-    it("sets set-cookie header if present", async () => {
-        const requestBody = '{"email":"user@test.com","password":"pass"}';
-        // @ts-expect-error: mock request
-        req = buildReq(requestBody);
-        
-        const mockJson = { message: "Login successful" };
-        const cookieValue = "access_token=abc123; Path=/; HttpOnly";
+        const cookieValue = "access_token=new-token; Path=/; HttpOnly";
         const mockRes = {
             status: 200,
             headers: {
@@ -193,13 +117,70 @@ describe("POST /api/auth/login", () => {
         
         const response = await POSTFn(req as unknown as NextRequest);
         
+        expect(global.fetch).toHaveBeenCalledWith(
+            `${AUTH_SERVICE_URL}/refresh`,
+            expect.objectContaining({
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "cookie": cookies,
+                },
+            })
+        );
+        expect(response.constructor.name).toBe("NextResponse");
+        expect(response.status).toBe(200);
+        const json = await response.json();
+        expect(json).toEqual(mockJson);
         expect(response.headers.get("set-cookie")).toBe(cookieValue);
     });
 
-    it("handles connection refused error", async () => {
-        const requestBody = '{"email":"user@test.com","password":"pass"}';
+    it("returns 400 when refresh token is missing", async () => {
         // @ts-expect-error: mock request
-        req = buildReq(requestBody);
+        req = buildReq("");
+        
+        const mockJson = { message: "Missing refresh token" };
+        const mockRes = {
+            status: 400,
+            headers: {
+                get: (key: string) => (key === "content-type" ? "application/json" : null),
+            },
+            json: jest.fn().mockResolvedValue(mockJson),
+            text: jest.fn(),
+        };
+        mockFetch.mockResolvedValue(mockRes);
+        
+        const response = await POSTFn(req as unknown as NextRequest);
+        
+        expect(response.status).toBe(400);
+        const json = await response.json();
+        expect(json).toMatchObject({ message: expect.stringContaining("Missing") });
+    });
+
+    it("returns 401 when refresh token is invalid or expired", async () => {
+        // @ts-expect-error: mock request
+        req = buildReq("refresh_token=invalid-token");
+        
+        const mockJson = { message: "Invalid or expired refresh token" };
+        const mockRes = {
+            status: 401,
+            headers: {
+                get: (key: string) => (key === "content-type" ? "application/json" : null),
+            },
+            json: jest.fn().mockResolvedValue(mockJson),
+            text: jest.fn(),
+        };
+        mockFetch.mockResolvedValue(mockRes);
+        
+        const response = await POSTFn(req as unknown as NextRequest);
+        
+        expect(response.status).toBe(401);
+        const json = await response.json();
+        expect(json).toMatchObject({ message: expect.stringContaining("Invalid") });
+    });
+
+    it("handles connection refused error", async () => {
+        // @ts-expect-error: mock request
+        req = buildReq();
         
         const error = new Error("connect ECONNREFUSED") as Error & { code: string };
         error.code = "ECONNREFUSED";
@@ -215,32 +196,14 @@ describe("POST /api/auth/login", () => {
         });
     });
 
-    it("handles generic fetch error", async () => {
-        const requestBody = '{"email":"user@test.com","password":"pass"}';
-        // @ts-expect-error: mock request
-        req = buildReq(requestBody);
-        
-        mockFetch.mockRejectedValue(new Error("Network error"));
-        
-        const response = await POSTFn(req as unknown as NextRequest);
-        
-        expect(response.status).toBe(502);
-        const json = await response.json();
-        expect(json).toMatchObject({
-            error: "Upstream fetch failed",
-            details: "See server logs"
-        });
-    });
-
     it("returns error if AUTH_SERVICE_URL is not defined", async () => {
         jest.resetModules();
         delete process.env.AUTH_SERVICE_URL;
         process.env.MOCK_API = "false";
         ({ POST: POSTFn } = await import("./route"));
         
-        const requestBody = '{"email":"user@test.com","password":"pass"}';
         // @ts-expect-error: mock request
-        req = buildReq(requestBody);
+        req = buildReq();
         
         const response = await POSTFn(req as unknown as NextRequest);
         
