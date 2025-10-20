@@ -1028,5 +1028,66 @@ export const identityMocks = {
     body: {
       message: "User or password invalid"
     }
+  } as MockResponse,
+
+  // User Policies (aggregated from Guardian via roles)
+  userPolicies: {
+    status: 200,
+    body: {
+      policies: [
+        {
+          id: "policy-001",
+          name: "Project Management Policy",
+          description: "Permissions for project management operations",
+          company_id: "company-001",
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        },
+        {
+          id: "policy-002",
+          name: "User Management Policy",
+          description: "Permissions for user management operations",
+          company_id: "company-001",
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        }
+      ]
+    }
+  } as MockResponse,
+
+  // User Permissions (aggregated from Guardian via policies)
+  userPermissions: {
+    status: 200,
+    body: {
+      permissions: [
+        {
+          id: "perm-001",
+          service: "identity",
+          resource_name: "user",
+          description: "Manage users",
+          operations: ["create", "read", "update", "delete"],
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        },
+        {
+          id: "perm-002",
+          service: "identity",
+          resource_name: "company",
+          description: "Manage companies",
+          operations: ["read", "update"],
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        },
+        {
+          id: "perm-003",
+          service: "guardian",
+          resource_name: "role",
+          description: "Manage roles",
+          operations: ["create", "read", "update", "delete"],
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        }
+      ]
+    }
   } as MockResponse
 };
