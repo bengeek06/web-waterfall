@@ -33,6 +33,6 @@ export function useZodForm<T extends FieldValues>({
 }: UseZodFormProps<T>): UseFormReturn<T> {
   return useForm<T>({
     ...formConfig,
-    resolver: zodResolver(schema) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as unknown as z.ZodTypeAny),
   });
 }
