@@ -7,12 +7,17 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Input } from "@/components/ui/input";
 import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 
 // ==================== CONSTANTS ====================
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+
+// ==================== VALIDATION ====================
+import { useZodForm } from "@/lib/hooks";
+import { policySchema, PolicyFormData } from "@/lib/validation";
 
 // ==================== TYPES ====================
 type Permission = {
@@ -96,8 +101,15 @@ export default function Policies() {
   // Policy dialog (create/edit)
   const [showPolicyDialog, setShowPolicyDialog] = useState(false);
   const [editingPolicy, setEditingPolicy] = useState<Policy | null>(null);
-  const [formName, setFormName] = useState("");
-  const [formDescription, setFormDescription] = useState("");
+
+  // Policy form with Zod validation
+  const policyForm = useZodForm({
+    schema: policySchema,
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
 
   // Expanded policies for permission view
   const [expanded, setExpanded] = useState<ExpandedPolicies>({});
@@ -172,23 +184,23 @@ export default function Policies() {
 
   function openCreatePolicyDialog() {
     setEditingPolicy(null);
-    setFormName("");
-    setFormDescription("");
+    policyForm.reset({ name: "", description: "" });
     setShowPolicyDialog(true);
   }
 
   function openEditPolicyDialog(policy: Policy) {
     setEditingPolicy(policy);
-    setFormName(policy.name);
-    setFormDescription(policy.description || "");
+    policyForm.reset({
+      name: policy.name,
+      description: policy.description || "",
+    });
     setShowPolicyDialog(true);
   }
 
-  async function handlePolicySubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handlePolicySubmit(data: PolicyFormData) {
     const payload = {
-      name: formName,
-      description: formDescription,
+      name: data.name,
+      description: data.description,
     };
     try {
       let res;
@@ -340,25 +352,33 @@ export default function Policies() {
             <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.dialogTitle)}>
               {editingPolicy ? "Éditer la policy" : "Créer une policy"}
             </DialogTitle>
-            <form className={`p-6 ${SPACING.component.md}`} onSubmit={handlePolicySubmit}>
+            <form 
+              className={`p-6 ${SPACING.component.md}`} 
+              onSubmit={policyForm.handleSubmit(handlePolicySubmit)}
+            >
               <div>
                 <label className="block text-sm mb-1">Nom</label>
-                <input 
-                  className="border rounded px-2 py-1 w-full" 
-                  value={formName} 
-                  onChange={e => setFormName(e.target.value)} 
-                  required 
+                <Input
+                  {...policyForm.register("name")}
                   {...testId(DASHBOARD_TEST_IDS.policies.nameInput)}
                 />
+                {policyForm.formState.errors.name && (
+                  <div className={`${COLOR_CLASSES.text.destructive} text-xs mt-1`}>
+                    {policyForm.formState.errors.name.message}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm mb-1">Description</label>
-                <input 
-                  className="border rounded px-2 py-1 w-full" 
-                  value={formDescription} 
-                  onChange={e => setFormDescription(e.target.value)} 
+                <Input
+                  {...policyForm.register("description")}
                   {...testId(DASHBOARD_TEST_IDS.policies.descriptionInput)}
                 />
+                {policyForm.formState.errors.description && (
+                  <div className={`${COLOR_CLASSES.text.destructive} text-xs mt-1`}>
+                    {policyForm.formState.errors.description.message}
+                  </div>
+                )}
               </div>
               <div className={`flex ${SPACING.gap.sm} justify-end mt-4`}>
                 <Button 
