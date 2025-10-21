@@ -1,9 +1,11 @@
 import { getDictionary } from "@/lib/dictionaries";
 import { getUserData } from "@/lib/user";
+import { getUserLanguage } from "@/lib/locale";
 import ProfileForm from "./profile-form";
 
 export default async function ProfilePage() {
-  const dictionary = await getDictionary("fr"); // À remplacer par la locale dynamique si besoin
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
   const user = await getUserData();
 
   return (

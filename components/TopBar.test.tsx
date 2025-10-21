@@ -26,6 +26,11 @@ jest.mock('@/lib/user', () => ({
   getAvatarUrl: jest.fn(() => Promise.resolve('https://example.com/avatar.jpg')),
 }));
 
+// Mock getUserLanguage
+jest.mock('@/lib/locale', () => ({
+  getUserLanguage: jest.fn(() => Promise.resolve('fr')),
+}));
+
 // Mock getDictionary
 jest.mock('@/lib/dictionaries', () => ({
   getDictionary: jest.fn(() => Promise.resolve({

@@ -21,6 +21,10 @@ const customJestConfig = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  // Transform next-intl ESM modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(next-intl)/)',
+  ],
   // Configuration explicite pour VS Code
   testMatch: [
     '**/__tests__/**/*.(ts|tsx|js)',

@@ -13,6 +13,7 @@ import {
 // Utils
 import { getAvatarUrl } from "@/lib/user";
 import { getDictionary } from "@/lib/dictionaries";
+import { getUserLanguage } from "@/lib/locale";
 
 // Constants
 import { COMMON_TEST_IDS, testId } from "@/lib/test-ids";
@@ -21,7 +22,8 @@ import { ICON_SIZES, ICON_COLORS } from "@/lib/design-tokens";
 // ==================== COMPONENT ====================
 export default async function TopBar() {
   const avatarUrl = await getAvatarUrl();
-  const dictionary = await getDictionary('fr');
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
 
   // ==================== RENDER ====================
   return (

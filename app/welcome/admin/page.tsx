@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { KeyRound, Users } from "lucide-react";
 import { getDictionary } from "@/lib/dictionaries";
+import { getUserLanguage } from "@/lib/locale";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -14,7 +15,8 @@ import {
 
 
 export default async function AdminPage() {
-    const dictionary = await getDictionary('fr');
+    const userLanguage = await getUserLanguage();
+    const dictionary = await getDictionary(userLanguage);
     
   return (
     <div>
