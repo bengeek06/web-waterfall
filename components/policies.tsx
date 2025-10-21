@@ -1,14 +1,20 @@
 "use client";
 
-
 import React, { useEffect, useState } from "react";
+
+// ==================== UI COMPONENTS ====================
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 
-// Types
+// ==================== CONSTANTS ====================
+import { GUARDIAN_ROUTES } from "@/lib/api-routes";
+import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+
+// ==================== TYPES ====================
 type Permission = {
   id: string | number;
   service: string;
@@ -28,21 +34,32 @@ type Policy = {
 
 type ExpandedPolicies = Record<string | number, boolean>;
 
+// ==================== CONSTANTS ====================
+const OPERATION_ICONS = {
+  READ: { icon: Eye, label: "Lire (READ)" },
+  CREATE: { icon: PlusSquare, label: "Créer (CREATE)" },
+  LIST: { icon: List, label: "Lister (LIST)" },
+  UPDATE: { icon: Pencil, label: "Mettre à jour (UPDATE)" },
+  DELETE: { icon: Trash2, label: "Supprimer (DELETE)" },
+} as const;
+
+// ==================== COMPONENT ====================
 function getOperationIcon(operation: string) {
-  switch (operation.replace(/^OperationEnum\./, "")) {
-    case "READ":
-      return { icon: <Eye className="w-4 h-4" />, label: "Lire (READ)" };
-    case "CREATE":
-      return { icon: <PlusSquare className="w-4 h-4" />, label: "Créer (CREATE)" };
-    case "LIST":
-      return { icon: <List className="w-4 h-4" />, label: "Lister (LIST)" };
-    case "UPDATE":
-      return { icon: <Pencil className="w-4 h-4" />, label: "Mettre à jour (UPDATE)" };
-    case "DELETE":
-      return { icon: <Trash2 className="w-4 h-4" />, label: "Supprimer (DELETE)" };
-    default:
-      return { icon: <span className="text-xs">{operation}</span>, label: operation };
+  const cleanOperation = operation.replace(/^OperationEnum\./, "");
+  const iconConfig = OPERATION_ICONS[cleanOperation as keyof typeof OPERATION_ICONS];
+  
+  if (iconConfig) {
+    const Icon = iconConfig.icon;
+    return { 
+      icon: <Icon className={ICON_SIZES.sm} />, 
+      label: iconConfig.label 
+    };
   }
+  
+  return { 
+    icon: <span className="text-xs">{operation}</span>, 
+    label: operation 
+  };
 }
 
 // Regroupe les permissions par service/ressource
@@ -96,11 +113,12 @@ export default function Policies() {
   // Permissions selected to add
   const [selectedPermissionsToAdd, setSelectedPermissionsToAdd] = useState<Set<string | number>>(new Set());
 
+  // ==================== HANDLERS ====================
   async function fetchData() {
     try {
       const [permissionsRes, policiesRes] = await Promise.all([
-        fetch("/api/guardian/permissions"),
-        fetch("/api/guardian/policies"),
+        fetch(GUARDIAN_ROUTES.permissions),
+        fetch(GUARDIAN_ROUTES.policies),
       ]);
       if (permissionsRes.status === 401 || policiesRes.status === 401) {
         window.location.href = "/login";
@@ -180,9 +198,9 @@ export default function Policies() {
         body: JSON.stringify(payload),
       };
       if (editingPolicy) {
-        res = await fetch(`/api/guardian/policies/${editingPolicy.id}`, options);
+        res = await fetch(GUARDIAN_ROUTES.policy(editingPolicy.id.toString()), options);
       } else {
-        res = await fetch("/api/guardian/policies", options);
+        res = await fetch(GUARDIAN_ROUTES.policies, options);
       }
       if (res.status === 401) {
         window.location.href = "/login";
@@ -204,7 +222,7 @@ export default function Policies() {
   async function handleDeletePolicy(policyId: string | number) {
     if (!window.confirm("Supprimer cette policy ?")) return;
     try {
-      const res = await fetch(`/api/guardian/policies/${policyId}`, {
+      const res = await fetch(GUARDIAN_ROUTES.policy(policyId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
@@ -234,9 +252,10 @@ export default function Policies() {
   async function handleRemovePermission(policyId: string | number, permissionId: string | number) {
     if (!window.confirm("Supprimer cette permission de la policy ?")) return;
     try {
-      const res = await fetch(`/api/guardian/policies/${policyId}/permissions/${permissionId}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        GUARDIAN_ROUTES.policyPermission(policyId.toString(), permissionId.toString()), 
+        { method: "DELETE" }
+      );
       if (res.status === 401) {
         window.location.href = "/login";
         return;
@@ -266,7 +285,7 @@ export default function Policies() {
     try {
       // Envoie un POST par permission
       const promises = Array.from(selectedPermissionsToAdd).map(permissionId =>
-        fetch(`/api/guardian/policies/${selectedPolicy.id}/permissions`, {
+        fetch(GUARDIAN_ROUTES.policyPermissions(selectedPolicy.id.toString()), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ permission_id: permissionId }),
@@ -297,39 +316,73 @@ export default function Policies() {
   const uniqueServices = Array.from(new Set(permissions.map(p => p.service))).sort();
   const uniqueResources = Array.from(new Set(permissions.map(p => p.resource_name))).sort();
 
+  // ==================== RENDER ====================
   return (
-    <section>
+    <section {...testId(DASHBOARD_TEST_IDS.policies.section)}>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xl font-bold">Policies</h2>
+        <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.policies.title)}>
+          Policies
+        </h2>
         <Dialog open={showPolicyDialog} onOpenChange={setShowPolicyDialog}>
           <DialogTrigger asChild>
-            <Button onClick={openCreatePolicyDialog}>
+            <Button 
+              onClick={openCreatePolicyDialog}
+              {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
+            >
               Ajouter une policy
             </Button>
           </DialogTrigger>
-          <DialogContent aria-describedby={void 0} aria-label="add_policy-dialog">
-            <DialogTitle>
+          <DialogContent 
+            aria-describedby={void 0} 
+            aria-label="add_policy-dialog"
+            {...testId(DASHBOARD_TEST_IDS.policies.dialog)}
+          >
+            <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.dialogTitle)}>
               {editingPolicy ? "Éditer la policy" : "Créer une policy"}
             </DialogTitle>
-            <form className="p-6 space-y-4" onSubmit={handlePolicySubmit}>
+            <form className={`p-6 ${SPACING.component.md}`} onSubmit={handlePolicySubmit}>
               <div>
                 <label className="block text-sm mb-1">Nom</label>
-                <input className="border rounded px-2 py-1 w-full" value={formName} onChange={e => setFormName(e.target.value)} required />
+                <input 
+                  className="border rounded px-2 py-1 w-full" 
+                  value={formName} 
+                  onChange={e => setFormName(e.target.value)} 
+                  required 
+                  {...testId(DASHBOARD_TEST_IDS.policies.nameInput)}
+                />
               </div>
               <div>
                 <label className="block text-sm mb-1">Description</label>
-                <input className="border rounded px-2 py-1 w-full" value={formDescription} onChange={e => setFormDescription(e.target.value)} />
+                <input 
+                  className="border rounded px-2 py-1 w-full" 
+                  value={formDescription} 
+                  onChange={e => setFormDescription(e.target.value)} 
+                  {...testId(DASHBOARD_TEST_IDS.policies.descriptionInput)}
+                />
               </div>
-              <div className="flex gap-2 justify-end mt-4">
-                <Button type="button" variant="outline" onClick={() => setShowPolicyDialog(false)}>Annuler</Button>
-                <Button type="submit" variant="default">{editingPolicy ? "Enregistrer" : "Créer"}</Button>
+              <div className={`flex ${SPACING.gap.sm} justify-end mt-4`}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowPolicyDialog(false)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.cancelButton)}
+                >
+                  Annuler
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="default"
+                  {...testId(DASHBOARD_TEST_IDS.policies.submitButton)}
+                >
+                  {editingPolicy ? "Enregistrer" : "Créer"}
+                </Button>
               </div>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      <Table>
-        <TableHeader>
+      <Table {...testId(DASHBOARD_TEST_IDS.policies.table)}>
+        <TableHeader {...testId(DASHBOARD_TEST_IDS.policies.tableHeader)}>
           <TableRow>
             <TableHead></TableHead>
             <TableHead>Nom</TableHead>
@@ -340,19 +393,48 @@ export default function Policies() {
         <TableBody>
           {policies.map(policy => (
             <React.Fragment key={policy.id}>
-              <TableRow>
+              <TableRow {...testId(DASHBOARD_TEST_IDS.policies.tableRow(policy.id.toString()))}>
                 <TableCell>
-                  <button onClick={() => toggleExpand(policy.id)}>
-                    {expanded[policy.id] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  <button 
+                    onClick={() => toggleExpand(policy.id)}
+                    {...testId(DASHBOARD_TEST_IDS.policies.expandButton(policy.id.toString()))}
+                  >
+                    {expanded[policy.id] ? 
+                      <ChevronDown className={ICON_SIZES.sm} /> : 
+                      <ChevronRight className={ICON_SIZES.sm} />
+                    }
                   </button>
                 </TableCell>
                 <TableCell>{policy.name}</TableCell>
-                <TableCell>{policy.description || <span className="text-gray-400">—</span>}</TableCell>
                 <TableCell>
-                  <Button size="sm" variant="outline" onClick={() => openEditPolicyDialog(policy)}>Éditer</Button>
-                  <Button size="sm" variant="destructive" className="ml-2" onClick={() => handleDeletePolicy(policy.id)}>Supprimer</Button>
-                  <Button size="sm" variant="default" className="ml-2" onClick={() => openPermissionDialog(policy)}>
-                    <Plus className="w-4 h-4 mr-1" /> Ajouter permission
+                  {policy.description || <span className={COLOR_CLASSES.text.muted}>—</span>}
+                </TableCell>
+                <TableCell>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => openEditPolicyDialog(policy)}
+                    {...testId(DASHBOARD_TEST_IDS.policies.editButton(policy.id.toString()))}
+                  >
+                    Éditer
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive" 
+                    className="ml-2" 
+                    onClick={() => handleDeletePolicy(policy.id)}
+                    {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(policy.id.toString()))}
+                  >
+                    Supprimer
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="default" 
+                    className="ml-2" 
+                    onClick={() => openPermissionDialog(policy)}
+                    {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(policy.id.toString()))}
+                  >
+                    <Plus className={`${ICON_SIZES.sm} mr-1`} /> Ajouter permission
                   </Button>
                 </TableCell>
               </TableRow>
@@ -362,52 +444,64 @@ export default function Policies() {
                     <div className="pl-8">
                       <div className="font-semibold mb-2">Permissions</div>
                       {policy.permissions.length === 0 ? (
-                        <span className="text-gray-400">Aucune permission</span>
+                        <span className={COLOR_CLASSES.text.muted}>Aucune permission</span>
                       ) : (
-                        <ul className="space-y-1">
+                        <ul className={SPACING.component.xs}>
                           {groupPermissions(policy.permissions).map(group => (
                             <li
                               key={group.service + group.resource_name}
-                              className="flex items-center gap-2"
+                              className={`flex items-center ${SPACING.gap.sm}`}
+                              {...testId(DASHBOARD_TEST_IDS.policies.permissionGroup(
+                                group.service, 
+                                group.resource_name
+                              ))}
                             >
                               <span className="bg-gray-100 px-2 py-1 rounded text-xs">
                                 {group.service} / {group.resource_name}
                               </span>
-                              <span className="flex gap-1">
+                              <span className={`flex ${SPACING.gap.xs}`}>
                                 {group.perms.map(perm => (
                                   <HoverCard key={perm.id}>
                                     <HoverCardTrigger asChild>
-                                      <span className="inline-flex items-center">
+                                      <span 
+                                        className="inline-flex items-center"
+                                        {...testId(DASHBOARD_TEST_IDS.policies.permissionIcon(perm.id))}
+                                      >
                                         {getOperationIcon(perm.operation).icon}
                                       </span>
                                     </HoverCardTrigger>
                                     <HoverCardContent className="text-xs">
                                       {getOperationIcon(perm.operation).label}
                                       {perm.description && (
-                                        <div className="mt-1 text-gray-500">{perm.description}</div>
+                                        <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                          {perm.description}
+                                        </div>
                                       )}
                                     </HoverCardContent>
                                   </HoverCard>
                                 ))}
                               </span>
                               {/* Actions alignées à droite */}
-                              <span className="ml-auto flex gap-2">
+                              <span className={`ml-auto flex ${SPACING.gap.sm}`}>
                                 <button
                                   className="text-gray-500 hover:text-blue-600"
                                   title="Éditer les opérations"
                                   onClick={() => {
-                                    // Ouvre la modale d'édition pour ce groupe avec filtre
                                     openPermissionDialog(
                                       { ...policy, permissions: group.perms },
                                       group.service,
                                       group.resource_name
                                     );
                                   }}
+                                  {...testId(DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
+                                    group.service,
+                                    group.resource_name
+                                  ))}
                                 >
-                                  <Pencil className="w-4 h-4" />
+                                  <Pencil className={ICON_SIZES.sm} />
                                 </button>
                                 <button
-                                  className="text-red-500"
+                                  className={COLOR_CLASSES.text.destructive}
                                   title="Supprimer toutes les permissions de ce groupe"
                                   onClick={() => {
                                     if (window.confirm("Supprimer toutes les permissions de ce groupe ?")) {
@@ -418,8 +512,12 @@ export default function Policies() {
                                       );
                                     }
                                   }}
+                                  {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
+                                    group.service,
+                                    group.resource_name
+                                  ))}
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  <Trash2 className={ICON_SIZES.sm} />
                                 </button>
                               </span>
                             </li>
@@ -443,25 +541,31 @@ export default function Policies() {
             maxHeight: "80vh",
             display: "flex",
             flexDirection: "column",
-          }} aria-describedby={void 0} aria-label="add_permissions-dialog"
+          }} 
+          aria-describedby={void 0} 
+          aria-label="add_permissions-dialog"
+          {...testId(DASHBOARD_TEST_IDS.policies.addPermissionDialog)}
         >
-          <DialogTitle>
+          <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.addPermissionDialogTitle)}>
             Ajouter des permissions à {selectedPolicy?.name}
           </DialogTitle>
-          <div className="flex flex-col md:flex-row gap-6 mt-4 flex-1">
+          <div className={`flex flex-col md:flex-row ${SPACING.gap.lg} mt-4 flex-1`}>
             <div className="flex-1 min-w-0">
               <div className="font-semibold mb-2">Permissions déjà associées</div>
               <div className="overflow-y-auto max-h-[30vh] pr-2">
                 {selectedPolicy?.permissions.length === 0 ? (
-                  <div className="text-gray-400">Aucune permission</div>
+                  <div className={COLOR_CLASSES.text.muted}>Aucune permission</div>
                 ) : (
-                  <ul className="space-y-1">
+                  <ul className={SPACING.component.xs}>
                     {groupPermissions(selectedPolicy?.permissions || []).map(group => (
-                      <li key={group.service + group.resource_name} className="flex items-center gap-2">
+                      <li 
+                        key={group.service + group.resource_name} 
+                        className={`flex items-center ${SPACING.gap.sm}`}
+                      >
                         <span className="bg-gray-100 px-2 py-1 rounded text-xs">
                           {group.service} / {group.resource_name}
                         </span>
-                        <span className="flex gap-1">
+                        <span className={`flex ${SPACING.gap.xs}`}>
                           {group.perms.map(perm => (
                             <HoverCard key={perm.id}>
                               <HoverCardTrigger asChild>
@@ -472,7 +576,9 @@ export default function Policies() {
                               <HoverCardContent className="text-xs">
                                 {getOperationIcon(perm.operation).label}
                                 {perm.description && (
-                                  <div className="mt-1 text-gray-500">{perm.description}</div>
+                                  <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                    {perm.description}
+                                  </div>
                                 )}
                               </HoverCardContent>
                             </HoverCard>
@@ -486,11 +592,12 @@ export default function Policies() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold mb-2">Permissions disponibles</div>
-              <div className="flex gap-2 mb-2">
+              <div className={`flex ${SPACING.gap.sm} mb-2`}>
                 <select
                   className="border rounded px-2 py-1"
                   value={filterService}
                   onChange={e => setFilterService(e.target.value)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.serviceFilter)}
                 >
                   <option value="">Service</option>
                   {uniqueServices.map(s => (
@@ -501,6 +608,7 @@ export default function Policies() {
                   className="border rounded px-2 py-1"
                   value={filterResource}
                   onChange={e => setFilterResource(e.target.value)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.resourceFilter)}
                 >
                   <option value="">Ressource</option>
                   {uniqueResources.map(r => (
@@ -510,21 +618,28 @@ export default function Policies() {
               </div>
               <div className="overflow-y-auto max-h-[30vh] pr-2">
                 {filteredAvailablePermissions.length === 0 ? (
-                  <div className="text-gray-400">Aucune permission disponible</div>
+                  <div className={COLOR_CLASSES.text.muted}>Aucune permission disponible</div>
                 ) : (
-                  <ul className="space-y-1">
+                  <ul className={SPACING.component.xs}>
                     {groupAvailablePermissions(filteredAvailablePermissions).map(group => (
-                      <li key={group.service + group.resource_name} className="flex items-center gap-2">
+                      <li 
+                        key={group.service + group.resource_name} 
+                        className={`flex items-center ${SPACING.gap.sm}`}
+                      >
                         <span className="bg-gray-100 px-2 py-1 rounded text-xs">
                           {group.service} / {group.resource_name}
                         </span>
-                        <span className="flex gap-1">
+                        <span className={`flex ${SPACING.gap.xs}`}>
                           {group.perms.map(perm => (
-                            <label key={perm.id} className="flex items-center gap-1 cursor-pointer">
+                            <label 
+                              key={perm.id} 
+                              className={`flex items-center ${SPACING.gap.xs} cursor-pointer`}
+                            >
                               <input
                                 type="checkbox"
                                 checked={selectedPermissionsToAdd.has(perm.id)}
                                 onChange={() => handleSelectPermissionToAdd(perm.id)}
+                                {...testId(DASHBOARD_TEST_IDS.policies.permissionCheckbox(perm.id))}
                               />
                               <HoverCard>
                                 <HoverCardTrigger asChild>
@@ -535,7 +650,9 @@ export default function Policies() {
                                 <HoverCardContent className="text-xs">
                                   {getOperationIcon(perm.operation).label}
                                   {perm.description && (
-                                    <div className="mt-1 text-gray-500">{perm.description}</div>
+                                    <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                      {perm.description}
+                                    </div>
                                   )}
                                 </HoverCardContent>
                               </HoverCard>
@@ -549,11 +666,12 @@ export default function Policies() {
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-4">
+          <div className={`flex justify-end ${SPACING.gap.sm} mt-4`}>
             <Button
               variant="outline"
               type="button"
               onClick={() => setShowPermissionDialog(false)}
+              {...testId(DASHBOARD_TEST_IDS.policies.addPermissionCancelButton)}
             >
               Annuler
             </Button>
@@ -561,13 +679,21 @@ export default function Policies() {
               variant="default"
               disabled={selectedPermissionsToAdd.size === 0}
               onClick={handleAddPermissionsToPolicy}
+              {...testId(DASHBOARD_TEST_IDS.policies.addPermissionSubmitButton)}
             >
               Ajouter {selectedPermissionsToAdd.size > 0 ? `(${selectedPermissionsToAdd.size})` : ""}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-      {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+      {error && (
+        <div 
+          className={`${COLOR_CLASSES.text.destructive} text-sm mt-2`}
+          {...testId(DASHBOARD_TEST_IDS.policies.errorMessage)}
+        >
+          {error}
+        </div>
+      )}
     </section>
   );
 }

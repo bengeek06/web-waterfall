@@ -5,8 +5,14 @@
 
 export const COMMON_TEST_IDS = {
   topBar: {
+    nav: 'topbar-nav',
     container: 'topbar-container',
     logo: 'topbar-logo',
+    logoLink: 'topbar-logo-link',
+    avatarButton: 'topbar-avatar-button',
+    avatarImage: 'topbar-avatar-image',
+    avatarIcon: 'topbar-avatar-icon',
+    dropdownContent: 'topbar-dropdown-content',
     userMenu: 'topbar-user-menu',
     userAvatar: 'topbar-user-avatar',
     userName: 'topbar-user-name',

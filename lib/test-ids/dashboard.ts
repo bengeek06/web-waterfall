@@ -23,10 +23,42 @@ export const DASHBOARD_TEST_IDS = {
     deleteButton: (roleId: string) => `roles-delete-button-${roleId}`,
   },
   policies: {
+    section: 'policies-section',
+    title: 'policies-title',
     table: 'policies-table',
+    tableHeader: 'policies-table-header',
     tableRow: (policyId: string) => `policies-table-row-${policyId}`,
+    expandButton: (policyId: string) => `policies-expand-button-${policyId}`,
     addButton: 'policies-add-button',
-    manageButton: (policyId: string) => `policies-manage-button-${policyId}`,
+    editButton: (policyId: string) => `policies-edit-button-${policyId}`,
+    deleteButton: (policyId: string) => `policies-delete-button-${policyId}`,
+    addPermissionButton: (policyId: string) => `policies-add-permission-button-${policyId}`,
+    
+    // Policy Dialog
+    dialog: 'policy-dialog',
+    dialogTitle: 'policy-dialog-title',
+    nameInput: 'policy-name-input',
+    descriptionInput: 'policy-description-input',
+    cancelButton: 'policy-cancel-button',
+    submitButton: 'policy-submit-button',
+    
+    // Permission Group
+    permissionGroup: (service: string, resource: string) => `permission-group-${service}-${resource}`,
+    permissionIcon: (permissionId: string | number) => `permission-icon-${permissionId}`,
+    editPermissionGroupButton: (service: string, resource: string) => `edit-permission-group-${service}-${resource}`,
+    deletePermissionGroupButton: (service: string, resource: string) => `delete-permission-group-${service}-${resource}`,
+    
+    // Add Permission Dialog
+    addPermissionDialog: 'add-permission-dialog',
+    addPermissionDialogTitle: 'add-permission-dialog-title',
+    serviceFilter: 'permission-service-filter',
+    resourceFilter: 'permission-resource-filter',
+    permissionCheckbox: (permissionId: string | number) => `permission-checkbox-${permissionId}`,
+    addPermissionCancelButton: 'add-permission-cancel-button',
+    addPermissionSubmitButton: 'add-permission-submit-button',
+    
+    // Error Message
+    errorMessage: 'policies-error-message',
   },
   profile: {
     form: 'profile-form',
