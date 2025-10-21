@@ -30,7 +30,8 @@ const customJestConfig = {
     '/node_modules/',
     '/.next/',
     '/coverage/',
-    '/dist/'
+    '/dist/',
+    '/e2e/'  // Exclure les tests Playwright
   ],
   // Optimisations pour Node.js 24
   maxWorkers: '50%',

@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vscode
 .spec
+
+# Playwright
+playwright-report/
+test-results/
