@@ -14,6 +14,10 @@ import { AUTH_ROUTES } from "@/lib/api-routes";
 import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, ICON_COLORS, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
+// Validation
+import { useZodForm } from "@/lib/hooks";
+import { loginSchema, LoginFormData } from "@/lib/validation";
+
 // ==================== TYPES ====================
 interface LoginProps {
 	dictionary: {
@@ -27,40 +31,36 @@ interface LoginProps {
 	};
 }
 
-// ==================== CONSTANTS ====================
-const VALIDATION = {
-	EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-} as const;
-
 // ==================== COMPONENT ====================
 export default function Login({ dictionary }: LoginProps) {
 	// Router
 	const router = useRouter();
 
 	// State
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 	const [error, setError] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
+
+	// Form with Zod validation
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useZodForm({
+		schema: loginSchema,
+		defaultValues: {
+			email: "",
+			password: "",
+		},
+	});
 
 	// ==================== HANDLERS ====================
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = async (data: LoginFormData) => {
 		setError(null);
-
-		// Validate email
-		if (!VALIDATION.EMAIL_REGEX.test(email)) {
-			setError(dictionary.invalid_email);
-			return;
-		}
-
-		setIsLoading(true);
 
 		try {
 			const res = await fetch(AUTH_ROUTES.login, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ email, password }),
+				body: JSON.stringify(data),
 			});
 
 			if (!res.ok) throw new Error(dictionary.login_failed);
@@ -69,8 +69,6 @@ export default function Login({ dictionary }: LoginProps) {
 		} catch (err) {
 			setError(dictionary.login_failed);
 			console.error(err);
-		} finally {
-			setIsLoading(false);
 		}
 	};
 
@@ -88,59 +86,71 @@ export default function Login({ dictionary }: LoginProps) {
 				</CardHeader>
 				<CardContent>
 					<form 
-						onSubmit={handleSubmit} 
+						onSubmit={handleSubmit(onSubmit)} 
 						className={SPACING.component.md}
 						{...testId(AUTH_TEST_IDS.login.form)}
 					>
 						{/* Email Input */}
-						<div className={`flex items-center ${SPACING.gap.sm}`}>
-							<User 
-								className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
-								{...testId(AUTH_TEST_IDS.login.emailIcon)}
-							/>
-							<Input
-								type="email"
-								placeholder={dictionary.email}
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								disabled={isLoading}
-								required
-								{...testId(AUTH_TEST_IDS.login.emailInput)}
-							/>
+						<div>
+							<div className={`flex items-center ${SPACING.gap.sm}`}>
+								<User 
+									className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+									{...testId(AUTH_TEST_IDS.login.emailIcon)}
+								/>
+								<Input
+									type="email"
+									placeholder={dictionary.email}
+									disabled={isSubmitting}
+									required
+									{...register("email")}
+									{...testId(AUTH_TEST_IDS.login.emailInput)}
+								/>
+							</div>
+							{errors.email && (
+								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
+									{errors.email.message}
+								</div>
+							)}
 						</div>
 
 						{/* Password Input */}
-						<div className={`flex items-center ${SPACING.gap.sm}`}>
-							<KeyRound 
-								className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
-								{...testId(AUTH_TEST_IDS.login.passwordIcon)}
-							/>
-							<Input
-								type="password"
-								placeholder={dictionary.password}
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								disabled={isLoading}
-								required
-								{...testId(AUTH_TEST_IDS.login.passwordInput)}
-							/>
+						<div>
+							<div className={`flex items-center ${SPACING.gap.sm}`}>
+								<KeyRound 
+									className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+									{...testId(AUTH_TEST_IDS.login.passwordIcon)}
+								/>
+								<Input
+									type="password"
+									placeholder={dictionary.password}
+									disabled={isSubmitting}
+									required
+									{...register("password")}
+									{...testId(AUTH_TEST_IDS.login.passwordInput)}
+								/>
+							</div>
+							{errors.password && (
+								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
+									{errors.password.message}
+								</div>
+							)}
 						</div>
 
 						{/* Submit Button */}
 						<Button 
 							type="submit" 
 							className="w-full"
-							disabled={isLoading}
+							disabled={isSubmitting}
 							{...testId(AUTH_TEST_IDS.login.submitButton)}
 						>
-							{isLoading ? "Loading..." : dictionary.submit}
+							{isSubmitting ? "Loading..." : dictionary.submit}
 						</Button>
 					</form>
 
 					{/* Error Message */}
 					{error && (
 						<div 
-							className={`${COLOR_CLASSES.text.destructive} text-sm mt-2`}
+							className={`${COLOR_CLASSES.text.destructive} ${SPACING.component.md} text-center`}
 							{...testId(AUTH_TEST_IDS.login.errorMessage)}
 						>
 							{error}
@@ -152,7 +162,7 @@ export default function Login({ dictionary }: LoginProps) {
 						type="button"
 						variant="outline"
 						className="w-full mt-4"
-						disabled={isLoading}
+						disabled={isSubmitting}
 						{...testId(AUTH_TEST_IDS.login.registerButton)}
 					>
 						{dictionary.register}

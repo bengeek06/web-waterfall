@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import Login from './login';
@@ -98,28 +98,26 @@ describe('Login Component', () => {
       expect(emailInput).toHaveAttribute('type', 'email');
     });
 
-    it('should show validation error for invalid email format when submitted programmatically', async () => {
+    it('should show Zod validation error for short password', async () => {
       const user = userEvent.setup();
-      const { container } = render(<Login dictionary={mockDictionary} />);
+      render(<Login dictionary={mockDictionary} />);
 
-      const emailInput = screen.getByTestId('login-email-input') as HTMLInputElement;
+      const emailInput = screen.getByTestId('login-email-input');
       const passwordInput = screen.getByTestId('login-password-input');
-      const form = container.querySelector('form');
+      const submitButton = screen.getByTestId('login-submit-button');
       
-      // Modifier directement la valeur de l'input et dispatch events
-      await user.clear(emailInput);
-      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
-      await user.type(passwordInput, 'password123');
+      // Enter valid email but password too short (Zod: min 6 chars)
+      await user.type(emailInput, 'test@example.com');
+      await user.type(passwordInput, '12345'); // 5 chars - invalid
+      await user.click(submitButton);
 
-      // Soumettre le formulaire directement
-      if (form) {
-        fireEvent.submit(form);
-      }
-
+      // Zod validation should show inline error for password
       await waitFor(() => {
-        expect(screen.getByTestId('login-error-message')).toBeInTheDocument();
-        expect(screen.getByTestId('login-error-message')).toHaveTextContent(mockDictionary.invalid_email);
+        expect(screen.getByText('Le mot de passe doit contenir au moins 6 caractères')).toBeInTheDocument();
       });
+      
+      // Should not call API with invalid data
+      expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('should have required attribute on password input', () => {
@@ -374,9 +372,9 @@ describe('Login Component', () => {
       const passwordInput = screen.getByTestId('login-password-input');
       const submitButton = screen.getByTestId('login-submit-button');
 
-      // Première tentative avec erreur
+      // First attempt with API error
       await user.type(emailInput, 'admin@test.com');
-      await user.type(passwordInput, 'wrong');
+      await user.type(passwordInput, 'validpassword');
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
@@ -389,8 +387,10 @@ describe('Login Component', () => {
         expect(screen.getByTestId('login-error-message')).toBeInTheDocument();
       });
 
-      // Deuxième tentative
+      // Second attempt with success
+      await user.clear(emailInput);
       await user.clear(passwordInput);
+      await user.type(emailInput, 'admin@test.com');
       await user.type(passwordInput, 'Admin123!');
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
@@ -400,13 +400,13 @@ describe('Login Component', () => {
 
       await user.click(submitButton);
 
-      // L'erreur devrait être effacée
+      // Error should be cleared
       await waitFor(() => {
         expect(screen.queryByTestId('login-error-message')).not.toBeInTheDocument();
       });
     });
 
-    it('should display specific error messages based on response', async () => {
+    it('should display API error messages when login fails', async () => {
       const user = userEvent.setup();
       render(<Login dictionary={mockDictionary} />);
 
@@ -414,7 +414,7 @@ describe('Login Component', () => {
       const passwordInput = screen.getByTestId('login-password-input');
       
       await user.type(emailInput, 'admin@test.com');
-      await user.type(passwordInput, 'wrong');
+      await user.type(passwordInput, 'validpassword');
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
