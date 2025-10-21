@@ -49,7 +49,7 @@ export async function DELETE(
   }
 
   logger.debug(`Environment GUARDIAN_SERVICE_URL: ${GUARDIAN_SERVICE_URL}`);
-  logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
+  logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers.entries()))}`);
   logger.debug(`Forwarding ${req.url} to ${GUARDIAN_SERVICE_URL}/policies/${policy_id}/permissions/${permission_id}`);
 
   // Forward all headers except "host"

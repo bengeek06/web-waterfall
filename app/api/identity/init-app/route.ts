@@ -45,7 +45,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "IDENTITY_SERVICE_URL is not defined" }, { status: 500 });
     }
     logger.debug(`Identity service URL: ${IDENTITY_SERVICE_URL}`);
-    logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
+    logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers.entries()))}`);
     logger.debug(`Forwarding ${req.url} to ${IDENTITY_SERVICE_URL}/init-db`);
 
     const response = await fetch(`${IDENTITY_SERVICE_URL}/init-db`, {

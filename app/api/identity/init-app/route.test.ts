@@ -20,11 +20,12 @@ describe("GET /api/identity/init-app", () => {
   let GETFn: (req: NextRequest) => Promise<Response>;
 
   const buildReq = (): Partial<NextRequest> => {
+    const headersEntries = [["content-type", "application/json"]];
     return {
       text: jest.fn().mockResolvedValue(""),
       url: "http://localhost:3000/api/identity/init-app",
       headers: {
-        entries: jest.fn().mockReturnValue([]),
+        entries: jest.fn().mockReturnValue(headersEntries),
         append: jest.fn(),
         delete: jest.fn(),
         get: jest.fn(),
@@ -34,7 +35,7 @@ describe("GET /api/identity/init-app", () => {
         forEach: jest.fn(),
         keys: jest.fn(),
         values: jest.fn(),
-        [Symbol.iterator]: jest.fn(),
+        [Symbol.iterator]: jest.fn().mockReturnValue(headersEntries[Symbol.iterator]()),
       },
     } as Partial<NextRequest>;
   };
@@ -86,7 +87,7 @@ describe("GET /api/identity/init-app", () => {
         const response = await GETFn(req as unknown as NextRequest);
         
         expect(global.fetch).toHaveBeenCalledWith(
-            `${IDENTITY_SERVICE_URL}/init-app`,
+            `${IDENTITY_SERVICE_URL}/init-db`,
             expect.objectContaining({
                 method: "GET",
             })
