@@ -40,6 +40,10 @@ export const createUserSchema = z.object({
     .max(255, 'L\'URL ne peut pas dépasser 255 caractères')
     .optional()
     .or(z.literal('')),
+  language: z
+    .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
+    .optional()
+    .default('fr'),
   is_active: z.boolean().optional().default(true),
   is_verified: z.boolean().optional().default(false),
 });
@@ -75,6 +79,9 @@ export const updateUserSchema = z.object({
     .max(255, 'L\'URL ne peut pas dépasser 255 caractères')
     .optional()
     .or(z.literal('')),
+  language: z
+    .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
+    .optional(),
   is_active: z.boolean().optional(),
   is_verified: z.boolean().optional(),
 });

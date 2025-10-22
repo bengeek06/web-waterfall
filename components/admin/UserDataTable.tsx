@@ -23,6 +23,7 @@ export type User = {
   last_name?: string;
   phone_number?: string;
   avatar_url?: string;
+  language?: 'en' | 'fr';
   is_active: boolean;
   is_verified: boolean;
   last_login_at?: string;
@@ -39,6 +40,7 @@ type UserDataTableProps = {
       first_name: string;
       last_name: string;
       phone_number: string;
+      language: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -75,6 +77,11 @@ export function UserDataTable({ users, onEdit, onDelete, dictionary }: UserDataT
     {
       accessorKey: "phone_number",
       header: dictionary.columns.phone_number,
+    },
+    {
+      accessorKey: "language",
+      header: dictionary.columns.language,
+      cell: ({ row }) => row.original.language?.toUpperCase() || 'FR',
     },
     {
       accessorKey: "is_active",

@@ -24,6 +24,7 @@ export const ADMIN_TEST_IDS = {
     lastNameInput: 'admin-users-last-name-input',
     phoneInput: 'admin-users-phone-input',
     avatarUrlInput: 'admin-users-avatar-url-input',
+    languageSelect: 'admin-users-language-select',
     isActiveSwitch: 'admin-users-is-active-switch',
     isVerifiedSwitch: 'admin-users-is-verified-switch',
     cancelButton: 'admin-users-cancel-button',

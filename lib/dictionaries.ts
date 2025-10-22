@@ -36,12 +36,22 @@ import navigation_fr from '../dictionaries/fr/navigation.json';
 import login_fr from '../dictionaries/fr/login.json';
 import initApp_fr from '../dictionaries/fr/init-app.json';
 import adminUsers_fr from '../dictionaries/fr/admin-users.json';
+import admin_fr from '../dictionaries/fr/admin.json';
+import welcome_fr from '../dictionaries/fr/welcome.json';
+import profile_fr from '../dictionaries/fr/profile.json';
+import roles_fr from '../dictionaries/fr/roles.json';
+import policies_fr from '../dictionaries/fr/policies.json';
 
 import common_en from '../dictionaries/en/common.json';
 import navigation_en from '../dictionaries/en/navigation.json';
 import login_en from '../dictionaries/en/login.json';
 import initApp_en from '../dictionaries/en/init-app.json';
 import adminUsers_en from '../dictionaries/en/admin-users.json';
+import admin_en from '../dictionaries/en/admin.json';
+import welcome_en from '../dictionaries/en/welcome.json';
+import profile_en from '../dictionaries/en/profile.json';
+import roles_en from '../dictionaries/en/roles.json';
+import policies_en from '../dictionaries/en/policies.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -53,6 +63,11 @@ const dictionaries = {
     init_app: initApp_fr,
     ...navigation_fr,
     admin_users: adminUsers_fr,
+    admin_page: admin_fr,
+    welcome_page: welcome_fr,
+    ...profile_fr,
+    roles: roles_fr,
+    policies: policies_fr,
   },
   en: {
     ...common_en,
@@ -60,6 +75,11 @@ const dictionaries = {
     init_app: initApp_en,
     ...navigation_en,
     admin_users: adminUsers_en,
+    admin_page: admin_en,
+    welcome_page: welcome_en,
+    ...profile_en,
+    roles: roles_en,
+    policies: policies_en,
   },
 } as const;
 

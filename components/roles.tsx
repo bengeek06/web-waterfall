@@ -38,6 +38,35 @@ import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 
 // ==================== TYPE DEFINITIONS ====================
 
+type RolesDictionary = {
+  page_title: string;
+  create_button: string;
+  table_name: string;
+  table_description: string;
+  table_policies: string;
+  table_actions: string;
+  no_roles: string;
+  modal_create_title: string;
+  modal_edit_title: string;
+  form_name: string;
+  form_name_required: string;
+  form_description: string;
+  form_cancel: string;
+  form_create: string;
+  form_save: string;
+  policies_modal_title: string;
+  policies_select: string;
+  policies_add: string;
+  delete_confirm_title: string;
+  delete_confirm_message: string;
+  delete_cancel: string;
+  delete_confirm: string;
+  error_fetch: string;
+  error_create: string;
+  error_update: string;
+  error_delete: string;
+};
+
 type Policy = {
   id: string | number;
   name: string;
@@ -65,7 +94,7 @@ function testId(id: string) {
 
 // ==================== MAIN COMPONENT ====================
 
-export default function Roles() {
+export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   // ==================== STATE MANAGEMENT ====================
   
   const [roles, setRoles] = useState<Role[]>([]);
@@ -95,6 +124,7 @@ export default function Roles() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function fetchData() {
@@ -124,7 +154,7 @@ export default function Roles() {
       let rolesArray: Role[] = [];
       if (!rolesRes.ok) {
         const errorText = await rolesRes.text();
-        let errorMsg = "Erreur lors de la récupération des rôles";
+        let errorMsg = dictionary.error_fetch;
         try {
           const errorJson = JSON.parse(errorText);
           if (errorJson.message) errorMsg = errorJson.message;
@@ -138,7 +168,7 @@ export default function Roles() {
       if (Array.isArray(rolesData)) {
         rolesArray = rolesData;
       } else {
-        throw new Error("Réponse rôles non JSON: " + JSON.stringify(rolesData).slice(0, 200));
+        throw new Error(dictionary.error_fetch + ": " + JSON.stringify(rolesData).slice(0, 200));
       }
 
       // Fetch policies for each role
@@ -166,7 +196,7 @@ export default function Roles() {
       setRoles(rolesWithPolicies);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
-      else setError("Erreur inconnue.");
+      else setError(dictionary.error_fetch);
     }
   }
 
@@ -211,18 +241,18 @@ export default function Roles() {
       if (!res.ok) {
         const errorText = await res.text();
         console.error("Erreur API roles:", errorText);
-        throw new Error("Erreur lors de l'enregistrement");
+        throw new Error(dictionary.error_create);
       }
       setShowRoleDialog(false);
       fetchData();
     } catch (err) {
       console.error("handleRoleSubmit error:", err);
-      setError("Erreur lors de l'enregistrement du rôle");
+      setError(editingRole ? dictionary.error_update : dictionary.error_create);
     }
   }
 
   async function handleDeleteRole(roleId: string | number) {
-    if (!window.confirm("Supprimer ce rôle ?")) return;
+    if (!window.confirm(dictionary.delete_confirm_message)) return;
     try {
       const res = await fetch(GUARDIAN_ROUTES.role(roleId.toString()), {
         method: "DELETE",
@@ -231,11 +261,11 @@ export default function Roles() {
         window.location.href = "/login";
         return;
       }
-      if (!res.ok) throw new Error("Erreur lors de la suppression");
+      if (!res.ok) throw new Error(dictionary.error_delete);
       fetchData();
     } catch (err) {
       console.error("handleDeleteRole error:", err);
-      setError("Erreur lors de la suppression du rôle");
+      setError(dictionary.error_delete);
     }
   }
 
@@ -298,7 +328,7 @@ export default function Roles() {
       fetchData();
     } catch (err) {
       console.error("handleAddPoliciesToRole error:", err);
-      setError("Erreur lors de l'ajout des politiques");
+      setError(dictionary.error_create);
     }
   }
 
@@ -312,7 +342,7 @@ export default function Roles() {
         window.location.href = "/login";
         return;
       }
-      if (!res.ok) throw new Error("Erreur lors de la suppression de la politique");
+      if (!res.ok) throw new Error(dictionary.error_delete);
     } catch (err) {
       console.error("removePolicyWithoutConfirm error:", err);
       throw err;
@@ -320,12 +350,12 @@ export default function Roles() {
   }
 
   async function handleRemovePolicy(roleId: string | number, policyId: string | number, policyName: string) {
-    if (!window.confirm(`Supprimer la politique "${policyName}" de ce rôle ?`)) return;
+    if (!window.confirm(`${dictionary.delete_confirm_message} "${policyName}" ?`)) return;
     try {
       await removePolicyWithoutConfirm(roleId, policyId);
       fetchData();
     } catch {
-      setError("Erreur lors de la suppression de la politique");
+      setError(dictionary.error_delete);
     }
   }
 
@@ -345,14 +375,14 @@ export default function Roles() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.roles.title)}>
-          Rôles
+          {dictionary.page_title}
         </h2>
         <Button 
           onClick={openCreateRoleDialog}
           {...testId(DASHBOARD_TEST_IDS.roles.addButton)}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Ajouter un rôle
+          {dictionary.create_button}
         </Button>
       </div>
 
@@ -372,17 +402,17 @@ export default function Roles() {
           <TableHeader {...testId(DASHBOARD_TEST_IDS.roles.tableHeader)}>
             <TableRow>
               <TableHead className="w-12"></TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Politiques</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{dictionary.table_name}</TableHead>
+              <TableHead>{dictionary.table_description}</TableHead>
+              <TableHead>{dictionary.table_policies}</TableHead>
+              <TableHead className="text-right">{dictionary.table_actions}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {roles.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center text-gray-500">
-                  Aucun rôle trouvé
+                  {dictionary.no_roles}
                 </TableCell>
               </TableRow>
             ) : (
@@ -487,12 +517,12 @@ export default function Roles() {
         <DialogContent {...testId(DASHBOARD_TEST_IDS.roles.dialog)}>
           <DialogHeader>
             <DialogTitle {...testId(DASHBOARD_TEST_IDS.roles.dialogTitle)}>
-              {editingRole ? "Éditer le rôle" : "Créer un rôle"}
+              {editingRole ? dictionary.modal_edit_title : dictionary.modal_create_title}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={roleForm.handleSubmit(handleRoleSubmit)} className="space-y-4">
             <div>
-              <Label htmlFor="name">Nom *</Label>
+              <Label htmlFor="name">{dictionary.form_name_required}</Label>
               <Input
                 id="name"
                 {...roleForm.register("name")}
@@ -505,7 +535,7 @@ export default function Roles() {
               )}
             </div>
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{dictionary.form_description}</Label>
               <Input
                 id="description"
                 {...roleForm.register("description")}
@@ -524,13 +554,13 @@ export default function Roles() {
                 onClick={() => setShowRoleDialog(false)}
                 {...testId(DASHBOARD_TEST_IDS.roles.cancelButton)}
               >
-                Annuler
+                {dictionary.form_cancel}
               </Button>
               <Button 
                 type="submit"
                 {...testId(DASHBOARD_TEST_IDS.roles.submitButton)}
               >
-                {editingRole ? "Mettre à jour" : "Créer"}
+                {editingRole ? dictionary.form_save : dictionary.form_create}
               </Button>
             </DialogFooter>
           </form>
@@ -542,14 +572,14 @@ export default function Roles() {
         <DialogContent className="max-w-2xl max-h-[80vh]" {...testId(DASHBOARD_TEST_IDS.roles.addPolicyDialog)}>
           <DialogHeader>
             <DialogTitle {...testId(DASHBOARD_TEST_IDS.roles.addPolicyDialogTitle)}>
-              Ajouter des politiques à &quot;{selectedRole?.name}&quot;
+              {dictionary.policies_modal_title} &quot;{selectedRole?.name}&quot;
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 max-h-[50vh] overflow-y-auto">
             {getAvailablePolicies().length === 0 ? (
               <div className="text-gray-500 text-center py-4">
-                Aucune politique disponible
+                {dictionary.policies_select}
               </div>
             ) : (
               getAvailablePolicies().map((policy) => (
@@ -582,14 +612,14 @@ export default function Roles() {
               onClick={() => setShowPolicyDialog(false)}
               {...testId(DASHBOARD_TEST_IDS.roles.addPolicyCancelButton)}
             >
-              Annuler
+              {dictionary.form_cancel}
             </Button>
             <Button
               onClick={handleAddPoliciesToRole}
               disabled={selectedPoliciesToAdd.size === 0}
               {...testId(DASHBOARD_TEST_IDS.roles.addPolicySubmitButton)}
             >
-              Ajouter ({selectedPoliciesToAdd.size})
+              {dictionary.policies_add} ({selectedPoliciesToAdd.size})
             </Button>
           </DialogFooter>
         </DialogContent>

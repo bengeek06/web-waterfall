@@ -27,6 +27,7 @@ type UserManagementProps = {
       first_name: string;
       last_name: string;
       phone_number: string;
+      language: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -54,6 +55,7 @@ type UserManagementProps = {
       last_name: string;
       phone_number: string;
       avatar_url: string;
+      language: string;
       is_active: string;
       is_verified: string;
       cancel: string;

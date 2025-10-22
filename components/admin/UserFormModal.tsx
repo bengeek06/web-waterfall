@@ -37,6 +37,7 @@ export type User = {
   last_name?: string;
   phone_number?: string;
   avatar_url?: string;
+  language?: 'en' | 'fr';
   is_active: boolean;
   is_verified: boolean;
   last_login_at?: string;
@@ -62,6 +63,7 @@ type UserFormProps = {
       last_name: string;
       phone_number: string;
       avatar_url: string;
+      language: string;
       is_active: string;
       is_verified: string;
       cancel: string;
@@ -94,6 +96,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     last_name: "",
     phone_number: "",
     avatar_url: "",
+    language: "fr",
     is_active: true,
     is_verified: false,
   });
@@ -113,6 +116,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           last_name: user.last_name || "",
           phone_number: user.phone_number || "",
           avatar_url: user.avatar_url || "",
+          language: user.language || "fr",
           is_active: user.is_active ?? true,
           is_verified: user.is_verified ?? false,
         });
@@ -124,6 +128,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           last_name: "",
           phone_number: "",
           avatar_url: "",
+          language: "fr",
           is_active: true,
           is_verified: false,
         });
@@ -371,6 +376,26 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
             {errors.avatar_url && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
                 {errors.avatar_url}
+              </p>
+            )}
+          </div>
+
+          {/* Language */}
+          <div className={SPACING.component.xs}>
+            <Label htmlFor="language">{dictionary.form.language}</Label>
+            <select
+              id="language"
+              value={formData.language}
+              onChange={(e) => updateField("language", e.target.value as 'en' | 'fr')}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              {...testId(ADMIN_TEST_IDS.users.languageSelect)}
+            >
+              <option value="fr">Français</option>
+              <option value="en">English</option>
+            </select>
+            {errors.language && (
+              <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
+                {errors.language}
               </p>
             )}
           </div>

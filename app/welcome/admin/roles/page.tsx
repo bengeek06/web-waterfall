@@ -1,5 +1,3 @@
-"use client";
-
 import Roles from "@/components/roles";
 import Policies from "@/components/policies";
 import {
@@ -9,8 +7,13 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { getDictionary } from "@/lib/dictionaries";
+import { getUserLanguage } from "@/lib/locale";
 
-export default function RolesAdminPage() {
+export default async function RolesAdminPage() {
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
+  
   return (
     <div className="p-6 space-y-10">
       <div className="flex justify-center mb-4">
@@ -25,13 +28,13 @@ export default function RolesAdminPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <span>Rôles</span>
+              <span>{dictionary.roles.page_title}</span>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <Roles />
-      <Policies />
+      <Roles dictionary={dictionary.roles} />
+      <Policies dictionary={dictionary.policies} />
     </div>
   );
 }

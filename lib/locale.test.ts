@@ -20,7 +20,7 @@ describe('lib/locale', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.IDENTITY_API_URL = 'http://localhost:5002';
+    process.env.NEXT_PUBLIC_BASE_URL = 'http://localhost:3000';
   });
 
   describe('getUserId', () => {
@@ -100,10 +100,10 @@ describe('lib/locale', () => {
 
       expect(result).toBe('en');
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5002/users/user-123',
+        'http://localhost:3000/api/identity/users/user-123',
         expect.objectContaining({
           headers: expect.objectContaining({
-            Cookie: 'token=valid-token',
+            Cookie: 'access_token=valid-token',
           }),
           cache: 'no-store',
         })
@@ -176,12 +176,12 @@ describe('lib/locale', () => {
 
       expect(result).toBe(true);
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:5002/users/user-123',
+        'http://localhost:3000/api/identity/users/user-123',
         expect.objectContaining({
           method: 'PATCH',
           headers: expect.objectContaining({
             'Content-Type': 'application/json',
-            Cookie: 'token=valid-token',
+            Cookie: 'access_token=valid-token',
           }),
           body: JSON.stringify({ language: 'en' }),
         })

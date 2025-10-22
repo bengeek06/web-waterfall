@@ -8,6 +8,36 @@ import { GUARDIAN_ROUTES } from '@/lib/api-routes';
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock dictionary for roles component
+const mockRolesDictionary = {
+  page_title: "Rôles",
+  create_button: "Ajouter un rôle",
+  table_name: "Nom",
+  table_description: "Description",
+  table_policies: "Politiques",
+  table_actions: "Actions",
+  no_roles: "Aucun rôle trouvé",
+  modal_create_title: "Créer un rôle",
+  modal_edit_title: "Éditer le rôle",
+  form_name: "Nom",
+  form_name_required: "Nom *",
+  form_description: "Description",
+  form_cancel: "Annuler",
+  form_create: "Créer",
+  form_save: "Mettre à jour",
+  policies_modal_title: "Ajouter des politiques à",
+  policies_select: "Aucune politique disponible",
+  policies_add: "Ajouter",
+  delete_confirm_title: "Confirmer la suppression",
+  delete_confirm_message: "Supprimer ce rôle ?",
+  delete_cancel: "Annuler",
+  delete_confirm: "Supprimer",
+  error_fetch: "Erreur lors de la récupération des rôles",
+  error_create: "Erreur lors de l'enregistrement du rôle",
+  error_update: "Erreur lors de la mise à jour du rôle",
+  error_delete: "Erreur lors de la suppression du rôle",
+};
+
 describe('Roles Component', () => {
   const mockPolicies = [
     {
@@ -99,14 +129,14 @@ describe('Roles Component', () => {
 
   describe('Initial Render', () => {
     it('should render the component with title', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
       
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.title)).toBeInTheDocument();
       expect(screen.getByText('Rôles')).toBeInTheDocument();
     });
 
     it('should render the add role button', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
       
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       expect(addButton).toBeInTheDocument();
@@ -114,7 +144,7 @@ describe('Roles Component', () => {
     });
 
     it('should render the roles table', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
       
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.table)).toBeInTheDocument();
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.tableHeader)).toBeInTheDocument();
@@ -123,7 +153,7 @@ describe('Roles Component', () => {
 
   describe('Data Fetching', () => {
     it('should fetch and display roles on mount', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(GUARDIAN_ROUTES.policies);
@@ -139,7 +169,7 @@ describe('Roles Component', () => {
     it('should handle fetch errors gracefully', async () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.errorMessage)).toBeInTheDocument();
@@ -156,7 +186,7 @@ describe('Roles Component', () => {
         }),
       }));
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.errorMessage)).toBeInTheDocument();
@@ -166,7 +196,7 @@ describe('Roles Component', () => {
 
   describe('Role CRUD Operations', () => {
     it('should open create role dialog when add button is clicked', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       fireEvent.click(addButton);
@@ -206,7 +236,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -243,7 +273,7 @@ describe('Roles Component', () => {
     });
 
     it('should open edit role dialog with pre-filled data', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -288,7 +318,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -347,7 +377,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -371,7 +401,7 @@ describe('Roles Component', () => {
     it('should not delete role if user cancels confirmation', async () => {
       window.confirm = jest.fn(() => false);
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -392,7 +422,7 @@ describe('Roles Component', () => {
     });
 
     it('should cancel role dialog', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       fireEvent.click(addButton);
@@ -410,7 +440,7 @@ describe('Roles Component', () => {
     });
 
     it('should display validation errors for invalid input', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       fireEvent.click(addButton);
@@ -438,7 +468,7 @@ describe('Roles Component', () => {
 
   describe('Role Expansion', () => {
     it('should expand role to show policies', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -455,7 +485,7 @@ describe('Roles Component', () => {
     });
 
     it('should collapse expanded role', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -514,7 +544,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Empty Role')).toBeInTheDocument();
@@ -531,7 +561,7 @@ describe('Roles Component', () => {
 
   describe('Add Policy Dialog', () => {
     it('should open add policy dialog', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -585,7 +615,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Viewer')).toBeInTheDocument();
@@ -617,7 +647,7 @@ describe('Roles Component', () => {
     });
 
     it('should disable submit button when no policies selected', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -633,7 +663,7 @@ describe('Roles Component', () => {
     });
 
     it('should cancel add policy dialog', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -655,7 +685,7 @@ describe('Roles Component', () => {
     });
 
     it('should only show available policies (not already assigned)', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Viewer')).toBeInTheDocument();
@@ -713,7 +743,7 @@ describe('Roles Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -744,7 +774,7 @@ describe('Roles Component', () => {
     it('should not remove policy if user cancels confirmation', async () => {
       window.confirm = jest.fn(() => false);
 
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
@@ -774,7 +804,7 @@ describe('Roles Component', () => {
 
   describe('Test IDs Coverage', () => {
     it('should have all required test IDs in the DOM', async () => {
-      render(<Roles />);
+      render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();

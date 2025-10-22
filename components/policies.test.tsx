@@ -8,6 +8,40 @@ import { GUARDIAN_ROUTES } from '@/lib/api-routes';
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock dictionary for policies component
+const mockPoliciesDictionary = {
+  page_title: "Politiques",
+  create_button: "Ajouter une politique",
+  table_name: "Nom",
+  table_description: "Description",
+  table_permissions: "Permissions",
+  table_actions: "Actions",
+  no_policies: "Aucune politique trouvée",
+  modal_create_title: "Créer une politique",
+  modal_edit_title: "Éditer la politique",
+  form_name: "Nom",
+  form_name_required: "Nom *",
+  form_description: "Description",
+  form_cancel: "Annuler",
+  form_create: "Créer",
+  form_save: "Enregistrer",
+  permissions_modal_title: "Ajouter des permissions à",
+  permissions_select: "Aucune permission disponible",
+  permissions_save: "Sauvegarder",
+  delete_confirm_title: "Confirmer la suppression",
+  delete_confirm_message: "Supprimer cette politique ?",
+  delete_cancel: "Annuler",
+  delete_confirm: "Supprimer",
+  operation_create: "Créer (CREATE)",
+  operation_read: "Lire (READ)",
+  operation_update: "Mettre à jour (UPDATE)",
+  operation_delete: "Supprimer (DELETE)",
+  error_fetch: "Erreur lors de la récupération des politiques",
+  error_create: "Erreur lors de l'enregistrement de la politique",
+  error_update: "Erreur lors de la mise à jour de la politique",
+  error_delete: "Erreur lors de la suppression de la politique",
+};
+
 describe('Policies Component', () => {
   const mockPermissions = [
     {
@@ -107,14 +141,14 @@ describe('Policies Component', () => {
 
   describe('Initial Render', () => {
     it('should render the component with title', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
       
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.title)).toBeInTheDocument();
       expect(screen.getByText('Politiques')).toBeInTheDocument();
     });
 
     it('should render the add policy button', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
       
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addButton);
       expect(addButton).toBeInTheDocument();
@@ -122,7 +156,7 @@ describe('Policies Component', () => {
     });
 
     it('should render the policies table', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
       
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.table)).toBeInTheDocument();
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.tableHeader)).toBeInTheDocument();
@@ -131,7 +165,7 @@ describe('Policies Component', () => {
 
   describe('Data Fetching', () => {
     it('should fetch and display policies on mount', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(GUARDIAN_ROUTES.permissions);
@@ -147,7 +181,7 @@ describe('Policies Component', () => {
     it('should handle fetch errors gracefully', async () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.errorMessage)).toBeInTheDocument();
@@ -164,7 +198,7 @@ describe('Policies Component', () => {
         }),
       }));
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.errorMessage)).toBeInTheDocument();
@@ -174,7 +208,7 @@ describe('Policies Component', () => {
 
   describe('Policy CRUD Operations', () => {
     it('should open create policy dialog when add button is clicked', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addButton);
       fireEvent.click(addButton);
@@ -214,7 +248,7 @@ describe('Policies Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -251,7 +285,7 @@ describe('Policies Component', () => {
     });
 
     it('should open edit policy dialog with pre-filled data', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -296,7 +330,7 @@ describe('Policies Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -355,7 +389,7 @@ describe('Policies Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -379,7 +413,7 @@ describe('Policies Component', () => {
     it('should not delete policy if user cancels confirmation', async () => {
       window.confirm = jest.fn(() => false);
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -400,7 +434,7 @@ describe('Policies Component', () => {
     });
 
     it('should cancel policy dialog', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addButton);
       fireEvent.click(addButton);
@@ -420,7 +454,7 @@ describe('Policies Component', () => {
 
   describe('Policy Expansion', () => {
     it('should expand policy to show permissions', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -436,7 +470,7 @@ describe('Policies Component', () => {
     });
 
     it('should collapse expanded policy', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -485,7 +519,7 @@ describe('Policies Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Empty Policy')).toBeInTheDocument();
@@ -502,7 +536,7 @@ describe('Policies Component', () => {
 
   describe('Add Permission Dialog', () => {
     it('should open add permission dialog', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -520,7 +554,7 @@ describe('Policies Component', () => {
     });
 
     it('should filter permissions by service', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -543,7 +577,7 @@ describe('Policies Component', () => {
     });
 
     it('should filter permissions by resource', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -593,7 +627,7 @@ describe('Policies Component', () => {
         return Promise.reject(new Error('Unknown URL'));
       });
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Read Only')).toBeInTheDocument();
@@ -625,7 +659,7 @@ describe('Policies Component', () => {
     });
 
     it('should disable submit button when no permissions selected', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -641,7 +675,7 @@ describe('Policies Component', () => {
     });
 
     it('should cancel add permission dialog', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -665,7 +699,7 @@ describe('Policies Component', () => {
 
   describe('Permission Groups', () => {
     it('should display permission icons with hover cards', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -681,7 +715,7 @@ describe('Policies Component', () => {
     });
 
     it('should open edit permission group dialog with pre-filtered service/resource', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -724,7 +758,7 @@ describe('Policies Component', () => {
         ),
       }));
 
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
@@ -757,7 +791,7 @@ describe('Policies Component', () => {
 
   describe('Test IDs Coverage', () => {
     it('should have all required test IDs in the DOM', async () => {
-      render(<Policies />);
+      render(<Policies dictionary={mockPoliciesDictionary} />);
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();

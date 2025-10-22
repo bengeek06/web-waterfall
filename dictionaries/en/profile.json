@@ -1,0 +1,16 @@
+{
+  "profile_title": "My Profile",
+  "profile_avatar": "Change avatar",
+  "profile_email": "Email",
+  "profile_phone": "Phone",
+  "profile_first_name": "First Name",
+  "profile_last_name": "Last Name",
+  "profile_old_password": "Old password",
+  "profile_new_password": "New password",
+  "profile_new_password2": "Confirm new password",
+  "profile_cancel": "Cancel",
+  "profile_save": "Save",
+  "profile_password_mismatch": "New passwords do not match.",
+  "profile_update_error": "Error updating profile.",
+  "profile_update_success": "Profile updated successfully."
+}

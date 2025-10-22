@@ -1,7 +1,7 @@
 import { getDictionary } from "@/lib/dictionaries";
 import { getUserData } from "@/lib/user";
 import { getUserLanguage } from "@/lib/locale";
-import ProfileForm from "./profile-form";
+import Profile from "@/components/profile";
 
 export default async function ProfilePage() {
   const userLanguage = await getUserLanguage();
@@ -9,6 +9,6 @@ export default async function ProfilePage() {
   const user = await getUserData();
 
   return (
-    <ProfileForm dictionary={dictionary} user={user} />
+    <Profile user={user} dictionary={dictionary} />
   );
 }

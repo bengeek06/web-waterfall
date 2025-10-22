@@ -1,0 +1,16 @@
+{
+  "profile_title": "Mon profil",
+  "profile_avatar": "Changer l'avatar",
+  "profile_email": "Email",
+  "profile_phone": "Téléphone",
+  "profile_first_name": "Prénom",
+  "profile_last_name": "Nom",
+  "profile_old_password": "Ancien mot de passe",
+  "profile_new_password": "Nouveau mot de passe",
+  "profile_new_password2": "Confirmer le nouveau mot de passe",
+  "profile_cancel": "Annuler",
+  "profile_save": "Enregistrer",
+  "profile_password_mismatch": "Les nouveaux mots de passe ne correspondent pas.",
+  "profile_update_error": "Erreur lors de la mise à jour.",
+  "profile_update_success": "Profil mis à jour avec succès."
+}

@@ -3,7 +3,8 @@ import { jwtDecode } from 'jwt-decode';
 
 // ==================== TYPES ====================
 interface JWTPayload {
-  user_id: string;
+  user_id?: string;
+  sub?: string;  // Fallback for user_id
   company_id: string;
   exp: number;
 }
@@ -15,13 +16,13 @@ interface JWTPayload {
  */
 export async function getUserId(): Promise<string | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
+  const token = cookieStore.get('access_token')?.value;
   
   if (!token) return null;
   
   try {
     const decoded = jwtDecode<JWTPayload>(token);
-    return decoded.user_id || null;
+    return decoded.user_id || decoded.sub || null;
   } catch (error) {
     console.error('Error decoding JWT:', error);
     return null;
@@ -34,7 +35,7 @@ export async function getUserId(): Promise<string | null> {
  */
 export async function getCompanyId(): Promise<string | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get('token')?.value;
+  const token = cookieStore.get('access_token')?.value;
   
   if (!token) return null;
   
@@ -53,17 +54,28 @@ export async function getCompanyId(): Promise<string | null> {
  * @returns locale string ('en' or 'fr')
  */
 export async function getUserLanguage(): Promise<'en' | 'fr'> {
-  const userId = await getUserId();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
   
-  if (!userId) {
+  if (!token) {
     // Not authenticated, return default locale
     return 'fr';
   }
   
   try {
-    const response = await fetch(`${process.env.IDENTITY_API_URL || 'http://localhost:5002'}/users/${userId}`, {
+    // Decode JWT to get user_id (try user_id first, fallback to sub)
+    const decoded = jwtDecode<JWTPayload>(token);
+    const userId = decoded.user_id || decoded.sub;
+    
+    if (!userId) {
+      return 'fr';
+    }
+    
+    // Use Next.js API proxy (NEVER call services directly)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/identity/users/${userId}`, {
       headers: {
-        'Cookie': `token=${(await cookies()).get('token')?.value || ''}`,
+        'Cookie': `access_token=${token}`,
       },
       cache: 'no-store',
     });
@@ -87,19 +99,30 @@ export async function getUserLanguage(): Promise<'en' | 'fr'> {
  * @returns true if successful, false otherwise
  */
 export async function updateUserLanguage(language: 'en' | 'fr'): Promise<boolean> {
-  const userId = await getUserId();
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
   
-  if (!userId) {
+  if (!token) {
     console.error('Cannot update language: user not authenticated');
     return false;
   }
   
   try {
-    const response = await fetch(`${process.env.IDENTITY_API_URL || 'http://localhost:5002'}/users/${userId}`, {
+    // Decode JWT to get user_id (try user_id first, fallback to sub)
+    const decoded = jwtDecode<JWTPayload>(token);
+    const userId = decoded.user_id || decoded.sub;
+    
+    if (!userId) {
+      return false;
+    }
+    
+    // Use Next.js API proxy (NEVER call services directly)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/identity/users/${userId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Cookie': `token=${(await cookies()).get('token')?.value || ''}`,
+        'Cookie': `access_token=${token}`,
       },
       body: JSON.stringify({ language }),
     });
