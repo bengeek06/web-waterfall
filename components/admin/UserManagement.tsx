@@ -30,6 +30,7 @@ type UserManagementProps = {
       phone_number: string;
       language: string;
       roles: string;
+      positions: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -59,6 +60,7 @@ type UserManagementProps = {
       avatar_url: string;
       language: string;
       roles: string;
+      positions: string;
       is_active: string;
       is_verified: string;
       cancel: string;
@@ -99,11 +101,13 @@ export function UserManagement({ dictionary }: UserManagementProps) {
     if (res.ok) {
       const usersData = await res.json();
       
-      // Fetch user roles for each user
-      const usersWithRoles = await Promise.all(
+      // Fetch user roles and position for each user
+      const usersWithRolesAndPosition = await Promise.all(
         usersData.map(async (user: User) => {
           try {
+            // Fetch roles
             const userRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+            let roles: Array<{ id: string; name: string }> = [];
             if (userRolesRes.ok) {
               const allUserRoles = await userRolesRes.json();
               const userRoles = Array.isArray(allUserRoles)
@@ -114,23 +118,38 @@ export function UserManagement({ dictionary }: UserManagementProps) {
               const rolesRes = await clientSessionFetch(GUARDIAN_ROUTES.roles);
               if (rolesRes.ok) {
                 const allRoles = await rolesRes.json();
-                const roles = userRoles.map((ur: { role_id: string }) => {
-                  const role = allRoles.find((r: { id: string }) => r.id.toString() === ur.role_id.toString());
-                  return role ? { id: role.id, name: role.name } : null;
-                }).filter(Boolean);
-                
-                return { ...user, roles };
+                roles = userRoles
+                  .map((ur: { role_id: string }) => {
+                    const role = allRoles.find((r: { id: string }) => r.id.toString() === ur.role_id.toString());
+                    return role ? { id: role.id, name: role.name } : null;
+                  })
+                  .filter((r): r is { id: string; name: string } => r !== null);
               }
             }
-            return { ...user, roles: [] };
+            
+            // Fetch position details if user has a position_id
+            let position: { id: string; title: string } | undefined = undefined;
+            if (user.position_id) {
+              try {
+                const positionRes = await clientSessionFetch(IDENTITY_ROUTES.position(user.position_id));
+                if (positionRes.ok) {
+                  const positionData = await positionRes.json();
+                  position = { id: positionData.id, title: positionData.title };
+                }
+              } catch (error) {
+                console.error(`Error fetching position for user ${user.id}:`, error);
+              }
+            }
+            
+            return { ...user, roles, position };
           } catch (error) {
-            console.error(`Error fetching roles for user ${user.id}:`, error);
-            return { ...user, roles: [] };
+            console.error(`Error fetching roles/position for user ${user.id}:`, error);
+            return { ...user, roles: [], position: undefined };
           }
         })
       );
       
-      setUsers(usersWithRoles);
+      setUsers(usersWithRolesAndPosition);
     }
   }, [router]);
 

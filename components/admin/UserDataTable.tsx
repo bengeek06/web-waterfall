@@ -29,6 +29,8 @@ export type User = {
   last_login_at?: string;
   created_at?: string;
   roles?: Array<{ id: string; name: string }>;
+  position_id?: string;  // User has ONE position
+  position?: { id: string; title: string };  // Position details for display
 };
 
 type UserDataTableProps = {
@@ -43,6 +45,7 @@ type UserDataTableProps = {
       phone_number: string;
       language: string;
       roles: string;
+      positions: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -92,6 +95,14 @@ export function UserDataTable({ users, onEdit, onDelete, dictionary }: UserDataT
         const roles = row.original.roles || [];
         if (roles.length === 0) return "-";
         return roles.map(r => r.name).join(", ");
+      },
+    },
+    {
+      accessorKey: "positions",
+      header: dictionary.columns.positions,
+      cell: ({ row }) => {
+        const position = row.original.position;
+        return position ? position.title : "-";
       },
     },
     {

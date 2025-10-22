@@ -43,6 +43,7 @@ export type User = {
   is_verified: boolean;
   last_login_at?: string;
   created_at?: string;
+  position_id?: string;  // A user has ONE position
   roles?: Array<{ id: string; name: string }>;
 };
 
@@ -69,6 +70,7 @@ type UserFormProps = {
       is_active: string;
       is_verified: string;
       roles: string;
+      positions: string;
       cancel: string;
       save: string;
       create: string;
@@ -113,6 +115,11 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
   const [availableRoles, setAvailableRoles] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+  
+  // Positions management
+  const [availablePositions, setAvailablePositions] = useState<Array<{ id: string; title: string }>>([]);
+  const [selectedPositionId, setSelectedPositionId] = useState<string>("");  // Single position
+  const [isLoadingPositions, setIsLoadingPositions] = useState(false);
 
   // Load available roles on mount
   useEffect(() => {
@@ -133,6 +140,25 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     loadRoles();
   }, []);
 
+  // Load available positions on mount
+  useEffect(() => {
+    const loadPositions = async () => {
+      setIsLoadingPositions(true);
+      try {
+        const res = await clientSessionFetch(IDENTITY_ROUTES.positions);
+        if (res.ok) {
+          const positions = await res.json();
+          setAvailablePositions(Array.isArray(positions) ? positions : []);
+        }
+      } catch (error) {
+        console.error("Error loading positions:", error);
+      } finally {
+        setIsLoadingPositions(false);
+      }
+    };
+    loadPositions();
+  }, []);
+
   // Reset form when user changes or dialog opens/closes
   useEffect(() => {
     if (isOpen) {
@@ -150,6 +176,8 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         });
         // Set user's current roles
         setSelectedRoleIds(user.roles?.map(r => r.id.toString()) || []);
+        // Set user's current position (single)
+        setSelectedPositionId(user.position_id || "");
       } else {
         setFormData({
           email: "",
@@ -163,6 +191,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           is_verified: false,
         });
         setSelectedRoleIds([]);
+        setSelectedPositionId("");
       }
       setErrors({});
       setServerError(null);
@@ -204,6 +233,14 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       // Prepare payload
       const payload: Record<string, unknown> = { ...formData };
+      
+      // Add position_id to payload
+      if (selectedPositionId) {
+        payload.position_id = selectedPositionId;
+      } else {
+        // Explicitly set to null to remove position
+        payload.position_id = null;
+      }
       
       // Remove empty strings
       Object.keys(payload).forEach((key) => {
@@ -269,7 +306,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       const userData = await res.json();
       const userId = isEditing ? user!.id : userData.id;
 
-      // Handle role assignments
+      // Handle role assignments (separate from user creation/update)
       await handleRoleAssignments(userId);
 
       setIsSubmitting(false);
@@ -521,6 +558,33 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
             {errors.roles && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
                 {errors.roles}
+              </p>
+            )}
+          </div>
+
+          {/* Positions (Single Selection) */}
+          <div className={SPACING.component.xs}>
+            <Label htmlFor="positions">{dictionary.form.positions}</Label>
+            <select
+              id="positions"
+              value={selectedPositionId}
+              onChange={(e) => setSelectedPositionId(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Aucune position</option>
+              {isLoadingPositions ? (
+                <option disabled>Chargement...</option>
+              ) : (
+                availablePositions.map((position) => (
+                  <option key={position.id} value={position.id.toString()}>
+                    {position.title}
+                  </option>
+                ))
+              )}
+            </select>
+            {errors.positions && (
+              <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
+                {errors.positions}
               </p>
             )}
           </div>
