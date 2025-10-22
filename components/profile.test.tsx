@@ -8,6 +8,15 @@ import { IDENTITY_ROUTES } from '@/lib/api-routes';
 // Mock fetch globally
 global.fetch = jest.fn();
 
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+  })),
+}));
+
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,

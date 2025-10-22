@@ -59,6 +59,7 @@ type RolesDictionary = {
   policies_add: string;
   delete_confirm_title: string;
   delete_confirm_message: string;
+  delete_policy_confirm_message: string;
   delete_cancel: string;
   delete_confirm: string;
   error_fetch: string;
@@ -350,7 +351,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   }
 
   async function handleRemovePolicy(roleId: string | number, policyId: string | number, policyName: string) {
-    if (!window.confirm(`${dictionary.delete_confirm_message} "${policyName}" ?`)) return;
+    if (!window.confirm(`${dictionary.delete_policy_confirm_message} "${policyName}" de ce rôle ?`)) return;
     try {
       await removePolicyWithoutConfirm(roleId, policyId);
       fetchData();

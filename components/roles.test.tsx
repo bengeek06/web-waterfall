@@ -30,6 +30,7 @@ const mockRolesDictionary = {
   policies_add: "Ajouter",
   delete_confirm_title: "Confirmer la suppression",
   delete_confirm_message: "Supprimer ce rôle ?",
+  delete_policy_confirm_message: "Supprimer la politique",
   delete_cancel: "Annuler",
   delete_confirm: "Supprimer",
   error_fetch: "Erreur lors de la récupération des rôles",

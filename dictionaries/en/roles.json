@@ -19,6 +19,7 @@
   "policies_add": "Add",
   "delete_confirm_title": "Confirm Deletion",
   "delete_confirm_message": "Are you sure you want to delete this role?",
+  "delete_policy_confirm_message": "Remove policy",
   "delete_cancel": "Cancel",
   "delete_confirm": "Delete",
   "error_fetch": "Error fetching data",
