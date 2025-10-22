@@ -42,6 +42,7 @@ import profile_fr from '../dictionaries/fr/profile.json';
 import roles_fr from '../dictionaries/fr/roles.json';
 import policies_fr from '../dictionaries/fr/policies.json';
 import company_fr from '../dictionaries/fr/company.json';
+import organization_fr from '../dictionaries/fr/organization.json';
 
 import common_en from '../dictionaries/en/common.json';
 import navigation_en from '../dictionaries/en/navigation.json';
@@ -54,6 +55,7 @@ import profile_en from '../dictionaries/en/profile.json';
 import roles_en from '../dictionaries/en/roles.json';
 import policies_en from '../dictionaries/en/policies.json';
 import company_en from '../dictionaries/en/company.json';
+import organization_en from '../dictionaries/en/organization.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -71,6 +73,7 @@ const dictionaries = {
     roles: roles_fr,
     policies: policies_fr,
     company: company_fr,
+    organization: organization_fr,
   },
   en: {
     ...common_en,
@@ -84,6 +87,7 @@ const dictionaries = {
     roles: roles_en,
     policies: policies_en,
     company: company_en,
+    organization: organization_en,
   },
 } as const;
 

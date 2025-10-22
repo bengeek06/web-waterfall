@@ -6,6 +6,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Company from "@/components/company";
+import OrganizationTree from "@/components/organization-tree";
 import { getDictionary } from "@/lib/dictionaries";
 import { getLocale } from "@/lib/locale";
 import { cookies } from "next/headers";
@@ -40,7 +41,10 @@ export default async function CompanyPage() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <Company companyId={companyId} dictionary={dict.company} />
+      <div className="grid gap-6 lg:grid-cols-1 xl:grid-cols-2">
+        <Company companyId={companyId} dictionary={dict.company} />
+        <OrganizationTree companyId={companyId} dictionary={dict.organization} />
+      </div>
     </main>
   );
 }
