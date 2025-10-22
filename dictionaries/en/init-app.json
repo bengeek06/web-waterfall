@@ -1,0 +1,21 @@
+{
+  "title": "Initialize Application",
+  "company": {
+    "title": "Enter your company name. You can configure it in more detail later",
+    "label": "Company Name",
+    "desc": "Enter your company name"
+  },
+  "user": {
+    "title": "Create a user. This user will be the company administrator",
+    "label": "User Name",
+    "desc": "Enter the user name"
+  },
+  "password": "Password",
+  "password_desc": "Enter your password",
+  "password_confirm": "(confirmation)",
+  "submit": "Initialize",
+  "success": "Initialization successful!",
+  "error_company": "Failed to create company",
+  "error_user": "Failed to create user",
+  "loading": "Initializing..."
+}

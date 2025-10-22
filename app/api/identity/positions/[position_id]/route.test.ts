@@ -182,7 +182,7 @@ describe("/api/identity/positions/pos-001", () => {
         const mockRes = {
             status: 204,
             headers: {
-                get: (key: string) => null,
+                get: () => null,
             },
             json: jest.fn(),
             text: jest.fn().mockResolvedValue(""),

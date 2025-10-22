@@ -1,0 +1,9 @@
+{
+  "login": "Se connecter",
+  "email": "Adresse e-mail",
+  "password": "Mot de passe",
+  "submit": "Soumettre",
+  "register": "S'inscrire",
+  "invalid_email": "Format d'e-mail invalide.",
+  "login_failed": "Échec de la connexion. Vérifiez vos identifiants."
+}

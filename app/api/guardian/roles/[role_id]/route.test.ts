@@ -28,7 +28,6 @@ describe("/api/guardian/roles/[role_id]", () => {
   let mockFetch: jest.Mock;
   let GETFn: (req: NextRequest, context: { params: Promise<{ role_id: string }> }) => Promise<Response>;
   let PUTFn: (req: NextRequest, context: { params: Promise<{ role_id: string }> }) => Promise<Response>;
-  let PATCHFn: (req: NextRequest, context: { params: Promise<{ role_id: string }> }) => Promise<Response>;
   let DELETEFn: (req: NextRequest, context: { params: Promise<{ role_id: string }> }) => Promise<Response>;
 
   const buildReq = (body?: string) => {

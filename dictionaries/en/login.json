@@ -1,0 +1,9 @@
+{
+  "login": "Login",
+  "email": "Email Address",
+  "password": "Password",
+  "submit": "Submit",
+  "register": "Register",
+  "invalid_email": "Invalid email format.",
+  "login_failed": "Login failed. Check your credentials."
+}

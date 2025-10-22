@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
 
 /**
  * Décode un JWT et extrait le user_id (champ sub)
@@ -80,7 +79,7 @@ export async function getFirstnameFromCookie() {
   if (!userId) return null;
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`;
-  const res = await clientSessionFetch(url, {
+  const res = await fetch(url, {
     headers: { Cookie: `token=${token.value}` },
     cache: "no-store",
   });
@@ -103,7 +102,7 @@ export async function getUserData() {
   if (!userId) return null;
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`;
-  const res = await clientSessionFetch(url, {
+  const res = await fetch(url, {
     headers: { Cookie: `access_token=${token}` },
     cache: "no-store",
   });

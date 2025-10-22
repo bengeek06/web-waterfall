@@ -50,6 +50,10 @@ const OPERATION_ICONS = {
 
 // ==================== COMPONENT ====================
 function getOperationIcon(operation: string) {
+  if (!operation) {
+    return { icon: null, label: "Unknown" };
+  }
+  
   const cleanOperation = operation.replace(/^OperationEnum\./, "");
   const iconConfig = OPERATION_ICONS[cleanOperation as keyof typeof OPERATION_ICONS];
   
@@ -321,7 +325,7 @@ export default function Policies() {
   const filteredAvailablePermissions = permissions.filter(p =>
     (!filterService || p.service === filterService) &&
     (!filterResource || p.resource_name === filterResource) &&
-    !(selectedPolicy?.permissions.some(sp => sp.id === p.id))
+    !(selectedPolicy?.permissions?.some(sp => sp.id === p.id))
   );
 
   // Pour le filtrage, on extrait les services et ressources uniques
@@ -573,7 +577,7 @@ export default function Policies() {
             <div className="flex-1 min-w-0">
               <div className="font-semibold mb-2">Permissions déjà associées</div>
               <div className="overflow-y-auto max-h-[30vh] pr-2">
-                {selectedPolicy?.permissions.length === 0 ? (
+                {(selectedPolicy?.permissions?.length ?? 0) === 0 ? (
                   <div className={COLOR_CLASSES.text.muted}>Aucune permission</div>
                 ) : (
                   <ul className={SPACING.component.xs}>

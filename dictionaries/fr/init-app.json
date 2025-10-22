@@ -1,0 +1,21 @@
+{
+  "title": "Initialiser l'application",
+  "company": {
+    "title": "Saisissez le nom de votre entreprise. Vous pourrez la paramétrer plus en détails par la suite",
+    "label": "Nom de l'entreprise",
+    "desc": "Indiquez le nom de votre entreprise"
+  },
+  "user": {
+    "title": "Créez un utilisateur. Cet utilisateur sera l'administrateur de l'entreprise",
+    "label": "Nom de l'utilisateur",
+    "desc": "Indiquez le nom de l'utilisateur"
+  },
+  "password": "Mot de passe",
+  "password_desc": "Indiquez votre mot de passe",
+  "password_confirm": "(confirmation)",
+  "submit": "Initialiser",
+  "success": "Initialisation réussie !",
+  "error_company": "Échec de la création de l'entreprise",
+  "error_user": "Échec de la création de l'utilisateur",
+  "loading": "Initialisation..."
+}

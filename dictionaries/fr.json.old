@@ -1,0 +1,94 @@
+{
+    "welcome": "Bienvenue sur Waterfall",
+    "description": "Une application de gestion de projet qui aide les utilisateurs à gérer efficacement les projets, les jalons et les livrables.",
+    "login_component": {
+        "login": "Se connecter",
+        "email": "Adresse e-mail",
+        "password": "Mot de passe",
+        "submit": "Soumettre",
+        "register": "S'inscrire",
+        "invalid_email": "Format d'e-mail invalide.",
+        "login_failed": "Échec de la connexion. Vérifiez vos identifiants."
+    },
+    "init_app": {
+        "title": "Initialiser l'application",
+        "company": {
+            "title": "Saisissez le nom de votre entreprise. Vous pourrez la paramétrer plus en détails par la suite",
+            "label": "Nom de l'entreprise",
+            "desc": "Indiquez le nom de votre entreprise"
+        },
+        "user": {
+            "title": "Créez un utilisateur. Cet utilisateur sera l'administrateur de l'entreprise",
+            "label": "Nom de l'utilisateur",
+            "desc": "Indiquez le nom de l'utilisateur"
+        },
+        "password": "Mot de passe",
+        "password_desc": "Indiquez votre mot de passe",
+        "password_confirm": "(confirmation)",
+        "submit": "Initialiser",
+        "success": "Initialisation réussie !",
+        "error_company": "Échec de la création de l'entreprise",
+        "error_user": "Échec de la création de l'utilisateur",
+        "loading": "Initialisation..."
+    },
+    "profile": "Votre profil",
+    "users": "Utilisateurs",
+    "manage_users": "Gérer les utilisateurs",
+    "roles": "Rôles",
+    "manage_roles": "Gérer les rôles",
+    "admin_users": {
+        "page_title": "Gestion des utilisateurs",
+        "create_button": "Créer un utilisateur",
+        "no_users": "Aucun utilisateur trouvé.",
+        "columns": {
+            "email": "Email",
+            "first_name": "Prénom",
+            "last_name": "Nom",
+            "phone_number": "Téléphone",
+            "is_active": "Actif",
+            "is_verified": "Vérifié",
+            "last_login_at": "Dernière connexion",
+            "created_at": "Créé le",
+            "actions": "Actions"
+        },
+        "boolean": {
+            "yes": "Oui",
+            "no": "Non"
+        },
+        "actions": {
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "modal": {
+            "create_title": "Créer un utilisateur",
+            "edit_title": "Modifier l'utilisateur",
+            "create_description": "Formulaire pour créer un nouvel utilisateur.",
+            "edit_description": "Formulaire pour modifier un utilisateur existant."
+        },
+        "form": {
+            "email": "Email",
+            "password": "Mot de passe",
+            "first_name": "Prénom",
+            "last_name": "Nom",
+            "phone_number": "Téléphone",
+            "avatar_url": "Avatar URL",
+            "is_active": "Actif",
+            "is_verified": "Vérifié",
+            "cancel": "Annuler",
+            "save": "Enregistrer",
+            "create": "Créer"
+        },
+        "delete_modal": {
+            "title": "Supprimer l'utilisateur ?",
+            "description": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+            "cancel": "Annuler",
+            "confirm": "Supprimer"
+        },
+        "errors": {
+            "email_required": "Email requis.",
+            "password_required": "Mot de passe requis pour la création.",
+            "save_failed": "Erreur lors de l'enregistrement."
+        }
+    }
+
+}

@@ -1,8 +1,7 @@
 "use client";
 
-import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -11,55 +10,56 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
-import { locales, type Locale } from '@/i18n';
 
 // ==================== TYPES ====================
+type Locale = 'fr' | 'en';
+
 const LANGUAGE_LABELS: Record<Locale, { name: string; flag: string }> = {
   en: { name: 'English', flag: '🇬🇧' },
   fr: { name: 'Français', flag: '🇫🇷' },
 };
 
+const LOCALES: Locale[] = ['fr', 'en'];
+
 // ==================== COMPONENT ====================
 export default function LanguageSwitcher() {
-  const locale = useLocale() as Locale;
   const router = useRouter();
-  const pathname = usePathname();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [currentLocale, setCurrentLocale] = useState<Locale>('fr');
+
+  // Get current locale from localStorage or default to 'fr'
+  useEffect(() => {
+    const storedLocale = localStorage.getItem('userLanguage') as Locale;
+    if (storedLocale && LOCALES.includes(storedLocale)) {
+      setCurrentLocale(storedLocale);
+    }
+  }, []);
 
   const handleLocaleChange = async (newLocale: Locale) => {
-    if (newLocale === locale || isUpdating) return;
+    if (newLocale === currentLocale || isUpdating) return;
     
     setIsUpdating(true);
     
     try {
-      // Only persist to database if on authenticated route (welcome/*)
-      const isAuthenticatedRoute = pathname.includes('/welcome');
+      // Update language preference in database via API route
+      const response = await fetch('/api/user/language', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: newLocale }),
+        credentials: 'include',
+      });
       
-      if (isAuthenticatedRoute) {
-        // Update language preference in database via API route
-        const response = await fetch('/api/user/language', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ language: newLocale }),
-          credentials: 'include',
-        });
-        
-        if (!response.ok) {
-          console.error('Failed to update language preference');
-          // Continue with UI update even if API fails
-        }
+      if (!response.ok) {
+        console.error('Failed to update language preference');
+        // Continue with UI update even if API fails
       }
       
-      // Remove current locale from pathname
-      const pathWithoutLocale = pathname.replace(`/${locale}`, '');
+      // Update localStorage for client-side persistence
+      localStorage.setItem('userLanguage', newLocale);
+      setCurrentLocale(newLocale);
       
-      // Navigate to new locale
-      if (newLocale === 'fr') {
-        // Default locale, no prefix needed
-        router.push(pathWithoutLocale || '/');
-      } else {
-        router.push(`/${newLocale}${pathWithoutLocale || ''}`);
-      }
+      // Refresh page to reload with new language
+      router.refresh();
     } catch (error) {
       console.error('Error switching language:', error);
     } finally {
@@ -72,12 +72,12 @@ export default function LanguageSwitcher() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2" disabled={isUpdating}>
           <Globe className="h-4 w-4" />
-          <span>{LANGUAGE_LABELS[locale].flag}</span>
-          <span className="hidden sm:inline">{LANGUAGE_LABELS[locale].name}</span>
+          <span>{LANGUAGE_LABELS[currentLocale].flag}</span>
+          <span className="hidden sm:inline">{LANGUAGE_LABELS[currentLocale].name}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {locales.map((loc) => (
+        {LOCALES.map((loc) => (
           <DropdownMenuItem
             key={loc}
             onClick={() => handleLocaleChange(loc)}
@@ -86,7 +86,7 @@ export default function LanguageSwitcher() {
           >
             <span>{LANGUAGE_LABELS[loc].flag}</span>
             <span>{LANGUAGE_LABELS[loc].name}</span>
-            {loc === locale && <span className="ml-auto">✓</span>}
+            {loc === currentLocale && <span className="ml-auto">✓</span>}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
