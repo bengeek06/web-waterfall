@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
+import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
@@ -28,6 +29,7 @@ type UserManagementProps = {
       last_name: string;
       phone_number: string;
       language: string;
+      roles: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -56,6 +58,7 @@ type UserManagementProps = {
       phone_number: string;
       avatar_url: string;
       language: string;
+      roles: string;
       is_active: string;
       is_verified: string;
       cancel: string;
@@ -94,8 +97,40 @@ export function UserManagement({ dictionary }: UserManagementProps) {
     }
     
     if (res.ok) {
-      const data = await res.json();
-      setUsers(data);
+      const usersData = await res.json();
+      
+      // Fetch user roles for each user
+      const usersWithRoles = await Promise.all(
+        usersData.map(async (user: User) => {
+          try {
+            const userRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+            if (userRolesRes.ok) {
+              const allUserRoles = await userRolesRes.json();
+              const userRoles = Array.isArray(allUserRoles)
+                ? allUserRoles.filter((ur: { user_id: string }) => ur.user_id === user.id)
+                : [];
+              
+              // Fetch role details
+              const rolesRes = await clientSessionFetch(GUARDIAN_ROUTES.roles);
+              if (rolesRes.ok) {
+                const allRoles = await rolesRes.json();
+                const roles = userRoles.map((ur: { role_id: string }) => {
+                  const role = allRoles.find((r: { id: string }) => r.id.toString() === ur.role_id.toString());
+                  return role ? { id: role.id, name: role.name } : null;
+                }).filter(Boolean);
+                
+                return { ...user, roles };
+              }
+            }
+            return { ...user, roles: [] };
+          } catch (error) {
+            console.error(`Error fetching roles for user ${user.id}:`, error);
+            return { ...user, roles: [] };
+          }
+        })
+      );
+      
+      setUsers(usersWithRoles);
     }
   }, [router]);
 

@@ -8,6 +8,7 @@
     "last_name": "Last Name",
     "phone_number": "Phone",
     "language": "Language",
+    "roles": "Roles",
     "is_active": "Active",
     "is_verified": "Verified",
     "last_login_at": "Last Login",
@@ -36,6 +37,7 @@
     "phone_number": "Phone",
     "avatar_url": "Avatar URL",
     "language": "Language",
+    "roles": "Roles",
     "is_active": "Active",
     "is_verified": "Verified",
     "cancel": "Cancel",
@@ -55,6 +57,7 @@
     "unknown_field": "Unknown field",
     "validation_error": "Validation error",
     "field_required": "This field is required",
-    "invalid_format": "Invalid format"
+    "invalid_format": "Invalid format",
+    "roles_fetch_failed": "Error loading roles"
   }
 }

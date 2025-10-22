@@ -28,6 +28,7 @@ export type User = {
   is_verified: boolean;
   last_login_at?: string;
   created_at?: string;
+  roles?: Array<{ id: string; name: string }>;
 };
 
 type UserDataTableProps = {
@@ -41,6 +42,7 @@ type UserDataTableProps = {
       last_name: string;
       phone_number: string;
       language: string;
+      roles: string;
       is_active: string;
       is_verified: string;
       last_login_at: string;
@@ -82,6 +84,15 @@ export function UserDataTable({ users, onEdit, onDelete, dictionary }: UserDataT
       accessorKey: "language",
       header: dictionary.columns.language,
       cell: ({ row }) => row.original.language?.toUpperCase() || 'FR',
+    },
+    {
+      accessorKey: "roles",
+      header: dictionary.columns.roles,
+      cell: ({ row }) => {
+        const roles = row.original.roles || [];
+        if (roles.length === 0) return "-";
+        return roles.map(r => r.name).join(", ");
+      },
     },
     {
       accessorKey: "is_active",

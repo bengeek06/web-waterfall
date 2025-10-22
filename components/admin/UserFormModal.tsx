@@ -23,6 +23,7 @@ import type { CreateUserFormData } from "@/lib/validation/identity.schemas";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
+import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
@@ -42,6 +43,7 @@ export type User = {
   is_verified: boolean;
   last_login_at?: string;
   created_at?: string;
+  roles?: Array<{ id: string; name: string }>;
 };
 
 type UserFormProps = {
@@ -66,6 +68,7 @@ type UserFormProps = {
       language: string;
       is_active: string;
       is_verified: string;
+      roles: string;
       cancel: string;
       save: string;
       create: string;
@@ -78,6 +81,7 @@ type UserFormProps = {
       unknown_field?: string;
       field_required?: string;
       invalid_format?: string;
+      roles_fetch_failed?: string;
     };
   };
 };
@@ -104,6 +108,30 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Roles management
+  const [availableRoles, setAvailableRoles] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
+
+  // Load available roles on mount
+  useEffect(() => {
+    const loadRoles = async () => {
+      setIsLoadingRoles(true);
+      try {
+        const res = await clientSessionFetch(GUARDIAN_ROUTES.roles);
+        if (res.ok) {
+          const roles = await res.json();
+          setAvailableRoles(Array.isArray(roles) ? roles : []);
+        }
+      } catch (error) {
+        console.error("Error loading roles:", error);
+      } finally {
+        setIsLoadingRoles(false);
+      }
+    };
+    loadRoles();
+  }, []);
 
   // Reset form when user changes or dialog opens/closes
   useEffect(() => {
@@ -120,6 +148,8 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           is_active: user.is_active ?? true,
           is_verified: user.is_verified ?? false,
         });
+        // Set user's current roles
+        setSelectedRoleIds(user.roles?.map(r => r.id.toString()) || []);
       } else {
         setFormData({
           email: "",
@@ -132,6 +162,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           is_active: true,
           is_verified: false,
         });
+        setSelectedRoleIds([]);
       }
       setErrors({});
       setServerError(null);
@@ -185,10 +216,16 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       if (isEditing) {
         // Remove password for updates (password updates done separately)
         delete payload.password;
+        // Remove is_active and is_verified - these might not be accepted by PATCH
+        // They should be managed through dedicated endpoints
+        delete payload.is_active;
+        delete payload.is_verified;
       } else {
         // Remove is_verified for creation (managed by backend)
         delete payload.is_verified;
       }
+
+      console.log('Sending payload:', payload); // Debug log
 
       const res = await clientSessionFetch(url, {
         method,
@@ -203,6 +240,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
+        console.error('Server error response:', res.status, errorData); // Debug log
         
         // Handle backend validation errors with field-specific messages
         if (errorData.errors && typeof errorData.errors === 'object') {
@@ -228,6 +266,12 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         return;
       }
 
+      const userData = await res.json();
+      const userId = isEditing ? user!.id : userData.id;
+
+      // Handle role assignments
+      await handleRoleAssignments(userId);
+
       setIsSubmitting(false);
       onSuccess();
       onClose();
@@ -235,6 +279,52 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       console.error("Error submitting user form:", error);
       setServerError(dictionary.errors.save_failed);
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRoleAssignments = async (userId: string) => {
+    try {
+      // Get existing user roles
+      const existingRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+      if (!existingRolesRes.ok) {
+        console.error("Failed to fetch existing user roles");
+        return;
+      }
+
+      const allUserRoles = await existingRolesRes.json();
+      const userExistingRoles = Array.isArray(allUserRoles) 
+        ? allUserRoles.filter((ur: { user_id: string }) => ur.user_id === userId)
+        : [];
+
+      const existingRoleIds = userExistingRoles.map((ur: { role_id: string }) => ur.role_id.toString());
+
+      // Determine roles to add and remove
+      const rolesToAdd = selectedRoleIds.filter(roleId => !existingRoleIds.includes(roleId));
+      const rolesToRemove = userExistingRoles.filter(
+        (ur: { role_id: string }) => !selectedRoleIds.includes(ur.role_id.toString())
+      );
+
+      // Add new roles
+      for (const roleId of rolesToAdd) {
+        await clientSessionFetch(GUARDIAN_ROUTES.userRoles, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: userId,
+            role_id: roleId,
+          }),
+        });
+      }
+
+      // Remove old roles
+      for (const userRole of rolesToRemove) {
+        await clientSessionFetch(GUARDIAN_ROUTES.userRole(userRole.id), {
+          method: "DELETE",
+        });
+      }
+    } catch (error) {
+      console.error("Error managing user roles:", error);
+      // Don't throw - we don't want to block the user creation/update
     }
   };
 
@@ -400,29 +490,57 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
             )}
           </div>
 
-          {/* Is Active */}
-          <div className="flex items-center gap-2">
-            <Switch
-              id="is_active"
-              checked={formData.is_active}
-              onCheckedChange={(checked) => updateField("is_active", checked)}
-              {...testId(ADMIN_TEST_IDS.users.isActiveSwitch)}
-            />
-            <Label htmlFor="is_active">{dictionary.form.is_active}</Label>
+          {/* Roles */}
+          <div className={SPACING.component.xs}>
+            <Label htmlFor="roles">{dictionary.form.roles}</Label>
+            <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
+              {isLoadingRoles ? (
+                <p className="text-sm text-muted-foreground">Chargement...</p>
+              ) : availableRoles.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aucun rôle disponible</p>
+              ) : (
+                availableRoles.map((role) => (
+                  <label key={role.id} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedRoleIds.includes(role.id.toString())}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedRoleIds(prev => [...prev, role.id.toString()]);
+                        } else {
+                          setSelectedRoleIds(prev => prev.filter(id => id !== role.id.toString()));
+                        }
+                      }}
+                      className="rounded border-gray-300"
+                    />
+                    <span className="text-sm">{role.name}</span>
+                  </label>
+                ))
+              )}
+            </div>
+            {errors.roles && (
+              <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
+                {errors.roles}
+              </p>
+            )}
           </div>
 
-          {/* Is Verified - Only show when editing (managed by backend during creation) */}
-          {isEditing && (
+          {/* Is Active - Only show when creating (cannot be updated via PATCH) */}
+          {!isEditing && (
             <div className="flex items-center gap-2">
               <Switch
-                id="is_verified"
-                checked={formData.is_verified}
-                onCheckedChange={(checked) => updateField("is_verified", checked)}
-                {...testId(ADMIN_TEST_IDS.users.isVerifiedSwitch)}
+                id="is_active"
+                checked={formData.is_active}
+                onCheckedChange={(checked) => updateField("is_active", checked)}
+                {...testId(ADMIN_TEST_IDS.users.isActiveSwitch)}
               />
-              <Label htmlFor="is_verified">{dictionary.form.is_verified}</Label>
+              <Label htmlFor="is_active">{dictionary.form.is_active}</Label>
             </div>
           )}
+
+          {/* Is Verified - Not editable (managed by backend) */}
+          {/* Note: If you need to update is_active or is_verified, 
+              you'll need to create dedicated API endpoints for these actions */}
 
           {/* Server Error */}
           {serverError && (
