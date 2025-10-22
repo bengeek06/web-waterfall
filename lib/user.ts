@@ -24,6 +24,29 @@ export function getUserIdFromToken(token: string | undefined): string | null {
 }
 
 /**
+ * Décode un JWT et extrait le company_id
+ */
+export function getCompanyIdFromToken(token: string | undefined): string | null {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      Buffer.from(base64, "base64")
+        .toString("binary")
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const payload = JSON.parse(jsonPayload);
+    return payload.company_id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Récupère l'URL de l'avatar de l'utilisateur courant (ou null)
  */
 export async function getAvatarUrl() {

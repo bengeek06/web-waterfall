@@ -1,0 +1,26 @@
+{
+  "title": "Informations de l'entreprise",
+  "description": "Gérez les informations de votre entreprise",
+  "form": {
+    "name": "Nom de l'entreprise",
+    "address": "Adresse",
+    "city": "Ville",
+    "postal_code": "Code postal",
+    "country": "Pays",
+    "phone": "Téléphone",
+    "email": "Email",
+    "website": "Site web",
+    "siret": "SIRET",
+    "vat_number": "N° TVA",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "messages": {
+    "save_success": "Les informations de l'entreprise ont été mises à jour avec succès.",
+    "save_error": "Erreur lors de l'enregistrement des informations.",
+    "load_error": "Erreur lors du chargement des informations de l'entreprise."
+  },
+  "validation": {
+    "name_required": "Le nom de l'entreprise est requis."
+  }
+}

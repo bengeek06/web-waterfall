@@ -94,6 +94,13 @@ export async function getUserLanguage(): Promise<'en' | 'fr'> {
 }
 
 /**
+ * Alias for getUserLanguage for consistency
+ */
+export async function getLocale(): Promise<'en' | 'fr'> {
+  return getUserLanguage();
+}
+
+/**
  * Update user's language preference in identity service
  * @param language - The language to set ('en' or 'fr')
  * @returns true if successful, false otherwise
