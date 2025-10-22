@@ -1,5 +1,6 @@
 "use client";
 
+import Roles from "@/components/roles";
 import Policies from "@/components/policies";
 import {
   Breadcrumb,
@@ -29,6 +30,7 @@ export default function RolesAdminPage() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
+      <Roles />
       <Policies />
     </div>
   );
