@@ -238,6 +238,7 @@ function TreeNode({
 // Main Component
 export default function OrganizationTree({ companyId, dictionary }: OrganizationTreeProps) {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [units, setUnits] = useState<OrganizationUnit[]>([]);
   const [treeData, setTreeData] = useState<OrganizationUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<OrganizationUnit | null>(null);
