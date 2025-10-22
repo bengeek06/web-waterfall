@@ -1,19 +1,36 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { Building2, User, KeyRound, Mail } from "lucide-react";
+import Image from "next/image";
+
+// UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
-import Image from "next/image";
-import { Building2, User, KeyRound } from "lucide-react";
-import { useRouter } from "next/navigation";
 
+// Validation
+import { useZodForm } from "@/lib/hooks";
+import { initAppSchema, InitAppFormData } from "@/lib/validation";
+
+// Constants
+import { IDENTITY_ROUTES, GUARDIAN_ROUTES } from "@/lib/api-routes";
+import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES, ICON_COLORS, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+
+// ==================== TYPES ====================
 interface InitAppDictionary {
   title: string;
   company: { title: string; label: string; desc: string };
-  user: { title: string; label: string; desc: string };
+  user: { 
+    title: string; 
+    name_label: string; 
+    name_desc: string; 
+    email_label: string; 
+    email_desc: string; 
+  };
   password: string;
   password_confirm: string;
   password_desc: string;
@@ -24,87 +41,107 @@ interface InitAppDictionary {
   loading: string;
 }
 
-interface InitAppForm {
-  company: string;
-  user: string;
-  password: string;
-  passwordConfirm: string;
-}
+// ==================== CONSTANTS ====================
+const API_ERROR_MESSAGES = {
+  IDENTITY_ERROR: "Erreur lors de l'initialisation de l'identité",
+  GUARDIAN_ERROR: "Erreur lors de l'initialisation de Guardian",
+} as const;
 
+// ==================== COMPONENT ====================
 export default function InitApp({ dictionary }: { dictionary: InitAppDictionary }) {
-  const form = useForm<InitAppForm>({ defaultValues: { company: "", user: "", password: "", passwordConfirm: "" } });
+  // Form with Zod validation
+  const form = useZodForm({
+    schema: initAppSchema,
+    defaultValues: {
+      companyName: "",
+      userName: "",
+      userEmail: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+  
+  // Router
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  
+  // State
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ company?: string; user?: string; password?: string; passwordConfirm?: string }>({});
 
-  const handleSubmit = async (data: InitAppForm) => {
+  // ==================== HANDLERS ====================
+  const handleSubmit = async (data: InitAppFormData) => {
     setError(null);
     setSuccess(false);
-    setPasswordError(null);
-    setFieldErrors({});
-    const errors: { company?: string; user?: string; password?: string; passwordConfirm?: string } = {};
-    if (!data.company) errors.company = "Le nom de l'entreprise est requis.";
-    if (!data.user) errors.user = "L'email utilisateur est requis.";
-    if (!data.password) errors.password = "Le mot de passe est requis.";
-    if (!data.passwordConfirm) errors.passwordConfirm = "La confirmation du mot de passe est requise.";
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-    if (data.password !== data.passwordConfirm) {
-      setPasswordError("Les mots de passe ne correspondent pas.");
-      return;
-    }
-    setLoading(true);
+    
     try {
       // 1. Appel à l'init du service identity
-      const identityRes = await fetch("/api/identity/init-app", {
+      const identityRes = await fetch(IDENTITY_ROUTES.initApp, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: { name: data.company },
-          user: { email: data.user, password: data.password },
+          company: { name: data.companyName },
+          user: { email: data.userEmail, password: data.password },
         }),
       });
-      if (!identityRes.ok) throw new Error("Erreur lors de l'initialisation de l'identité");
+      
+      if (!identityRes.ok) throw new Error(API_ERROR_MESSAGES.IDENTITY_ERROR);
+      
       const identityData = await identityRes.json();
       const company_id = identityData.company.id;
       const user_id = identityData.user.id;
+      
       // 2. Appel à l'init du service guardian
-      const guardianRes = await fetch("/api/guardian/init-app", {
+      const guardianRes = await fetch(GUARDIAN_ROUTES.initApp, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: { name: data.company, company_id },
-          user: { email: data.user, password: data.password, user_id },
+          company: { name: data.companyName, company_id },
+          user: { email: data.userEmail, password: data.password, user_id },
         }),
       });
-      if (!guardianRes.ok) throw new Error("Erreur lors de l'initialisation de Guardian");
+      
+      if (!guardianRes.ok) throw new Error(API_ERROR_MESSAGES.GUARDIAN_ERROR);
+      
       setSuccess(true);
       router.push("/login");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
     }
   };
 
+  // ==================== RENDER ====================
   return (
-    <Card className="w-full max-w-md">
+    <Card 
+      className="w-full max-w-md"
+      {...testId(AUTH_TEST_IDS.initApp.card)}
+    >
       <CardHeader>
         <div className="flex flex-col items-center">
-          <Image src="/waterfall_logo.svg" alt="Waterfall Logo" width={160} height={44} className="mb-2" />
-          <CardTitle>{dictionary.title}</CardTitle>
+          <Image 
+            src="/waterfall_logo.svg" 
+            alt="Waterfall Logo" 
+            width={160} 
+            height={44} 
+            className="mb-2"
+            {...testId(AUTH_TEST_IDS.initApp.logo)}
+          />
+          <CardTitle {...testId(AUTH_TEST_IDS.initApp.title)}>
+            {dictionary.title}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form 
+            onSubmit={form.handleSubmit(handleSubmit)} 
+            className={SPACING.component.md}
+            {...testId(AUTH_TEST_IDS.initApp.form)}
+          >
             {/* Card Entreprise */}
-            <Card className="mb-4">
+            <Card 
+              className="mb-4"
+              {...testId(AUTH_TEST_IDS.initApp.companyCard)}
+            >
               <CardHeader>
                 <div className="text-base text-waterfall-description text-center italic">
                   {dictionary.company.title}
@@ -113,46 +150,112 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
               <CardContent>
                 <FormField
                   control={form.control}
-                  name="company"
+                  name="companyName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{dictionary.company.label}</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="company" type="text" {...field} required placeholder={dictionary.company.desc} />
+                        <div className={`flex items-center ${SPACING.gap.sm}`}>
+                          <Building2 
+                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            {...testId(AUTH_TEST_IDS.initApp.companyIcon)}
+                          />
+                          <Input 
+                            id="company" 
+                            type="text" 
+                            {...field} 
+                            placeholder={dictionary.company.desc}
+                            {...testId(AUTH_TEST_IDS.initApp.companyInput)}
+                          />
                         </div>
                       </FormControl>
-                      {fieldErrors.company && <div className="text-red-500 text-sm mt-1">{fieldErrors.company}</div>}
+                      {form.formState.errors.companyName && (
+                        <div 
+                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
+                          {...testId(AUTH_TEST_IDS.initApp.companyError)}
+                        >
+                          {form.formState.errors.companyName.message}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
               </CardContent>
             </Card>
             {/* Card Utilisateur */}
-            <Card>
+            <Card {...testId(AUTH_TEST_IDS.initApp.userCard)}>
               <CardHeader>
                 <div className="text-base text-waterfall-description text-center italic">
                   {dictionary.user.title}
                 </div>
               </CardHeader>
               <CardContent>
+                {/* User Name Input */}
                 <FormField
                   control={form.control}
-                  name="user"
+                  name="userName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{dictionary.user.label}</FormLabel>
+                      <FormLabel>{dictionary.user.name_label}</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-2">
-                          <User className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="user" type="text" {...field} required placeholder={dictionary.user.desc} />
+                        <div className={`flex items-center ${SPACING.gap.sm}`}>
+                          <User 
+                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            {...testId(AUTH_TEST_IDS.initApp.userIcon)}
+                          />
+                          <Input 
+                            id="userName" 
+                            type="text" 
+                            {...field} 
+                            placeholder={dictionary.user.name_desc}
+                            {...testId(AUTH_TEST_IDS.initApp.userNameInput)}
+                          />
                         </div>
                       </FormControl>
-                      {fieldErrors.user && <div className="text-red-500 text-sm mt-1">{fieldErrors.user}</div>}
+                      {form.formState.errors.userName && (
+                        <div 
+                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
+                          {...testId(AUTH_TEST_IDS.initApp.userError)}
+                        >
+                          {form.formState.errors.userName.message}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
+                
+                {/* Email Input */}
+                <FormField
+                  control={form.control}
+                  name="userEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{dictionary.user.email_label}</FormLabel>
+                      <FormControl>
+                        <div className={`flex items-center ${SPACING.gap.sm}`}>
+                          <Mail 
+                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                          />
+                          <Input 
+                            id="userEmail" 
+                            type="email" 
+                            {...field} 
+                            placeholder={dictionary.user.email_desc}
+                          />
+                        </div>
+                      </FormControl>
+                      {form.formState.errors.userEmail && (
+                        <div 
+                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
+                        >
+                          {form.formState.errors.userEmail.message}
+                        </div>
+                      )}
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Password Input */}
                 <FormField
                   control={form.control}
                   name="password"
@@ -160,39 +263,97 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                     <FormItem>
                       <FormLabel>{dictionary.password}</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-2">
-                          <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="password" type="password" {...field} required placeholder={dictionary.password_desc} />
+                        <div className={`flex items-center ${SPACING.gap.sm}`}>
+                          <KeyRound 
+                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            {...testId(AUTH_TEST_IDS.initApp.passwordIcon)}
+                          />
+                          <Input 
+                            id="password" 
+                            type="password" 
+                            {...field} 
+                            placeholder={dictionary.password_desc}
+                            {...testId(AUTH_TEST_IDS.initApp.passwordInput)}
+                          />
                         </div>
                       </FormControl>
-                      {fieldErrors.password && <div className="text-red-500 text-sm mt-1">{fieldErrors.password}</div>}
+                      {form.formState.errors.password && (
+                        <div 
+                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
+                          {...testId(AUTH_TEST_IDS.initApp.passwordError)}
+                        >
+                          {form.formState.errors.password.message}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
+                
+                {/* Password Confirmation Input */}
                 <FormField
                   control={form.control}
-                  name="passwordConfirm"
+                  name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{dictionary.password} {dictionary.password_confirm}</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-2">
-                          <KeyRound className="w-5 h-5 text-waterfall-icon" />
-                          <Input id="passwordConfirm" type="password" {...field} required placeholder={dictionary.password_desc} />
+                        <div className={`flex items-center ${SPACING.gap.sm}`}>
+                          <KeyRound 
+                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            {...testId(AUTH_TEST_IDS.initApp.confirmPasswordIcon)}
+                          />
+                          <Input 
+                            id="confirmPassword" 
+                            type="password" 
+                            {...field} 
+                            placeholder={dictionary.password_desc}
+                            {...testId(AUTH_TEST_IDS.initApp.confirmPasswordInput)}
+                          />
                         </div>
                       </FormControl>
-                      {fieldErrors.passwordConfirm && <div className="text-red-500 text-sm mt-1">{fieldErrors.passwordConfirm}</div>}
+                      {form.formState.errors.confirmPassword && (
+                        <div 
+                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
+                          {...testId(AUTH_TEST_IDS.initApp.confirmPasswordError)}
+                        >
+                          {form.formState.errors.confirmPassword.message}
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
               </CardContent>
             </Card>
-            <Button id="submit" type="submit" className="w-full" disabled={loading}>
-              {loading ? dictionary.loading : dictionary.submit}
+            {/* Submit Button */}
+            <Button 
+              id="submit" 
+              type="submit" 
+              className="w-full" 
+              disabled={form.formState.isSubmitting}
+              {...testId(AUTH_TEST_IDS.initApp.submitButton)}
+            >
+              {form.formState.isSubmitting ? dictionary.loading : dictionary.submit}
             </Button>
-            {passwordError && <div className="text-red-500 text-sm mt-2">{passwordError}</div>}
-            {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-            {success && <div className="text-green-600 text-sm mt-2">{dictionary.success}</div>}
+            
+            {/* General Error */}
+            {error && (
+              <div 
+                className={`${COLOR_CLASSES.text.destructive} text-sm mt-2`}
+                {...testId(AUTH_TEST_IDS.initApp.errorMessage)}
+              >
+                {error}
+              </div>
+            )}
+            
+            {/* Success Message */}
+            {success && (
+              <div 
+                className="text-green-600 text-sm mt-2"
+                {...testId(AUTH_TEST_IDS.initApp.successMessage)}
+              >
+                {dictionary.success}
+              </div>
+            )}
           </form>
         </Form>
       </CardContent>

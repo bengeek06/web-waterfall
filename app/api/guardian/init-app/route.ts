@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: "GUARDIAN_SERVICE_URL is not defined" }, { status: 500 });
     }
     logger.debug(`Guardian service URL: ${GUARDIAN_SERVICE_URL}`);
-    logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers))}`);
+    logger.debug(`Request headers: ${JSON.stringify(Object.fromEntries(req.headers.entries()))}`);
     logger.debug(`Forwarding ${req.url} to ${GUARDIAN_SERVICE_URL}/init-db`);
 
     const response = await fetch(`${GUARDIAN_SERVICE_URL}/init-db`, {
@@ -102,11 +102,23 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
+    // Construit les headers de manière propre
+    const forwardedHeaders = new Headers();
+    
+    // Forward tous les headers sauf ceux qui causent des conflits
+    req.headers.forEach((value, key) => {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey !== "host" && lowerKey !== "content-length" && lowerKey !== "content-type") {
+            forwardedHeaders.set(key, value);
+        }
+    });
+    
+    // Force les headers nécessaires pour le POST JSON
+    forwardedHeaders.set("Content-Type", "application/json");
+
     const res = await fetch(`${GUARDIAN_SERVICE_URL}/init-db`, {
         method: "POST",
-        headers: Object.fromEntries(
-            Array.from(req.headers.entries()).filter(([key]) => key.toLowerCase() !== "host")
-        ),
+        headers: forwardedHeaders,
         body: JSON.stringify(body),
         credentials: "include",
     });

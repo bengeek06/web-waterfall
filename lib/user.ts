@@ -1,5 +1,4 @@
 import { cookies } from "next/headers";
-import { checkSessionAndFetch } from "@/lib/sessionFetch";
 
 /**
  * Décode un JWT et extrait le user_id (champ sub)
@@ -19,6 +18,29 @@ export function getUserIdFromToken(token: string | undefined): string | null {
     );
     const payload = JSON.parse(jsonPayload);
     return payload.sub || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Décode un JWT et extrait le company_id
+ */
+export function getCompanyIdFromToken(token: string | undefined): string | null {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      Buffer.from(base64, "base64")
+        .toString("binary")
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const payload = JSON.parse(jsonPayload);
+    return payload.company_id || null;
   } catch {
     return null;
   }
@@ -80,7 +102,7 @@ export async function getFirstnameFromCookie() {
   if (!userId) return null;
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`;
-  const res = await checkSessionAndFetch(url, {
+  const res = await fetch(url, {
     headers: { Cookie: `token=${token.value}` },
     cache: "no-store",
   });
@@ -103,7 +125,7 @@ export async function getUserData() {
   if (!userId) return null;
 
   const url = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`;
-  const res = await checkSessionAndFetch(url, {
+  const res = await fetch(url, {
     headers: { Cookie: `access_token=${token}` },
     cache: "no-store",
   });

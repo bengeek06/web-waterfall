@@ -1,0 +1,66 @@
+{
+  "page_title": "Gestion des utilisateurs",
+  "create_button": "Créer un utilisateur",
+  "no_users": "Aucun utilisateur trouvé.",
+  "columns": {
+    "email": "Email",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "phone_number": "Téléphone",
+    "language": "Langue",
+    "roles": "Rôles",
+    "positions": "Positions",
+    "is_active": "Actif",
+    "is_verified": "Vérifié",
+    "last_login_at": "Dernière connexion",
+    "created_at": "Créé le",
+    "actions": "Actions"
+  },
+  "boolean": {
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "actions": {
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "modal": {
+    "create_title": "Créer un utilisateur",
+    "edit_title": "Modifier l'utilisateur",
+    "create_description": "Formulaire pour créer un nouvel utilisateur.",
+    "edit_description": "Formulaire pour modifier un utilisateur existant."
+  },
+  "form": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "first_name": "Prénom",
+    "last_name": "Nom",
+    "phone_number": "Téléphone",
+    "avatar_url": "Avatar URL",
+    "language": "Langue",
+    "roles": "Rôles",
+    "positions": "Positions",
+    "is_active": "Actif",
+    "is_verified": "Vérifié",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "create": "Créer"
+  },
+  "delete_modal": {
+    "title": "Supprimer l'utilisateur ?",
+    "description": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+    "cancel": "Annuler",
+    "confirm": "Supprimer"
+  },
+  "errors": {
+    "email_required": "Email requis.",
+    "password_required": "Mot de passe requis pour la création.",
+    "save_failed": "Erreur lors de l'enregistrement.",
+    "unknown_field": "Champ inconnu",
+    "validation_error": "Erreur de validation",
+    "field_required": "Ce champ est requis",
+    "invalid_format": "Format invalide",
+    "roles_fetch_failed": "Erreur lors du chargement des rôles",
+    "positions_fetch_failed": "Erreur lors du chargement des positions"
+  }
+}
