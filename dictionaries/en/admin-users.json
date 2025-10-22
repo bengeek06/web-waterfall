@@ -49,6 +49,10 @@
   "errors": {
     "email_required": "Email required.",
     "password_required": "Password required for creation.",
-    "save_failed": "Error saving."
+    "save_failed": "Error saving.",
+    "unknown_field": "Unknown field",
+    "validation_error": "Validation error",
+    "field_required": "This field is required",
+    "invalid_format": "Invalid format"
   }
 }

@@ -141,7 +141,7 @@ export default function Policies() {
         return;
       }
       if (!permissionsRes.ok) throw new Error("Erreur lors de la récupération des permissions.");
-      if (!policiesRes.ok) throw new Error("Erreur lors de la récupération des policies.");
+      if (!policiesRes.ok) throw new Error("Erreur lors de la récupération des politiques.");
       const permissionsContentType = permissionsRes.headers.get("content-type") || "";
       const policiesContentType = policiesRes.headers.get("content-type") || "";
       if (!permissionsContentType.includes("application/json")) {
@@ -150,7 +150,7 @@ export default function Policies() {
       }
       if (!policiesContentType.includes("application/json")) {
         const text = await policiesRes.text();
-        throw new Error("Réponse policies non JSON: " + text.slice(0, 200));
+        throw new Error("Réponse politiques non JSON: " + text.slice(0, 200));
       }
       const permissionsData = await permissionsRes.json();
       const policiesData = await policiesRes.json();
@@ -175,7 +175,32 @@ export default function Policies() {
           policiesArray = [policiesData];
         }
       }
-      setPolicies(policiesArray);
+      
+      // Fetch permissions for each policy
+      const policiesWithPermissions = await Promise.all(
+        policiesArray.map(async (policy) => {
+          try {
+            const policyPermsRes = await fetch(GUARDIAN_ROUTES.policyPermissions(policy.id.toString()));
+            if (!policyPermsRes.ok) {
+              console.warn(`Failed to fetch permissions for policy ${policy.id}`);
+              return { ...policy, permissions: [] };
+            }
+            const policyPermsData = await policyPermsRes.json();
+            let policyPermissions: Permission[] = [];
+            if (Array.isArray(policyPermsData)) {
+              policyPermissions = policyPermsData;
+            } else if (policyPermsData && typeof policyPermsData === "object" && Array.isArray(policyPermsData.permissions)) {
+              policyPermissions = policyPermsData.permissions;
+            }
+            return { ...policy, permissions: policyPermissions };
+          } catch (err) {
+            console.warn(`Error fetching permissions for policy ${policy.id}:`, err);
+            return { ...policy, permissions: [] };
+          }
+        })
+      );
+      
+      setPolicies(policiesWithPermissions);
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError("Erreur inconnue.");
@@ -231,12 +256,12 @@ export default function Policies() {
       fetchData();
     } catch (err) {
       console.error("handlePolicySubmit error:", err);
-      setError("Erreur lors de l'enregistrement de la policy");
+      setError("Erreur lors de l'enregistrement de la politique");
     }
   }
 
   async function handleDeletePolicy(policyId: string | number) {
-    if (!window.confirm("Supprimer cette policy ?")) return;
+    if (!window.confirm("Supprimer cette politique ?")) return;
     try {
       const res = await fetch(GUARDIAN_ROUTES.policy(policyId.toString()), {
         method: "DELETE",
@@ -249,7 +274,7 @@ export default function Policies() {
       fetchData();
     } catch (err) {
       console.error("handleDeletePolicy error:", err);
-      setError("Erreur lors de la suppression de la policy");
+      setError("Erreur lors de la suppression de la politique");
     }
   }
 
@@ -265,8 +290,7 @@ export default function Policies() {
     setSelectedPermissionsToAdd(new Set());
   }
 
-  async function handleRemovePermission(policyId: string | number, permissionId: string | number) {
-    if (!window.confirm("Supprimer cette permission de la policy ?")) return;
+  async function removePermissionWithoutConfirm(policyId: string | number, permissionId: string | number) {
     try {
       const res = await fetch(
         GUARDIAN_ROUTES.policyPermission(policyId.toString(), permissionId.toString()), 
@@ -277,10 +301,21 @@ export default function Policies() {
         return;
       }
       if (!res.ok) throw new Error("Erreur lors de la suppression de la permission");
-      fetchData();
     } catch (err) {
-      console.error("handleRemovePermission error:", err);
-      setError("Erreur lors de la suppression de la permission");
+      console.error("removePermissionWithoutConfirm error:", err);
+      throw err;
+    }
+  }
+
+  async function handleRemovePermissionGroup(policyId: string | number, permissions: Permission[]) {
+    if (!window.confirm(`Supprimer toutes les permissions de ce groupe (${permissions.length} permission${permissions.length > 1 ? 's' : ''}) ?`)) return;
+    try {
+      await Promise.all(
+        permissions.map(perm => removePermissionWithoutConfirm(policyId, perm.id))
+      );
+      fetchData();
+    } catch {
+      setError("Erreur lors de la suppression des permissions");
     }
   }
 
@@ -299,25 +334,43 @@ export default function Policies() {
   async function handleAddPermissionsToPolicy() {
     if (!selectedPolicy || selectedPermissionsToAdd.size === 0) return;
     try {
+      console.log("Adding permissions to policy:", selectedPolicy.id);
+      console.log("Selected permissions:", Array.from(selectedPermissionsToAdd));
+      
       // Envoie un POST par permission
-      const promises = Array.from(selectedPermissionsToAdd).map(permissionId =>
-        fetch(GUARDIAN_ROUTES.policyPermissions(selectedPolicy.id.toString()), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ permission_id: permissionId }),
-        })
-      );
+      const permissionsArray = Array.from(selectedPermissionsToAdd);
+      const promises = permissionsArray.map(async (permissionId) => {
+        const url = GUARDIAN_ROUTES.policyPermissions(selectedPolicy.id.toString());
+        console.log(`Posting permission ${permissionId} to ${url}`);
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ permission_id: permissionId }),
+          });
+          console.log(`Response for permission ${permissionId}:`, response.status);
+          return response;
+        } catch (error) {
+          console.error(`Error posting permission ${permissionId}:`, error);
+          throw error;
+        }
+      });
+      
       const results = await Promise.all(promises);
       if (results.some(res => res.status === 401)) {
         window.location.href = "/login";
         return;
       }
-      if (results.some(res => !res.ok)) throw new Error("Erreur lors de l'ajout des permissions");
+      if (results.some(res => !res.ok)) {
+        const failedResults = results.filter(res => !res.ok);
+        console.error("Some requests failed:", failedResults.map(r => r.status));
+        throw new Error("Erreur lors de l'ajout des permissions");
+      }
       setShowPermissionDialog(false);
       fetchData();
     } catch (err) {
       console.error("handleAddPermissionsToPolicy error:", err);
-      setError("Erreur lors de l'ajout des permissions");
+      setError(err instanceof Error ? err.message : "Erreur lors de l'ajout des permissions");
     }
   }
 
@@ -337,7 +390,7 @@ export default function Policies() {
     <section {...testId(DASHBOARD_TEST_IDS.policies.section)}>
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.policies.title)}>
-          Policies
+          Politiques
         </h2>
         <Dialog open={showPolicyDialog} onOpenChange={setShowPolicyDialog}>
           <DialogTrigger asChild>
@@ -345,7 +398,7 @@ export default function Policies() {
               onClick={openCreatePolicyDialog}
               {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
             >
-              Ajouter une policy
+              Ajouter une politique
             </Button>
           </DialogTrigger>
           <DialogContent 
@@ -354,7 +407,7 @@ export default function Policies() {
             {...testId(DASHBOARD_TEST_IDS.policies.dialog)}
           >
             <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.dialogTitle)}>
-              {editingPolicy ? "Éditer la policy" : "Créer une policy"}
+              {editingPolicy ? "Éditer la politique" : "Créer une politique"}
             </DialogTitle>
             <form 
               className={`p-6 ${SPACING.component.md}`} 
@@ -467,11 +520,11 @@ export default function Policies() {
                   <TableCell colSpan={4}>
                     <div className="pl-8">
                       <div className="font-semibold mb-2">Permissions</div>
-                      {policy.permissions.length === 0 ? (
+                      {(policy.permissions?.length ?? 0) === 0 ? (
                         <span className={COLOR_CLASSES.text.muted}>Aucune permission</span>
                       ) : (
                         <ul className={SPACING.component.xs}>
-                          {groupPermissions(policy.permissions).map(group => (
+                          {groupPermissions(policy.permissions || []).map(group => (
                             <li
                               key={group.service + group.resource_name}
                               className={`flex items-center ${SPACING.gap.sm}`}
@@ -527,15 +580,7 @@ export default function Policies() {
                                 <button
                                   className={COLOR_CLASSES.text.destructive}
                                   title="Supprimer toutes les permissions de ce groupe"
-                                  onClick={() => {
-                                    if (window.confirm("Supprimer toutes les permissions de ce groupe ?")) {
-                                      Promise.all(
-                                        group.perms.map(perm =>
-                                          handleRemovePermission(policy.id, perm.id)
-                                        )
-                                      );
-                                    }
-                                  }}
+                                  onClick={() => handleRemovePermissionGroup(policy.id, group.perms)}
                                   {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
                                     group.service,
                                     group.resource_name

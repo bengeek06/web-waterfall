@@ -7,8 +7,10 @@
   },
   "user": {
     "title": "Créez un utilisateur. Cet utilisateur sera l'administrateur de l'entreprise",
-    "label": "Nom de l'utilisateur",
-    "desc": "Indiquez le nom de l'utilisateur"
+    "name_label": "Nom de l'utilisateur",
+    "name_desc": "Prénom et nom",
+    "email_label": "Email",
+    "email_desc": "adresse@exemple.com"
   },
   "password": "Mot de passe",
   "password_desc": "Indiquez votre mot de passe",

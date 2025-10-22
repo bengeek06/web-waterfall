@@ -50,9 +50,19 @@ describe('Policies Component', () => {
     },
   ];
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+  // Helper function to create a standard mock fetch implementation
+  const createMockFetch = (customHandlers?: Record<string, unknown>) => {
+    return (url: string, options?: RequestInit) => {
+      // Check custom handlers first
+      if (customHandlers && customHandlers[url]) {
+        const handler = customHandlers[url];
+        if (typeof handler === 'function') {
+          return handler(url, options);
+        }
+        return Promise.resolve(handler);
+      }
+
+      // Default handlers
       if (url === GUARDIAN_ROUTES.permissions) {
         return Promise.resolve({
           ok: true,
@@ -66,11 +76,33 @@ describe('Policies Component', () => {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve(mockPolicies),
+          json: () => Promise.resolve(mockPolicies.map(p => ({ id: p.id, name: p.name, description: p.description }))),
         });
       }
-      return Promise.reject(new Error('Unknown URL'));
-    });
+      // Handle policy permissions requests
+      if (url === GUARDIAN_ROUTES.policyPermissions('1')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: { get: () => 'application/json' },
+          json: () => Promise.resolve([mockPermissions[0], mockPermissions[1]]),
+        });
+      }
+      if (url === GUARDIAN_ROUTES.policyPermissions('2')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: { get: () => 'application/json' },
+          json: () => Promise.resolve([mockPermissions[0]]),
+        });
+      }
+      return Promise.reject(new Error('Unknown URL: ' + url));
+    };
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (global.fetch as jest.Mock).mockImplementation(createMockFetch());
   });
 
   describe('Initial Render', () => {
@@ -78,7 +110,7 @@ describe('Policies Component', () => {
       render(<Policies />);
       
       expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.title)).toBeInTheDocument();
-      expect(screen.getByText('Policies')).toBeInTheDocument();
+      expect(screen.getByText('Politiques')).toBeInTheDocument();
     });
 
     it('should render the add policy button', async () => {
@@ -86,7 +118,7 @@ describe('Policies Component', () => {
       
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addButton);
       expect(addButton).toBeInTheDocument();
-      expect(addButton).toHaveTextContent('Ajouter une policy');
+      expect(addButton).toHaveTextContent('Ajouter une politique');
     });
 
     it('should render the policies table', async () => {
@@ -123,22 +155,14 @@ describe('Policies Component', () => {
     });
 
     it('should handle non-JSON responses', async () => {
-      (global.fetch as jest.Mock).mockImplementation((url: string) => {
-        if (url === GUARDIAN_ROUTES.permissions) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            headers: { get: () => 'text/html' },
-            text: () => Promise.resolve('<html>Error page</html>'),
-          });
-        }
-        return Promise.resolve({
+      (global.fetch as jest.Mock).mockImplementation(createMockFetch({
+        [GUARDIAN_ROUTES.permissions]: Promise.resolve({
           ok: true,
           status: 200,
-          headers: { get: () => 'application/json' },
-          json: () => Promise.resolve([]),
-        });
-      });
+          headers: { get: () => 'text/html' },
+          text: () => Promise.resolve('<html>Error page</html>'),
+        }),
+      }));
 
       render(<Policies />);
 
@@ -157,7 +181,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.dialog)).toBeInTheDocument();
-        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.dialogTitle)).toHaveTextContent('Créer une policy');
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.dialogTitle)).toHaveTextContent('Créer une politique');
       });
     });
 
@@ -237,7 +261,7 @@ describe('Policies Component', () => {
       fireEvent.click(editButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.dialogTitle)).toHaveTextContent('Éditer la policy');
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.dialogTitle)).toHaveTextContent('Éditer la politique');
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.nameInput)).toHaveValue('Admin Policy');
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.descriptionInput)).toHaveValue('Full admin access');
       });
@@ -340,7 +364,7 @@ describe('Policies Component', () => {
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.deleteButton('1'));
       fireEvent.click(deleteButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer cette policy ?');
+      expect(window.confirm).toHaveBeenCalledWith('Supprimer cette politique ?');
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -364,7 +388,7 @@ describe('Policies Component', () => {
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.deleteButton('1'));
       fireEvent.click(deleteButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer cette policy ?');
+      expect(window.confirm).toHaveBeenCalledWith('Supprimer cette politique ?');
 
       // Should not call delete endpoint
       await waitFor(() => {
@@ -685,32 +709,20 @@ describe('Policies Component', () => {
     it('should delete permission group after confirmation', async () => {
       window.confirm = jest.fn(() => true);
 
-      (global.fetch as jest.Mock).mockImplementation((url: string, options?: RequestInit) => {
-        if (options?.method === 'DELETE' && url.includes('permissions')) {
-          return Promise.resolve({
-            ok: true,
-            status: 204,
-          });
-        }
-        // Default responses
-        if (url === GUARDIAN_ROUTES.permissions) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            headers: { get: () => 'application/json' },
-            json: () => Promise.resolve(mockPermissions),
-          });
-        }
-        if (url === GUARDIAN_ROUTES.policies) {
-          return Promise.resolve({
-            ok: true,
-            status: 200,
-            headers: { get: () => 'application/json' },
-            json: () => Promise.resolve(mockPolicies),
-          });
-        }
-        return Promise.reject(new Error('Unknown URL'));
-      });
+      (global.fetch as jest.Mock).mockImplementation(createMockFetch({
+        // Override for DELETE requests
+        ...Object.fromEntries(
+          [1, 2].map(id => [
+            GUARDIAN_ROUTES.policyPermission(id.toString(), mockPermissions[0].id.toString()),
+            (url: string, options?: RequestInit) => {
+              if (options?.method === 'DELETE') {
+                return Promise.resolve({ ok: true, status: 204 });
+              }
+              return Promise.reject(new Error('Unexpected method'));
+            }
+          ])
+        ),
+      }));
 
       render(<Policies />);
 
@@ -730,7 +742,7 @@ describe('Policies Component', () => {
       );
       fireEvent.click(deleteGroupButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer toutes les permissions de ce groupe ?');
+      expect(window.confirm).toHaveBeenCalledWith('Supprimer toutes les permissions de ce groupe (2 permissions) ?');
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(

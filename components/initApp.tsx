@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, User, KeyRound } from "lucide-react";
+import { Building2, User, KeyRound, Mail } from "lucide-react";
 import Image from "next/image";
 
 // UI Components
@@ -24,7 +24,13 @@ import { ICON_SIZES, ICON_COLORS, COLOR_CLASSES, SPACING } from "@/lib/design-to
 interface InitAppDictionary {
   title: string;
   company: { title: string; label: string; desc: string };
-  user: { title: string; label: string; desc: string };
+  user: { 
+    title: string; 
+    name_label: string; 
+    name_desc: string; 
+    email_label: string; 
+    email_desc: string; 
+  };
   password: string;
   password_confirm: string;
   password_desc: string;
@@ -190,7 +196,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                   name="userName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nom</FormLabel>
+                      <FormLabel>{dictionary.user.name_label}</FormLabel>
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
                           <User 
@@ -201,7 +207,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                             id="userName" 
                             type="text" 
                             {...field} 
-                            placeholder="Nom de l'utilisateur"
+                            placeholder={dictionary.user.name_desc}
                             {...testId(AUTH_TEST_IDS.initApp.userNameInput)}
                           />
                         </div>
@@ -224,17 +230,17 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                   name="userEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{dictionary.user.label}</FormLabel>
+                      <FormLabel>{dictionary.user.email_label}</FormLabel>
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
-                          <User 
+                          <Mail 
                             className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
                           />
                           <Input 
                             id="userEmail" 
                             type="email" 
                             {...field} 
-                            placeholder={dictionary.user.desc}
+                            placeholder={dictionary.user.email_desc}
                           />
                         </div>
                       </FormControl>

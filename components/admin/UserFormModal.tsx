@@ -72,6 +72,10 @@ type UserFormProps = {
       email_required: string;
       password_required: string;
       save_failed: string;
+      validation_error?: string;
+      unknown_field?: string;
+      field_required?: string;
+      invalid_format?: string;
     };
   };
 };
@@ -172,9 +176,13 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         }
       });
       
-      // Remove password for updates
+      // Remove fields not accepted by the backend
       if (isEditing) {
+        // Remove password for updates (password updates done separately)
         delete payload.password;
+      } else {
+        // Remove is_verified for creation (managed by backend)
+        delete payload.is_verified;
       }
 
       const res = await clientSessionFetch(url, {
@@ -190,7 +198,27 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        setServerError(errorData.error || errorData.message || dictionary.errors.save_failed);
+        
+        // Handle backend validation errors with field-specific messages
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          const newErrors: Record<string, string> = {};
+          Object.entries(errorData.errors).forEach(([field, messages]) => {
+            if (Array.isArray(messages) && messages.length > 0) {
+              newErrors[field] = messages[0]; // Take first error message
+            }
+          });
+          
+          if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            // Show a translated generic message at the top
+            setServerError(dictionary.errors.validation_error || dictionary.errors.save_failed);
+            setIsSubmitting(false);
+            return;
+          }
+        }
+        
+        // Fallback to generic error
+        setServerError(errorData.message || errorData.error || dictionary.errors.save_failed);
         setIsSubmitting(false);
         return;
       }
@@ -358,16 +386,18 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
             <Label htmlFor="is_active">{dictionary.form.is_active}</Label>
           </div>
 
-          {/* Is Verified */}
-          <div className="flex items-center gap-2">
-            <Switch
-              id="is_verified"
-              checked={formData.is_verified}
-              onCheckedChange={(checked) => updateField("is_verified", checked)}
-              {...testId(ADMIN_TEST_IDS.users.isVerifiedSwitch)}
-            />
-            <Label htmlFor="is_verified">{dictionary.form.is_verified}</Label>
-          </div>
+          {/* Is Verified - Only show when editing (managed by backend during creation) */}
+          {isEditing && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id="is_verified"
+                checked={formData.is_verified}
+                onCheckedChange={(checked) => updateField("is_verified", checked)}
+                {...testId(ADMIN_TEST_IDS.users.isVerifiedSwitch)}
+              />
+              <Label htmlFor="is_verified">{dictionary.form.is_verified}</Label>
+            </div>
+          )}
 
           {/* Server Error */}
           {serverError && (
