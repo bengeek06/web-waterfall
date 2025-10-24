@@ -86,8 +86,10 @@ export default async function TopBar() {
               <DropdownMenuItem asChild>
                 <Link 
                   href="/welcome/profile"
+                  className="flex items-center gap-2"
                   {...testId(COMMON_TEST_IDS.topBar.profileLink)}
                 >
+                  <span className="text-base">👤</span>
                   {dictionary.profile}
                 </Link>
               </DropdownMenuItem>
