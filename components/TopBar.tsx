@@ -13,9 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/components/LogoutButton";
 import AboutModal from "@/components/AboutModal";
+import ProfileModal from "@/components/ProfileModal";
 
 // Utils
-import { getAvatarUrl } from "@/lib/user";
+import { getAvatarUrl, getUserData } from "@/lib/user";
 import { getDictionary } from "@/lib/dictionaries";
 import { getUserLanguage } from "@/lib/locale";
 
@@ -26,6 +27,7 @@ import { ICON_SIZES, ICON_COLORS } from "@/lib/design-tokens";
 // ==================== COMPONENT ====================
 export default async function TopBar() {
   const avatarUrl = await getAvatarUrl();
+  const userData = await getUserData();
   const userLanguage = await getUserLanguage();
   const dictionary = await getDictionary(userLanguage);
 
@@ -88,14 +90,23 @@ export default async function TopBar() {
               {...testId(COMMON_TEST_IDS.topBar.dropdownContent)}
             >
               <DropdownMenuItem asChild>
-                <Link 
-                  href="/welcome/profile"
-                  className="flex items-center gap-3 px-3 py-2"
-                  {...testId(COMMON_TEST_IDS.topBar.profileLink)}
+                <ProfileModal
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
+                  testId={COMMON_TEST_IDS.topBar.profileLink}
+                  dictionary={dictionary}
+                  userInfo={userData ? {
+                    id: userData.id,
+                    firstName: userData.first_name,
+                    lastName: userData.last_name,
+                    email: userData.email,
+                    phoneNumber: userData.phone_number,
+                    avatarUrl: userData.avatar_url,
+                    language: userData.language
+                  } : undefined}
                 >
                   <User size={16} className="text-gray-500" />
                   <span>{dictionary.profile}</span>
-                </Link>
+                </ProfileModal>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <AboutModal
