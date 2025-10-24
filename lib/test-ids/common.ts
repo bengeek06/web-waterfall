@@ -17,6 +17,7 @@ export const COMMON_TEST_IDS = {
     userAvatar: 'topbar-user-avatar',
     userName: 'topbar-user-name',
     logoutButton: 'topbar-logout-button',
+    logoutLink: 'topbar-logout-link',
     profileLink: 'topbar-profile-link',
     settingsLink: 'topbar-settings-link',
   },

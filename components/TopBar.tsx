@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
+import { User, LogOut } from "lucide-react";
 
 // UI Components
 import {
@@ -9,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import LogoutButton from "@/components/LogoutButton";
 
 // Utils
 import { getAvatarUrl } from "@/lib/user";
@@ -70,12 +72,11 @@ export default async function TopBar() {
                     {...testId(COMMON_TEST_IDS.topBar.avatarImage)}
                   />
                 ) : (
-                  <span 
-                    className={`${ICON_COLORS.waterfall} text-4xl`}
+                  <User 
+                    size={24}
+                    className={ICON_COLORS.waterfall}
                     {...testId(COMMON_TEST_IDS.topBar.avatarIcon)}
-                  >
-                    👤
-                  </span>
+                  />
                 )}
               </button>
             </DropdownMenuTrigger>
@@ -89,9 +90,18 @@ export default async function TopBar() {
                   className="flex items-center gap-2"
                   {...testId(COMMON_TEST_IDS.topBar.profileLink)}
                 >
-                  <span className="text-base">👤</span>
+                  <User size={16} />
                   {dictionary.profile}
                 </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <LogoutButton
+                  className="flex items-center gap-2 w-full text-left cursor-pointer"
+                  testId={COMMON_TEST_IDS.topBar.logoutLink}
+                >
+                  <LogOut size={16} />
+                  {dictionary.logout}
+                </LogoutButton>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
