@@ -17,7 +17,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { clientSessionFetch } from "@/lib/clientFetch";
 
 // Types
 type OrganizationUnit = {

@@ -23,7 +23,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { DASHBOARD_TEST_IDS } from "@/lib/test-ids";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { clientSessionFetch } from "@/lib/clientFetch";
 
 // ==================== TYPES ====================
 type Locale = "fr" | "en";

@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { clientSessionFetch } from "@/lib/clientFetch";
 
 // Types
 type OrganizationUnit = {

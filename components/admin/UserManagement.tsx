@@ -15,7 +15,7 @@ import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { clientSessionFetch } from "@/lib/clientFetch";
 
 // ==================== TYPES ====================
 type UserManagementProps = {

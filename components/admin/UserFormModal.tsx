@@ -28,7 +28,7 @@ import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { clientSessionFetch } from "@/lib/clientFetch";
 
 // Types
 export type User = {
