@@ -1,16 +1,9 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+import js from '@eslint/js';
+import nextConfig from 'eslint-config-next/core-web-vitals';
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  js.configs.recommended,
+  ...nextConfig,
   {
     ignores: [
       "node_modules/**",
@@ -20,6 +13,22 @@ const eslintConfig = [
       "coverage/**",
       "next-env.d.ts",
     ],
+  },
+  {
+    files: ["**/*.test.{js,jsx,ts,tsx}", "**/__tests__/**/*", "**/jest.config.js", "**/jest.setup.js"],
+    languageOptions: {
+      globals: {
+        jest: "readonly",
+        describe: "readonly",
+        it: "readonly",
+        test: "readonly",
+        expect: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+      },
+    },
   },
 ];
 
