@@ -165,11 +165,35 @@ export async function proxyRequest(
     nextRes = new NextResponse(null, { status: 204 });
   } else if (contentType && contentType.includes("application/json")) {
     const data = await upstream.json();
-    logger.debug(`Response data: ${JSON.stringify(data)}`);
+    
+    // Log selon le status HTTP - erreurs en rouge !
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        response: data
+      }, `HTTP ${upstream.status} Error Response`);
+    } else {
+      logger.debug(`Response data: ${JSON.stringify(data)}`);
+    }
+    
     nextRes = NextResponse.json(data, { status: upstream.status });
   } else {
     const text = await upstream.text();
-    logger.debug(`Response text: ${text}`);
+    
+    // Log selon le status HTTP - erreurs en rouge !
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        response: text
+      }, `HTTP ${upstream.status} Error Response`);
+    } else {
+      logger.debug(`Response text: ${text}`);
+    }
+    
     nextRes = new NextResponse(text, { status: upstream.status });
   }
 
