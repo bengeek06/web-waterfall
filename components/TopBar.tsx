@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Info } from "lucide-react";
 
 // UI Components
 import {
@@ -9,8 +9,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import LogoutButton from "@/components/LogoutButton";
+import AboutModal from "@/components/AboutModal";
 
 // Utils
 import { getAvatarUrl } from "@/lib/user";
@@ -82,25 +84,36 @@ export default async function TopBar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end"
+              className="w-48"
               {...testId(COMMON_TEST_IDS.topBar.dropdownContent)}
             >
               <DropdownMenuItem asChild>
                 <Link 
                   href="/welcome/profile"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-3 px-3 py-2"
                   {...testId(COMMON_TEST_IDS.topBar.profileLink)}
                 >
-                  <User size={16} />
-                  {dictionary.profile}
+                  <User size={16} className="text-gray-500" />
+                  <span>{dictionary.profile}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <AboutModal
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
+                  testId={COMMON_TEST_IDS.topBar.aboutLink}
+                >
+                  <Info size={16} className="text-gray-500" />
+                  <span>{dictionary.about}</span>
+                </AboutModal>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
                 <LogoutButton
-                  className="flex items-center gap-2 w-full text-left cursor-pointer"
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2 text-red-600 hover:text-red-700"
                   testId={COMMON_TEST_IDS.topBar.logoutLink}
                 >
                   <LogOut size={16} />
-                  {dictionary.logout}
+                  <span>{dictionary.logout}</span>
                 </LogoutButton>
               </DropdownMenuItem>
             </DropdownMenuContent>
