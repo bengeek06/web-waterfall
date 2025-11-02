@@ -31,55 +31,45 @@ export default function AboutModal({ children, className, testId }: AboutModalPr
     { service: 'Guardian Service', version: '', status: 'loading' },
   ]);
 
-  const fetchVersions = async () => {
-    const endpoints = [
-      { name: 'Auth Service', url: '/api/auth/version' },
-      { name: 'Identity Service', url: '/api/identity/version' },
-      { name: 'Guardian Service', url: '/api/guardian/version' },
-    ];
-
-    const updatedServices = await Promise.all(
-      endpoints.map(async ({ name, url }) => {
-        try {
-          const response = await clientFetch(url);
-          const data = await response.json();
-          return {
-            service: name,
-            version: data.version || 'Unknown',
-            status: 'success' as const,
-          };
-        } catch (error) {
-          console.error(`Failed to fetch version for ${name}:`, error);
-          return {
-            service: name,
-            version: 'Error',
-            status: 'error' as const,
-          };
-        }
-      })
-    );
-
-    setServices(updatedServices);
-  };
-
+  // Fetch versions when modal opens
   useEffect(() => {
-    if (open) {
-      fetchVersions();
-    }
+    if (!open) return;
+    
+    const fetchVersions = async () => {
+      const endpoints = [
+        { name: 'Auth Service', url: '/api/auth/version' },
+        { name: 'Identity Service', url: '/api/identity/version' },
+        { name: 'Guardian Service', url: '/api/guardian/version' },
+      ];
+
+      const updatedServices = await Promise.all(
+        endpoints.map(async ({ name, url }) => {
+          try {
+            const response = await clientFetch(url);
+            const data = await response.json();
+            return {
+              service: name,
+              version: data.version || 'Unknown',
+              status: 'success' as const,
+            };
+          } catch (error) {
+            console.error(`Failed to fetch version for ${name}:`, error);
+            return {
+              service: name,
+              version: 'Error',
+              status: 'error' as const,
+            };
+          }
+        })
+      );
+
+      setServices(updatedServices);
+    };
+    
+    fetchVersions();
   }, [open]);
 
-  const getStatusColor = (status: ServiceVersion['status']) => {
-    switch (status) {
-      case 'loading':
-        return 'text-yellow-600';
-      case 'success':
-        return 'text-green-600';
-      case 'error':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+
 
   const getStatusIcon = (status: ServiceVersion['status']) => {
     switch (status) {

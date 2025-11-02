@@ -35,8 +35,8 @@ export type User = {
 
 type UserDataTableProps = {
   users: User[];
-  onEdit: (user: User) => void;
-  onDelete: (userId: string) => void;
+  onEdit: (_user: User) => void;
+  onDelete: (_userId: string) => void;
   dictionary: {
     columns: {
       email: string;

@@ -115,11 +115,11 @@ function TreeNode({
 }: {
   unit: OrganizationUnit;
   level?: number;
-  onSelect: (unit: OrganizationUnit) => void;
+  onSelect: (_unit: OrganizationUnit) => void;
   selectedId: string | null;
-  onAddChild: (parentUnit: OrganizationUnit) => void;
-  onEdit: (unit: OrganizationUnit) => void;
-  onDelete: (unitId: string) => void;
+  onAddChild: (_parentUnit: OrganizationUnit) => void;
+  onEdit: (_unit: OrganizationUnit) => void;
+  onDelete: (_unitId: string) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
   const hasChildren = unit.children && unit.children.length > 0;
@@ -238,8 +238,6 @@ function TreeNode({
 // Main Component
 export default function OrganizationTree({ companyId, dictionary }: OrganizationTreeProps) {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [units, setUnits] = useState<OrganizationUnit[]>([]);
   const [treeData, setTreeData] = useState<OrganizationUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<OrganizationUnit | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -316,7 +314,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
         const data = await res.json();
         const unitsList = Array.isArray(data) ? data : [];
-        setUnits(unitsList);
         setTreeData(buildTree(unitsList));
       } catch (err) {
         console.error("Error loading organization units:", err);
@@ -368,7 +365,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       if (res.ok) {
         const data = await res.json();
         const unitsList = Array.isArray(data) ? data : [];
-        setUnits(unitsList);
         setTreeData(buildTree(unitsList));
       }
     } catch (err) {

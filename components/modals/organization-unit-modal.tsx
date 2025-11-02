@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // UI Components
@@ -71,29 +71,15 @@ export default function OrganizationUnitModal({
   dictionary,
 }: OrganizationUnitModalProps) {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  // Initialize state from props - will reset when component remounts (via key)
+  const [name, setName] = useState(unit?.name || "");
+  const [description, setDescription] = useState(unit?.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const isEditing = !!unit;
   const isCreatingChild = !!parentUnit;
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      if (unit) {
-        setName(unit.name);
-        setDescription(unit.description || "");
-      } else {
-        setName("");
-        setDescription("");
-      }
-      setError(null);
-      setMessage(null);
-    }
-  }, [isOpen, unit]);
 
   const getTitle = () => {
     if (isEditing) return dictionary.unit_modal.edit_title;
@@ -180,7 +166,7 @@ export default function OrganizationUnitModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} key={unit?.id || parentUnit?.id || "new"}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>

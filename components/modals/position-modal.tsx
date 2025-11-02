@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // UI Components
@@ -75,31 +75,15 @@ export default function PositionModal({
   dictionary,
 }: PositionModalProps) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [level, setLevel] = useState("");
+  // Initialize state from props - will reset when component remounts (via key)
+  const [title, setTitle] = useState(position?.title || "");
+  const [description, setDescription] = useState(position?.description || "");
+  const [level, setLevel] = useState(position?.level !== undefined ? String(position.level) : "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const isEditing = !!position;
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      if (position) {
-        setTitle(position.title);
-        setDescription(position.description || "");
-        setLevel(position.level !== undefined ? String(position.level) : "");
-      } else {
-        setTitle("");
-        setDescription("");
-        setLevel("");
-      }
-      setError(null);
-      setMessage(null);
-    }
-  }, [isOpen, position]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,7 +170,7 @@ export default function PositionModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose} key={position?.id || organizationUnit.id}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>

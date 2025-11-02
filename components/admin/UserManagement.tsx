@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Components
@@ -90,7 +90,8 @@ export function UserManagement({ dictionary }: UserManagementProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchUsers = useCallback(async () => {
+  // Function to fetch users (can be called multiple times)
+  const fetchUsers = async () => {
     const res = await clientSessionFetch(IDENTITY_ROUTES.users);
     
     if (res.status === 401) {
@@ -151,11 +152,13 @@ export function UserManagement({ dictionary }: UserManagementProps) {
       
       setUsers(usersWithRolesAndPosition);
     }
-  }, [router]);
+  };
 
+  // Fetch users on mount
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreateClick = () => {
     setEditingUser(null);

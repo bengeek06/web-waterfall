@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  actions?: (row: Row<TData>) => React.ReactNode;
+  actions?: (_row: Row<TData>) => React.ReactNode;
 }
 
 export function DataTable<TData, TValue>({ columns, data, actions }: DataTableProps<TData, TValue>) {

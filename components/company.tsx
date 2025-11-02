@@ -17,7 +17,7 @@ import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 import { clientSessionFetch } from "@/lib/clientFetch";
 
 // Types
-type Company = {
+type CompanyData = {
   id: string;
   name: string;
   address?: string;
@@ -66,7 +66,7 @@ type CompanyProps = {
 // ==================== COMPONENT ====================
 export default function Company({ companyId, dictionary }: CompanyProps) {
   const router = useRouter();
-  const [company, setCompany] = useState<Company | null>(null);
+  const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
