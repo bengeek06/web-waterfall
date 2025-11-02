@@ -21,9 +21,30 @@ jest.mock('next/link', () => ({
   },
 }));
 
-// Mock getAvatarUrl
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  usePathname: jest.fn(() => '/'),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
+}));
+
+// Mock user functions
 jest.mock('@/lib/user', () => ({
   getAvatarUrl: jest.fn(() => Promise.resolve('https://example.com/avatar.jpg')),
+  getUserData: jest.fn(() => Promise.resolve({
+    id: '123',
+    email: 'test@example.com',
+    first_name: 'John',
+    last_name: 'Doe',
+    language: 'fr',
+  })),
 }));
 
 // Mock getUserLanguage
@@ -129,13 +150,14 @@ describe('TopBar Component', () => {
       expect(dropdownContent).toBeInTheDocument();
     });
 
-    it('should render profile link', async () => {
+    it('should render profile modal button', async () => {
       const Component = await TopBar();
       render(Component);
       
-      const profileLink = screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink);
-      expect(profileLink).toBeInTheDocument();
-      expect(profileLink).toHaveAttribute('href', '/welcome/profile');
+      const profileButton = screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink);
+      expect(profileButton).toBeInTheDocument();
+      // ProfileModal est maintenant un bouton, pas un lien
+      expect(profileButton.tagName).not.toBe('A');
     });
   });
 
