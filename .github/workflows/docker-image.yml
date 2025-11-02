@@ -22,7 +22,7 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }} # bengeek06/web-waterfall
+  IMAGE_NAME: ${{ github.repository }}
   DOCKERFILE_PATH: ./Dockerfile
   CONTEXT: .
   PROD_TARGET: runner
@@ -106,14 +106,25 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          logout: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Extract metadata
+        id: docker_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-,format=short
+
       - name: Define tags
         id: tags
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          # Forcer en minuscules pour GHCR
+          IMAGE="${{ env.REGISTRY }}/$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')"
           SHA_TAG="${IMAGE}:sha-${{ steps.meta.outputs.short_sha }}"
           TAGS="${SHA_TAG}"
 
@@ -126,6 +137,7 @@ jobs:
             TAGS="${TAGS},${IMAGE}:staging"
           fi
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
+          echo "Publishing to: $TAGS"
 
       - name: Build & Push (production target)
         uses: docker/build-push-action@v5
