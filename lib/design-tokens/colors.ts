@@ -52,11 +52,25 @@ export const COLORS = {
     5: 'var(--chart-5)',
   },
   
-  // Waterfall custom colors
+  // Waterfall custom colors - institutional palette
   waterfall: {
     icon: 'var(--waterfall-icon)',
     description: 'var(--waterfall-description)',
     accent: 'var(--waterfall-accent)',
+    primary: 'var(--waterfall-primary)',
+    primaryDark: 'var(--waterfall-primary-dark)',
+    primaryHover: 'var(--waterfall-primary-hover)',
+    primaryLight: 'var(--waterfall-primary-light)',
+    accentBlue: 'var(--waterfall-accent-blue)',
+    textDark: 'var(--waterfall-text-dark)',
+    textMedium: 'var(--waterfall-text-medium)',
+    textLight: 'var(--waterfall-text-light)',
+    bgLight: 'var(--waterfall-bg-light)',
+    bgMedium: 'var(--waterfall-bg-medium)',
+    borderLight: 'var(--waterfall-border-light)',
+    success: 'var(--waterfall-success)',
+    companyColor: 'var(--waterfall-company-color)',
+    userColor: 'var(--waterfall-user-color)',
   },
 } as const;
 
@@ -75,6 +89,9 @@ export const COLOR_CLASSES = {
     warning: 'text-yellow-600 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',
     info: 'text-blue-600 dark:text-blue-400',
+    waterfallCompany: 'text-[var(--waterfall-company-color)]',
+    waterfallUser: 'text-[var(--waterfall-user-color)]',
+    waterfallPrimaryDark: 'text-[var(--waterfall-primary-dark)]',
   },
   bg: {
     primary: 'bg-primary',
@@ -83,11 +100,16 @@ export const COLOR_CLASSES = {
     destructive: 'bg-destructive',
     accent: 'bg-accent',
     card: 'bg-card',
+    waterfallLight: 'bg-[var(--waterfall-bg-light)]',
+    waterfallPrimaryDark: 'bg-[var(--waterfall-primary-dark)]',
+    waterfallPrimaryHover: 'hover:bg-[var(--waterfall-primary-hover)]',
   },
   border: {
     default: 'border-border',
     primary: 'border-primary',
     destructive: 'border-destructive',
+    waterfallCompany: 'border-l-[var(--waterfall-company-color)]',
+    waterfallUser: 'border-l-[var(--waterfall-user-color)]',
   },
 } as const;
 

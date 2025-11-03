@@ -18,7 +18,7 @@ import { initAppSchema, InitAppFormData } from "@/lib/validation";
 // Constants
 import { IDENTITY_ROUTES, GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
-import { ICON_SIZES, ICON_COLORS, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 interface InitAppDictionary {
@@ -40,13 +40,21 @@ interface InitAppDictionary {
 }
 
 // ==================== CONSTANTS ====================
+const FORM_IDS = {
+  COMPANY_INPUT: "company",
+  EMAIL_INPUT: "userEmail",
+  PASSWORD_INPUT: "password",
+  CONFIRM_PASSWORD_INPUT: "confirmPassword",
+  SUBMIT_BUTTON: "submit",
+} as const;
+
 const API_ERROR_MESSAGES = {
   IDENTITY_ERROR: "Erreur lors de l'initialisation de l'identité",
   GUARDIAN_ERROR: "Erreur lors de l'initialisation de Guardian",
 } as const;
 
 // ==================== COMPONENT ====================
-export default function InitApp({ dictionary }: { dictionary: InitAppDictionary }) {
+export default function InitApp({ dictionary }: { readonly dictionary: InitAppDictionary }) {
   // Form with Zod validation
   const form = useZodForm({
     schema: initAppSchema,
@@ -109,20 +117,23 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
   // ==================== RENDER ====================
   return (
     <Card 
-      className="w-full max-w-md"
+      className="w-full max-w-md shadow-lg border-0"
       {...testId(AUTH_TEST_IDS.initApp.card)}
     >
-      <CardHeader>
+      <CardHeader className="bg-gradient-to-r from-[var(--waterfall-primary-dark)] to-[var(--waterfall-primary-light)] text-white pt-8 pb-6 rounded-t-[10px]">
         <div className="flex flex-col items-center">
           <Image 
             src="/waterfall_logo.svg" 
             alt="Waterfall Logo" 
             width={160} 
             height={44} 
-            className="mb-2"
+            className="mb-4 brightness-0 invert"
             {...testId(AUTH_TEST_IDS.initApp.logo)}
           />
-          <CardTitle {...testId(AUTH_TEST_IDS.initApp.title)}>
+          <CardTitle 
+            className="text-2xl font-bold text-white mb-2"
+            {...testId(AUTH_TEST_IDS.initApp.title)}
+          >
             {dictionary.title}
           </CardTitle>
         </div>
@@ -134,17 +145,17 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
             className={SPACING.component.md}
             {...testId(AUTH_TEST_IDS.initApp.form)}
           >
+            {/* Section Entreprise */}
+            <div className={`text-base font-semibold ${COLOR_CLASSES.text.waterfallPrimaryDark} text-center mb-4`}>
+              {dictionary.company.title}
+            </div>
+
             {/* Card Entreprise */}
             <Card 
-              className="mb-4"
+              className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
               {...testId(AUTH_TEST_IDS.initApp.companyCard)}
             >
-              <CardHeader>
-                <div className="text-base text-waterfall-description text-center italic">
-                  {dictionary.company.title}
-                </div>
-              </CardHeader>
-              <CardContent>
+              <CardContent className={`pt-4 pb-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
                 <FormField
                   control={form.control}
                   name="companyName"
@@ -154,11 +165,11 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
                           <Building2 
-                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallCompany}`}
                             {...testId(AUTH_TEST_IDS.initApp.companyIcon)}
                           />
                           <Input 
-                            id="company" 
+                            id={FORM_IDS.COMPANY_INPUT}
                             type="text" 
                             {...field} 
                             placeholder={dictionary.company.desc}
@@ -179,15 +190,14 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                 />
               </CardContent>
             </Card>
-            {/* Card Utilisateur */}
-            <Card {...testId(AUTH_TEST_IDS.initApp.userCard)}>
-              <CardHeader>
-                <div className="text-base text-waterfall-description text-center italic">
-                  {dictionary.user.title}
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Email Input */}
+            {/* Section Utilisateur */}
+            <div className={`text-base font-semibold ${COLOR_CLASSES.text.waterfallPrimaryDark} text-center mb-4 mt-6`}>
+              {dictionary.user.title}
+            </div>
+
+            {/* Email Card */}
+            <Card className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
+              <CardContent className={`pt-4 pb-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
                 <FormField
                   control={form.control}
                   name="userEmail"
@@ -197,10 +207,10 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
                           <Mail 
-                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallUser}`}
                           />
                           <Input 
-                            id="userEmail" 
+                            id={FORM_IDS.EMAIL_INPUT}
                             type="email" 
                             {...field} 
                             placeholder={dictionary.user.email_desc}
@@ -217,8 +227,12 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                     </FormItem>
                   )}
                 />
-                
-                {/* Password Input */}
+              </CardContent>
+            </Card>
+
+            {/* Password Card */}
+            <Card className={`mb-4 border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`} {...testId(AUTH_TEST_IDS.initApp.userCard)}>
+              <CardContent className={`pt-4 pb-4 space-y-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
                 <FormField
                   control={form.control}
                   name="password"
@@ -228,11 +242,11 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
                           <KeyRound 
-                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallUser}`}
                             {...testId(AUTH_TEST_IDS.initApp.passwordIcon)}
                           />
                           <Input 
-                            id="password" 
+                            id={FORM_IDS.PASSWORD_INPUT}
                             type="password" 
                             {...field} 
                             placeholder={dictionary.password_desc}
@@ -251,8 +265,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                     </FormItem>
                   )}
                 />
-                
-                {/* Password Confirmation Input */}
+
                 <FormField
                   control={form.control}
                   name="confirmPassword"
@@ -262,11 +275,11 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                       <FormControl>
                         <div className={`flex items-center ${SPACING.gap.sm}`}>
                           <KeyRound 
-                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+                            className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallUser}`}
                             {...testId(AUTH_TEST_IDS.initApp.confirmPasswordIcon)}
                           />
                           <Input 
-                            id="confirmPassword" 
+                            id={FORM_IDS.CONFIRM_PASSWORD_INPUT}
                             type="password" 
                             {...field} 
                             placeholder={dictionary.password_desc}
@@ -289,9 +302,9 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
             </Card>
             {/* Submit Button */}
             <Button 
-              id="submit" 
+              id={FORM_IDS.SUBMIT_BUTTON}
               type="submit" 
-              className="w-full" 
+              className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} ${COLOR_CLASSES.bg.waterfallPrimaryHover} text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
               disabled={form.formState.isSubmitting}
               {...testId(AUTH_TEST_IDS.initApp.submitButton)}
             >
@@ -301,7 +314,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
             {/* General Error */}
             {error && (
               <div 
-                className={`${COLOR_CLASSES.text.destructive} text-sm mt-2`}
+                className="bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] px-4 py-3 rounded text-sm mt-4"
                 {...testId(AUTH_TEST_IDS.initApp.errorMessage)}
               >
                 {error}
@@ -311,7 +324,7 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
             {/* Success Message */}
             {success && (
               <div 
-                className="text-green-600 text-sm mt-2"
+                className="bg-[#d4edda] border border-[#c3e6cb] text-[#155724] px-4 py-3 rounded text-sm mt-4"
                 {...testId(AUTH_TEST_IDS.initApp.successMessage)}
               >
                 {dictionary.success}

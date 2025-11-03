@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 // Constants
 import { AUTH_ROUTES } from "@/lib/api-routes";
 import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
-import { ICON_SIZES, ICON_COLORS, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+import { ICON_SIZES, SPACING } from "@/lib/design-tokens";
 
 // Validation
 import { useZodForm } from "@/lib/hooks";
@@ -76,11 +76,14 @@ export default function Login({ dictionary }: LoginProps) {
 	return (
 		<div>
 			<Card 
-				className="w-full max-w-sm"
+				className="w-full max-w-sm shadow-lg"
 				{...testId(AUTH_TEST_IDS.login.card)}
 			>
-				<CardHeader>
-					<CardTitle {...testId(AUTH_TEST_IDS.login.title)}>
+				<CardHeader className="bg-gradient-to-r from-[#2c3e50] to-[#34495e] text-white rounded-t-lg">
+					<CardTitle 
+						className="text-2xl font-bold text-white text-center"
+						{...testId(AUTH_TEST_IDS.login.title)}
+					>
 						{dictionary.login}
 					</CardTitle>
 				</CardHeader>
@@ -94,7 +97,7 @@ export default function Login({ dictionary }: LoginProps) {
 						<div>
 							<div className={`flex items-center ${SPACING.gap.sm}`}>
 								<User 
-									className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+									className={`${ICON_SIZES.md} text-[#3498db]`}
 									{...testId(AUTH_TEST_IDS.login.emailIcon)}
 								/>
 								<Input
@@ -107,7 +110,7 @@ export default function Login({ dictionary }: LoginProps) {
 								/>
 							</div>
 							{errors.email && (
-								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
+								<div className="text-[#e74c3c] text-sm mt-1 ml-8">
 									{errors.email.message}
 								</div>
 							)}
@@ -117,7 +120,7 @@ export default function Login({ dictionary }: LoginProps) {
 						<div>
 							<div className={`flex items-center ${SPACING.gap.sm}`}>
 								<KeyRound 
-									className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
+									className={`${ICON_SIZES.md} text-[#3498db]`}
 									{...testId(AUTH_TEST_IDS.login.passwordIcon)}
 								/>
 								<Input
@@ -130,7 +133,7 @@ export default function Login({ dictionary }: LoginProps) {
 								/>
 							</div>
 							{errors.password && (
-								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
+								<div className="text-[#e74c3c] text-sm mt-1 ml-8">
 									{errors.password.message}
 								</div>
 							)}
@@ -139,7 +142,7 @@ export default function Login({ dictionary }: LoginProps) {
 						{/* Submit Button */}
 						<Button 
 							type="submit" 
-							className="w-full"
+							className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all"
 							disabled={isSubmitting}
 							{...testId(AUTH_TEST_IDS.login.submitButton)}
 						>
@@ -150,7 +153,7 @@ export default function Login({ dictionary }: LoginProps) {
 					{/* Error Message */}
 					{error && (
 						<div 
-							className={`${COLOR_CLASSES.text.destructive} ${SPACING.component.md} text-center`}
+							className="bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] px-4 py-3 rounded text-sm text-center mt-4"
 							{...testId(AUTH_TEST_IDS.login.errorMessage)}
 						>
 							{error}
@@ -161,7 +164,7 @@ export default function Login({ dictionary }: LoginProps) {
 					<Button
 						type="button"
 						variant="outline"
-						className="w-full mt-4"
+						className="w-full mt-4 border-2 border-[#3498db] text-[#3498db] hover:bg-[#3498db] hover:text-white font-semibold transition-all"
 						disabled={isSubmitting}
 						{...testId(AUTH_TEST_IDS.login.registerButton)}
 					>
