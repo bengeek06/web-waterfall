@@ -3,11 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Building2, FolderKanban } from "lucide-react";
 import Link from "next/link";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-} from "@/components/ui/breadcrumb";
 import { getUserData } from "@/lib/user";
 import { getUserLanguage } from "@/lib/locale";
 import { getDictionary } from "@/lib/dictionaries";
@@ -18,32 +13,15 @@ export default async function WelcomePage() {
   const userLanguage = await getUserLanguage();
   const dictionary = await getDictionary(userLanguage);
   
-  const username = user?.first_name || user?.email || 'Guest';
+  const displayName = user?.first_name || user?.email || 'Guest';
   
   return (
     <div>
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <span>Welcome</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      
-      {/* Debug info */}
-      <div className="max-w-4xl mx-auto mb-6 p-4 bg-blue-50 border border-blue-200 rounded">
-        <p className="text-lg font-semibold">{dictionary.welcome_page.greeting} {username}!</p>
-        <p className="text-sm text-gray-600 mt-2">
-          Language from getUserLanguage(): <strong>{userLanguage}</strong>
-        </p>
-        <p className="text-sm text-gray-600">
-          Language from user object: <strong>{user?.language || 'undefined'}</strong>
-        </p>
-        <p className="text-sm text-gray-600">
-          User email: <strong>{user?.email || 'undefined'}</strong>
-        </p>
+      {/* Welcome message */}
+      <div className="max-w-4xl mx-auto mb-8 text-center">
+        <h1 className={`text-3xl font-bold ${COLOR_CLASSES.text.waterfallPrimaryDark}`}>
+          {dictionary.welcome_page.greeting} {displayName}!
+        </h1>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {/* Card Users Administration */}
