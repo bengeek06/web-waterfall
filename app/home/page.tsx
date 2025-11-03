@@ -11,6 +11,7 @@ import {
 import { getUserData } from "@/lib/user";
 import { getUserLanguage } from "@/lib/locale";
 import { getDictionary } from "@/lib/dictionaries";
+import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 
 export default async function WelcomePage() {
   const user = await getUserData();
@@ -45,10 +46,10 @@ export default async function WelcomePage() {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        {/* Card Administration */}
-        <Card>
+        {/* Card Users Administration */}
+        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
           <CardHeader className="flex flex-row items-center gap-3">
-            <ShieldCheck className="w-8 h-8 text-blue-600" />
+            <ShieldCheck className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallUser}`} />
             <CardTitle>{dictionary.welcome_page.administration}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -59,10 +60,10 @@ export default async function WelcomePage() {
             </Link>
           </CardContent>
         </Card>
-        {/* Card Entreprise */}
-        <Card>
+        {/* Card Company Settings */}
+        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
           <CardHeader className="flex flex-row items-center gap-3">
-            <Building2 className="w-8 h-8 text-green-600" />
+            <Building2 className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>{dictionary.welcome_page.company}</CardTitle>
           </CardHeader>
           <CardContent>
@@ -73,10 +74,10 @@ export default async function WelcomePage() {
             </Link>
           </CardContent>
         </Card>
-        {/* Card Projets */}
-        <Card>
+        {/* Card Projects */}
+        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallProject} shadow-sm hover:shadow-md transition-shadow`}>
           <CardHeader className="flex flex-row items-center gap-3">
-            <FolderKanban className="w-8 h-8 text-purple-600" />
+            <FolderKanban className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallProject}`} />
             <CardTitle>{dictionary.welcome_page.projects}</CardTitle>
           </CardHeader>
           <CardContent>

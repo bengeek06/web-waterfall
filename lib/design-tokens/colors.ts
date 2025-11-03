@@ -71,6 +71,7 @@ export const COLORS = {
     success: 'var(--waterfall-success)',
     companyColor: 'var(--waterfall-company-color)',
     userColor: 'var(--waterfall-user-color)',
+    projectColor: 'var(--waterfall-project-color)',
     gradientStart: 'var(--waterfall-gradient-start)',
     gradientMiddle: 'var(--waterfall-gradient-middle)',
     gradientEnd: 'var(--waterfall-gradient-end)',
@@ -94,6 +95,7 @@ export const COLOR_CLASSES = {
     info: 'text-blue-600 dark:text-blue-400',
     waterfallCompany: 'text-[var(--waterfall-company-color)]',
     waterfallUser: 'text-[var(--waterfall-user-color)]',
+    waterfallProject: 'text-[var(--waterfall-project-color)]',
     waterfallPrimaryDark: 'text-[var(--waterfall-primary-dark)]',
   },
   bg: {
@@ -113,6 +115,7 @@ export const COLOR_CLASSES = {
     destructive: 'border-destructive',
     waterfallCompany: 'border-l-[var(--waterfall-company-color)]',
     waterfallUser: 'border-l-[var(--waterfall-user-color)]',
+    waterfallProject: 'border-l-[var(--waterfall-project-color)]',
   },
 } as const;
 

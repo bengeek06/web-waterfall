@@ -93,6 +93,7 @@
   /* Application color scheme */
   --waterfall-company-color: #5dade2;   /* Bleu ciel - Entreprise */
   --waterfall-user-color: #52c89f;      /* Vert menthe - Utilisateur */
+  --waterfall-project-color: #9b59b6;   /* Violet - Projets */
   
   /* Gradient colors - subtle gray tones */
   --waterfall-gradient-start: #f8f9fa;  /* Gris très clair */
@@ -155,6 +156,7 @@
   /* Application color scheme - dark mode */
   --waterfall-company-color: #7ec8f0;   /* Bleu ciel plus clair */
   --waterfall-user-color: #6dd4b3;      /* Vert menthe plus clair */
+  --waterfall-project-color: #b47ede;   /* Violet plus clair */
   
   /* Gradient colors - dark mode */
   --waterfall-gradient-start: #2a3544;  /* Gris sombre */
