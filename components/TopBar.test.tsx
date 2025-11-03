@@ -101,7 +101,7 @@ describe('TopBar Component', () => {
       
       const logoLink = screen.getByTestId(COMMON_TEST_IDS.topBar.logoLink);
       expect(logoLink).toBeInTheDocument();
-      expect(logoLink).toHaveAttribute('href', '/welcome');
+      expect(logoLink).toHaveAttribute('href', '/home');
     });
 
     it('should render the logo image', async () => {

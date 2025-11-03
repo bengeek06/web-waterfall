@@ -41,7 +41,7 @@ export default async function TopBar() {
         {/* Logo */}
         <div className="flex-shrink-0">
           <Link 
-            href="/welcome"
+            href="/home"
             {...testId(COMMON_TEST_IDS.topBar.logoLink)}
           >
             <Image

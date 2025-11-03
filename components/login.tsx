@@ -82,7 +82,7 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 
 			if (!res.ok) throw new Error(dictionary.login_failed);
 
-			router.push("/welcome");
+			router.push("/home");
 		} catch (err) {
 			setError(dictionary.login_failed);
 			console.error(err);

@@ -13,7 +13,7 @@ export default function ProjectsPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/welcome">Welcome</BreadcrumbLink>
+              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

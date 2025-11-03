@@ -172,7 +172,7 @@ describe('Login Component', () => {
 
       // Vérifier la redirection
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/welcome');
+        expect(mockPush).toHaveBeenCalledWith('/home');
       });
     });
 

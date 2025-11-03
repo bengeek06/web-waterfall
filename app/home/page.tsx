@@ -52,7 +52,7 @@ export default async function WelcomePage() {
             <CardTitle>{dictionary.welcome_page.administration}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/welcome/admin" className="w-full mt-2">
+            <Link href="/home/admin" className="w-full mt-2">
               <Button variant="outline" className="w-full">
                 {dictionary.welcome_page.access_administration}
               </Button>
@@ -66,7 +66,7 @@ export default async function WelcomePage() {
             <CardTitle>{dictionary.welcome_page.company}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/welcome/company" className="w-full mt-2">
+            <Link href="/home/company" className="w-full mt-2">
               <Button variant="outline" className="w-full">
                 {dictionary.welcome_page.access_company}
               </Button>
@@ -80,7 +80,7 @@ export default async function WelcomePage() {
             <CardTitle>{dictionary.welcome_page.projects}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/welcome/projects" className="w-full mt-2">
+            <Link href="/home/projects" className="w-full mt-2">
               <Button variant="outline" className="w-full">
                 {dictionary.welcome_page.access_projects}
               </Button>

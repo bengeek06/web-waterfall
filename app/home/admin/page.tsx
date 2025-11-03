@@ -24,7 +24,7 @@ export default async function AdminPage() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/welcome">Welcome</BreadcrumbLink>
+              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -41,7 +41,7 @@ export default async function AdminPage() {
                     <CardTitle>{dictionary.admin_page.users}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Link href="/welcome/admin/users" className="w-full mt-2">
+                    <Link href="/home/admin/users" className="w-full mt-2">
                     <Button variant="outline" className="w-full">
                         {dictionary.admin_page.manage_users}
                     </Button>
@@ -55,7 +55,7 @@ export default async function AdminPage() {
                     <CardTitle>{dictionary.admin_page.roles}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Link href="/welcome/admin/roles" className="w-full mt-2">
+                    <Link href="/home/admin/roles" className="w-full mt-2">
                     <Button variant="outline" className="w-full">
                         {dictionary.admin_page.manage_roles}
                     </Button>
