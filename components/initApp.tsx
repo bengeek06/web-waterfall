@@ -127,7 +127,7 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
   // ==================== RENDER ====================
   return (
     <Card 
-      className={`w-full shadow-lg border-0 ${COLOR_CLASSES.bg.waterfallGradient}`}
+      className="w-full shadow-lg border-0 bg-white"
       {...testId(AUTH_TEST_IDS.initApp.card)}
     >
       <CardHeader className="pt-8 pb-6 rounded-t-[10px]">

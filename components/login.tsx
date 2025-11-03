@@ -92,7 +92,7 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 	// ==================== RENDER ====================
 	return (
 		<Card 
-			className={`w-full shadow-lg border-0 ${COLOR_CLASSES.bg.waterfallGradient}`}
+			className="w-full shadow-lg border-0 bg-white"
 			{...testId(AUTH_TEST_IDS.login.card)}
 		>
 			<CardHeader className="pt-8 pb-6 rounded-t-[10px]">
