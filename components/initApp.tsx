@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, User, KeyRound, Mail } from "lucide-react";
+import { Building2, KeyRound, Mail } from "lucide-react";
 import Image from "next/image";
 
 // UI Components
@@ -26,8 +26,6 @@ interface InitAppDictionary {
   company: { title: string; label: string; desc: string };
   user: { 
     title: string; 
-    name_label: string; 
-    name_desc: string; 
     email_label: string; 
     email_desc: string; 
   };
@@ -54,7 +52,6 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
     schema: initAppSchema,
     defaultValues: {
       companyName: "",
-      userName: "",
       userEmail: "",
       password: "",
       confirmPassword: "",
@@ -190,40 +187,6 @@ export default function InitApp({ dictionary }: { dictionary: InitAppDictionary 
                 </div>
               </CardHeader>
               <CardContent>
-                {/* User Name Input */}
-                <FormField
-                  control={form.control}
-                  name="userName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{dictionary.user.name_label}</FormLabel>
-                      <FormControl>
-                        <div className={`flex items-center ${SPACING.gap.sm}`}>
-                          <User 
-                            className={`${ICON_SIZES.md} ${ICON_COLORS.waterfall}`}
-                            {...testId(AUTH_TEST_IDS.initApp.userIcon)}
-                          />
-                          <Input 
-                            id="userName" 
-                            type="text" 
-                            {...field} 
-                            placeholder={dictionary.user.name_desc}
-                            {...testId(AUTH_TEST_IDS.initApp.userNameInput)}
-                          />
-                        </div>
-                      </FormControl>
-                      {form.formState.errors.userName && (
-                        <div 
-                          className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}
-                          {...testId(AUTH_TEST_IDS.initApp.userError)}
-                        >
-                          {form.formState.errors.userName.message}
-                        </div>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                
                 {/* Email Input */}
                 <FormField
                   control={form.control}

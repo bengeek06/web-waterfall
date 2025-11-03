@@ -7,8 +7,6 @@
   },
   "user": {
     "title": "Create a user. This user will be the company administrator",
-    "name_label": "User Name",
-    "name_desc": "First and last name",
     "email_label": "Email",
     "email_desc": "email@example.com"
   },

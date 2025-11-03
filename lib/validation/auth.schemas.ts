@@ -54,11 +54,6 @@ export const initAppSchema = z.object({
     .min(1, 'Nom de la compagnie requis')
     .min(2, 'Le nom de la compagnie doit contenir au moins 2 caractères')
     .max(100, 'Le nom de la compagnie ne peut pas dépasser 100 caractères'),
-  userName: z
-    .string()
-    .min(1, 'Nom de l\'utilisateur requis')
-    .min(2, 'Le nom doit contenir au moins 2 caractères')
-    .max(100, 'Le nom ne peut pas dépasser 100 caractères'),
   userEmail: z
     .string()
     .min(1, 'Email requis')

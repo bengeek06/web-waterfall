@@ -46,8 +46,6 @@ const mockDictionary = {
   },
   user: {
     title: 'Informations de l\'utilisateur',
-    name_label: 'Nom de l\'utilisateur',
-    name_desc: 'Prénom et nom',
     email_label: 'Email',
     email_desc: 'adresse@exemple.com'
   },
@@ -82,7 +80,6 @@ describe('InitApp Component', () => {
       
       // Vérifier la présence des champs par placeholder
       expect(screen.getByPlaceholderText(mockDictionary.company.desc)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(mockDictionary.user.name_desc)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(mockDictionary.user.email_desc)).toBeInTheDocument();
       expect(screen.getAllByPlaceholderText(mockDictionary.password_desc)).toHaveLength(2);
       
@@ -94,7 +91,6 @@ describe('InitApp Component', () => {
       render(<InitApp dictionary={mockDictionary} />);
 
       expect(screen.getByPlaceholderText(mockDictionary.company.desc)).toHaveAttribute('type', 'text');
-      expect(screen.getByPlaceholderText(mockDictionary.user.name_desc)).toHaveAttribute('type', 'text');
       expect(screen.getByPlaceholderText(mockDictionary.user.email_desc)).toHaveAttribute('type', 'email');
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
       expect(passwordFields[0]).toHaveAttribute('type', 'password');
@@ -121,7 +117,6 @@ describe('InitApp Component', () => {
       render(<InitApp dictionary={mockDictionary} />);
 
       await user.type(screen.getByPlaceholderText(mockDictionary.company.desc), 'Test Company');
-      await user.type(screen.getByPlaceholderText(mockDictionary.user.name_desc), 'Test User');
       await user.type(screen.getByPlaceholderText(mockDictionary.user.email_desc), 'test@example.com');
       
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
@@ -145,7 +140,6 @@ describe('InitApp Component', () => {
 
       // Fill form with valid data (password must meet Zod requirements)
       await user.type(screen.getByPlaceholderText(mockDictionary.company.desc), 'Test Company');
-      await user.type(screen.getByPlaceholderText(mockDictionary.user.name_desc), 'Test User');
       await user.type(screen.getByPlaceholderText(mockDictionary.user.email_desc), 'test@example.com');
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
       await user.type(passwordFields[0], 'Password123');
@@ -196,7 +190,6 @@ describe('InitApp Component', () => {
 
       // Fill form with valid data
       await user.type(screen.getByPlaceholderText(mockDictionary.company.desc), 'Test Company');
-      await user.type(screen.getByPlaceholderText(mockDictionary.user.name_desc), 'Test User');
       await user.type(screen.getByPlaceholderText(mockDictionary.user.email_desc), 'test@example.com');
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
       await user.type(passwordFields[0], 'Password123');
@@ -225,18 +218,15 @@ describe('InitApp Component', () => {
       render(<InitApp dictionary={mockDictionary} />);
 
       const companyField = screen.getByPlaceholderText(mockDictionary.company.desc);
-      const userNameField = screen.getByPlaceholderText(mockDictionary.user.name_desc);
       const userEmailField = screen.getByPlaceholderText(mockDictionary.user.email_desc);
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
 
       await user.type(companyField, 'My Company');
-      await user.type(userNameField, 'John Doe');
       await user.type(userEmailField, 'user@test.com');
       await user.type(passwordFields[0], 'MyPassword123');
       await user.type(passwordFields[1], 'MyPassword123');
 
       expect(companyField).toHaveValue('My Company');
-      expect(userNameField).toHaveValue('John Doe');
       expect(userEmailField).toHaveValue('user@test.com');
       expect(passwordFields[0]).toHaveValue('MyPassword123');
       expect(passwordFields[1]).toHaveValue('MyPassword123');
@@ -249,7 +239,6 @@ describe('InitApp Component', () => {
 
       // Vérifier que les champs existent et sont accessibles
       expect(screen.getByPlaceholderText(mockDictionary.company.desc)).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(mockDictionary.user.name_desc)).toBeInTheDocument();
       expect(screen.getByPlaceholderText(mockDictionary.user.email_desc)).toBeInTheDocument();
       const passwordFields = screen.getAllByPlaceholderText(mockDictionary.password_desc);
       expect(passwordFields).toHaveLength(2);

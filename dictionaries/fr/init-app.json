@@ -7,8 +7,6 @@
   },
   "user": {
     "title": "Créez un utilisateur. Cet utilisateur sera l'administrateur de l'entreprise",
-    "name_label": "Nom de l'utilisateur",
-    "name_desc": "Prénom et nom",
     "email_label": "Email",
     "email_desc": "adresse@exemple.com"
   },

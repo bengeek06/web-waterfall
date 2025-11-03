@@ -115,8 +115,8 @@ export default function PositionModal({
         payload.description = description.trim();
       }
 
-      if (level.trim() && !isNaN(parseInt(level))) {
-        payload.level = parseInt(level);
+      if (level.trim() && !Number.isNaN(Number.parseInt(level))) {
+        payload.level = Number.parseInt(level);
       }
 
       let res;
