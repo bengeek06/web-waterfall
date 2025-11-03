@@ -71,6 +71,9 @@ export const COLORS = {
     success: 'var(--waterfall-success)',
     companyColor: 'var(--waterfall-company-color)',
     userColor: 'var(--waterfall-user-color)',
+    gradientStart: 'var(--waterfall-gradient-start)',
+    gradientMiddle: 'var(--waterfall-gradient-middle)',
+    gradientEnd: 'var(--waterfall-gradient-end)',
   },
 } as const;
 
@@ -102,7 +105,7 @@ export const COLOR_CLASSES = {
     card: 'bg-card',
     waterfallLight: 'bg-[var(--waterfall-bg-light)]',
     waterfallPrimaryDark: 'bg-[var(--waterfall-primary-dark)]',
-    waterfallPrimaryHover: 'hover:bg-[var(--waterfall-primary-hover)]',
+    waterfallGradient: 'bg-gradient-to-b from-[var(--waterfall-gradient-start)] via-[var(--waterfall-gradient-middle)] to-[var(--waterfall-gradient-end)]',
   },
   border: {
     default: 'border-border',

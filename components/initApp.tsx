@@ -14,7 +14,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, KeyRound, Mail } from "lucide-react";
-import Image from "next/image";
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -128,26 +127,16 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
   // ==================== RENDER ====================
   return (
     <Card 
-      className="w-full max-w-md shadow-lg border-0"
+      className={`w-full shadow-lg border-0 ${COLOR_CLASSES.bg.waterfallGradient}`}
       {...testId(AUTH_TEST_IDS.initApp.card)}
     >
-      <CardHeader className="bg-gradient-to-r from-[var(--waterfall-primary-dark)] to-[var(--waterfall-primary-light)] text-white pt-8 pb-6 rounded-t-[10px]">
-        <div className="flex flex-col items-center">
-          <Image 
-            src="/waterfall_logo.svg" 
-            alt="Waterfall Logo" 
-            width={160} 
-            height={44} 
-            className="mb-4 brightness-0 invert"
-            {...testId(AUTH_TEST_IDS.initApp.logo)}
-          />
-          <CardTitle 
-            className="text-2xl font-bold text-white mb-2"
-            {...testId(AUTH_TEST_IDS.initApp.title)}
-          >
-            {dictionary.title}
-          </CardTitle>
-        </div>
+      <CardHeader className="pt-8 pb-6 rounded-t-[10px]">
+        <CardTitle 
+          className={`text-2xl font-bold ${COLOR_CLASSES.text.waterfallPrimaryDark} text-center`}
+          {...testId(AUTH_TEST_IDS.initApp.title)}
+        >
+          {dictionary.title}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -163,10 +152,10 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
 
             {/* Card Entreprise */}
             <Card 
-              className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+              className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallCompany} ${COLOR_CLASSES.bg.waterfallLight} shadow-sm hover:shadow-md transition-shadow`}
               {...testId(AUTH_TEST_IDS.initApp.companyCard)}
             >
-              <CardContent className={`pt-4 pb-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
+              <CardContent className="pt-4 pb-4">
                 <FormField
                   control={form.control}
                   name="companyName"
@@ -207,8 +196,8 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
             </div>
 
             {/* Email Card */}
-            <Card className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
-              <CardContent className={`pt-4 pb-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
+            <Card className={`mb-3 border-l-4 ${COLOR_CLASSES.border.waterfallUser} ${COLOR_CLASSES.bg.waterfallLight} shadow-sm hover:shadow-md transition-shadow`}>
+              <CardContent className="pt-4 pb-4">
                 <FormField
                   control={form.control}
                   name="userEmail"
@@ -242,8 +231,8 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
             </Card>
 
             {/* Password Card */}
-            <Card className={`mb-4 border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`} {...testId(AUTH_TEST_IDS.initApp.userCard)}>
-              <CardContent className={`pt-4 pb-4 space-y-4 ${COLOR_CLASSES.bg.waterfallLight}`}>
+            <Card className={`mb-4 border-l-4 ${COLOR_CLASSES.border.waterfallUser} ${COLOR_CLASSES.bg.waterfallLight} shadow-sm hover:shadow-md transition-shadow`} {...testId(AUTH_TEST_IDS.initApp.userCard)}>
+              <CardContent className="pt-4 pb-4 space-y-4">
                 <FormField
                   control={form.control}
                   name="password"
@@ -315,7 +304,7 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
             <Button 
               id={FORM_IDS.SUBMIT_BUTTON}
               type="submit" 
-              className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} ${COLOR_CLASSES.bg.waterfallPrimaryHover} text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
+              className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} hover:bg-[var(--waterfall-primary-hover)] text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
               disabled={form.formState.isSubmitting}
               {...testId(AUTH_TEST_IDS.initApp.submitButton)}
             >

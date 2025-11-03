@@ -43,7 +43,7 @@ export default async function Home() {
           {dictionary.description}
         </p>
       </div>
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-2xl mx-auto">
         <Login dictionary={dictionary.login_component} />
       </div>
     </div>

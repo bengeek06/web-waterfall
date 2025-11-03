@@ -70,9 +70,8 @@ describe('InitApp Component', () => {
     it('should render the component with all form fields', () => {
       render(<InitApp dictionary={mockDictionary} />);
 
-      // Vérifier la présence du titre et logo
+      // Vérifier la présence du titre
       expect(screen.getByText(mockDictionary.title)).toBeInTheDocument();
-      expect(screen.getByAltText('Waterfall Logo')).toBeInTheDocument();
       
       // Vérifier la présence des sections
       expect(screen.getByText(mockDictionary.company.title)).toBeInTheDocument();

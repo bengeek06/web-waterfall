@@ -92,12 +92,12 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 	// ==================== RENDER ====================
 	return (
 		<Card 
-			className="w-full max-w-md shadow-lg border-0"
+			className={`w-full shadow-lg border-0 ${COLOR_CLASSES.bg.waterfallGradient}`}
 			{...testId(AUTH_TEST_IDS.login.card)}
 		>
-			<CardHeader className="bg-gradient-to-r from-[var(--waterfall-primary-dark)] to-[var(--waterfall-primary-light)] text-white pt-8 pb-6 rounded-t-[10px]">
+			<CardHeader className="pt-8 pb-6 rounded-t-[10px]">
 				<CardTitle 
-					className="text-2xl font-bold text-white text-center"
+					className={`text-2xl font-bold ${COLOR_CLASSES.text.waterfallPrimaryDark} text-center`}
 					{...testId(AUTH_TEST_IDS.login.title)}
 				>
 					{dictionary.login}
@@ -161,7 +161,7 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 						<Button 
 							id={FORM_IDS.SUBMIT_BUTTON}
 							type="submit" 
-							className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} ${COLOR_CLASSES.bg.waterfallPrimaryHover} text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
+							className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} hover:bg-[var(--waterfall-primary-hover)] text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
 							disabled={isSubmitting}
 							{...testId(AUTH_TEST_IDS.login.submitButton)}
 						>
