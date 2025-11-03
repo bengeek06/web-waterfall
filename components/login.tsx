@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -12,7 +23,7 @@ import { Button } from "@/components/ui/button";
 // Constants
 import { AUTH_ROUTES } from "@/lib/api-routes";
 import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
-import { ICON_SIZES, SPACING } from "@/lib/design-tokens";
+import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Validation
 import { useZodForm } from "@/lib/hooks";
@@ -25,14 +36,20 @@ interface LoginProps {
 		email: string;
 		password: string;
 		submit: string;
-		register: string;
 		invalid_email: string;
 		login_failed: string;
 	};
 }
 
+// ==================== CONSTANTS ====================
+const FORM_IDS = {
+	EMAIL_INPUT: "email",
+	PASSWORD_INPUT: "password",
+	SUBMIT_BUTTON: "submit",
+} as const;
+
 // ==================== COMPONENT ====================
-export default function Login({ dictionary }: LoginProps) {
+export default function Login({ dictionary }: Readonly<LoginProps>) {
 	// Router
 	const router = useRouter();
 
@@ -74,19 +91,18 @@ export default function Login({ dictionary }: LoginProps) {
 
 	// ==================== RENDER ====================
 	return (
-		<div>
-			<Card 
-				className="w-full max-w-sm shadow-lg"
-				{...testId(AUTH_TEST_IDS.login.card)}
-			>
-				<CardHeader className="bg-gradient-to-r from-[#2c3e50] to-[#34495e] text-white rounded-t-lg">
-					<CardTitle 
-						className="text-2xl font-bold text-white text-center"
-						{...testId(AUTH_TEST_IDS.login.title)}
-					>
-						{dictionary.login}
-					</CardTitle>
-				</CardHeader>
+		<Card 
+			className="w-full max-w-md shadow-lg border-0"
+			{...testId(AUTH_TEST_IDS.login.card)}
+		>
+			<CardHeader className="bg-gradient-to-r from-[var(--waterfall-primary-dark)] to-[var(--waterfall-primary-light)] text-white pt-8 pb-6 rounded-t-[10px]">
+				<CardTitle 
+					className="text-2xl font-bold text-white text-center"
+					{...testId(AUTH_TEST_IDS.login.title)}
+				>
+					{dictionary.login}
+				</CardTitle>
+			</CardHeader>
 				<CardContent>
 					<form 
 						onSubmit={handleSubmit(onSubmit)} 
@@ -97,10 +113,11 @@ export default function Login({ dictionary }: LoginProps) {
 						<div>
 							<div className={`flex items-center ${SPACING.gap.sm}`}>
 								<User 
-									className={`${ICON_SIZES.md} text-[#3498db]`}
+									className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallUser}`}
 									{...testId(AUTH_TEST_IDS.login.emailIcon)}
 								/>
 								<Input
+									id={FORM_IDS.EMAIL_INPUT}
 									type="email"
 									placeholder={dictionary.email}
 									disabled={isSubmitting}
@@ -110,7 +127,7 @@ export default function Login({ dictionary }: LoginProps) {
 								/>
 							</div>
 							{errors.email && (
-								<div className="text-[#e74c3c] text-sm mt-1 ml-8">
+								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
 									{errors.email.message}
 								</div>
 							)}
@@ -120,10 +137,11 @@ export default function Login({ dictionary }: LoginProps) {
 						<div>
 							<div className={`flex items-center ${SPACING.gap.sm}`}>
 								<KeyRound 
-									className={`${ICON_SIZES.md} text-[#3498db]`}
+									className={`${ICON_SIZES.md} ${COLOR_CLASSES.text.waterfallUser}`}
 									{...testId(AUTH_TEST_IDS.login.passwordIcon)}
 								/>
 								<Input
+									id={FORM_IDS.PASSWORD_INPUT}
 									type="password"
 									placeholder={dictionary.password}
 									disabled={isSubmitting}
@@ -133,7 +151,7 @@ export default function Login({ dictionary }: LoginProps) {
 								/>
 							</div>
 							{errors.password && (
-								<div className="text-[#e74c3c] text-sm mt-1 ml-8">
+								<div className={`${COLOR_CLASSES.text.destructive} text-sm mt-1 ml-8`}>
 									{errors.password.message}
 								</div>
 							)}
@@ -141,8 +159,9 @@ export default function Login({ dictionary }: LoginProps) {
 
 						{/* Submit Button */}
 						<Button 
+							id={FORM_IDS.SUBMIT_BUTTON}
 							type="submit" 
-							className="w-full bg-[#3498db] hover:bg-[#2980b9] text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all"
+							className={`w-full ${COLOR_CLASSES.bg.waterfallPrimaryDark} ${COLOR_CLASSES.bg.waterfallPrimaryHover} text-white font-semibold py-6 text-lg shadow-md hover:shadow-lg transition-all`}
 							disabled={isSubmitting}
 							{...testId(AUTH_TEST_IDS.login.submitButton)}
 						>
@@ -153,25 +172,13 @@ export default function Login({ dictionary }: LoginProps) {
 					{/* Error Message */}
 					{error && (
 						<div 
-							className="bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] px-4 py-3 rounded text-sm text-center mt-4"
+							className={`${COLOR_CLASSES.bg.destructive} ${COLOR_CLASSES.border.destructive} ${COLOR_CLASSES.text.destructive} px-4 py-3 rounded text-sm text-center mt-4`}
 							{...testId(AUTH_TEST_IDS.login.errorMessage)}
 						>
 							{error}
 						</div>
 					)}
-
-					{/* Register Button */}
-					<Button
-						type="button"
-						variant="outline"
-						className="w-full mt-4 border-2 border-[#3498db] text-[#3498db] hover:bg-[#3498db] hover:text-white font-semibold transition-all"
-						disabled={isSubmitting}
-						{...testId(AUTH_TEST_IDS.login.registerButton)}
-					>
-						{dictionary.register}
-					</Button>
 				</CardContent>
-			</Card>
-		</div>
+		</Card>
 	);
 }

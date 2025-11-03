@@ -42,7 +42,6 @@ const mockDictionary = {
   email: 'Adresse email',
   password: 'Mot de passe',
   submit: 'Se connecter',
-  register: 'S\'inscrire',
   invalid_email: 'Format d\'email invalide',
   login_failed: 'Échec de la connexion',
 };
@@ -70,9 +69,8 @@ describe('Login Component', () => {
       expect(screen.getByTestId('login-email-icon')).toBeInTheDocument();
       expect(screen.getByTestId('login-password-icon')).toBeInTheDocument();
       
-      // Vérifier les boutons
+      // Vérifier le bouton
       expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
-      expect(screen.getByTestId('login-register-button')).toBeInTheDocument();
     });
 
     it('should render form fields with correct types', () => {
@@ -277,17 +275,6 @@ describe('Login Component', () => {
       });
     });
 
-    it('should handle register button click', async () => {
-      const user = userEvent.setup();
-      render(<Login dictionary={mockDictionary} />);
-
-      const registerButton = screen.getByTestId('login-register-button');
-      await user.click(registerButton);
-
-      // Note: Le composant actuel n'a pas de logique pour le bouton register
-      // Ce test vérifie juste que le bouton est cliquable
-      expect(registerButton).toBeInTheDocument();
-    });
   });
 
   describe('Accessibility', () => {
@@ -316,7 +303,6 @@ describe('Login Component', () => {
       expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
       expect(screen.getByTestId('login-password-icon')).toBeInTheDocument();
       expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
-      expect(screen.getByTestId('login-register-button')).toBeInTheDocument();
     });
   });
 
