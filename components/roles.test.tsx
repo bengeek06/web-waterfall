@@ -156,13 +156,7 @@ describe('Roles Component', () => {
     it('should fetch and display roles on mount', async () => {
       render(<Roles dictionary={mockRolesDictionary} />);
 
-      // fetchWithAuth is called internally, which uses global.fetch
-      // We just need to verify the data is displayed, not the fetch calls
-      // await waitFor(() => {
-      //   expect(global.fetch).toHaveBeenCalledWith(GUARDIAN_ROUTES.policies);
-      //   expect(global.fetch).toHaveBeenCalledWith(GUARDIAN_ROUTES.roles);
-      // });
-
+      // Wait for all async state updates to complete
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
         expect(screen.getByText('Viewer')).toBeInTheDocument();
@@ -200,6 +194,11 @@ describe('Roles Component', () => {
   describe('Role CRUD Operations', () => {
     it('should open create role dialog when add button is clicked', async () => {
       render(<Roles dictionary={mockRolesDictionary} />);
+
+      // Wait for initial data load
+      await waitFor(() => {
+        expect(screen.getByText('Administrator')).toBeInTheDocument();
+      });
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       fireEvent.click(addButton);
