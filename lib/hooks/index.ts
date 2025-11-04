@@ -3,3 +3,5 @@
  */
 
 export { useZodForm } from './useZodForm';
+export { usePermissions } from './usePermissions';
+export { useAvailablePermissions } from './useAvailablePermissions';
