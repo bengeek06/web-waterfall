@@ -48,7 +48,7 @@ export function UserDeleteDialog({
   onConfirm,
   isDeleting,
   dictionary,
-}: UserDeleteDialogProps) {
+}: Readonly<UserDeleteDialogProps>) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent

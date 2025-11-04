@@ -19,11 +19,13 @@ import { UserDataTable, type User } from "./UserDataTable";
 import { UserFormModal } from "./UserFormModal";
 import { UserDeleteDialog } from "./UserDeleteDialog";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // Utils
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
@@ -93,7 +95,7 @@ type UserManagementProps = {
 };
 
 // ==================== COMPONENT ====================
-export function UserManagement({ dictionary }: UserManagementProps) {
+export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -217,6 +219,28 @@ export function UserManagement({ dictionary }: UserManagementProps) {
     setDeletingUserId(null);
   };
 
+  const handleToggleActive = async (userId: string, isActive: boolean) => {
+    const res = await fetchWithAuth(IDENTITY_ROUTES.user(userId), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ is_active: isActive }),
+    });
+
+    if (res.status === 401) {
+      router.push("/login");
+      return;
+    }
+
+    if (res.ok) {
+      // Update local state
+      setUsers(prevUsers => 
+        prevUsers.map(user => 
+          user.id === userId ? { ...user, is_active: isActive } : user
+        )
+      );
+    }
+  };
+
   return (
     <div className="p-6" {...testId(ADMIN_TEST_IDS.users.page)}>
       {/* Header */}
@@ -224,7 +248,11 @@ export function UserManagement({ dictionary }: UserManagementProps) {
         <h1 className="text-2xl font-bold" {...testId(ADMIN_TEST_IDS.users.title)}>
           {dictionary.page_title}
         </h1>
-        <Button onClick={handleCreateClick} {...testId(ADMIN_TEST_IDS.users.createButton)}>
+        <Button 
+          onClick={handleCreateClick} 
+          {...testId(ADMIN_TEST_IDS.users.createButton)}
+        >
+          <Plus className={ICON_SIZES.sm} />
           {dictionary.create_button}
         </Button>
       </div>
@@ -234,6 +262,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
         users={users}
         onEdit={handleEditClick}
         onDelete={handleDeleteClick}
+        onToggleActive={handleToggleActive}
         dictionary={{
           columns: dictionary.columns,
           boolean: dictionary.boolean,

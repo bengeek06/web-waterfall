@@ -27,6 +27,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
 // Validation
 import { createUserSchema, updateUserSchema } from "@/lib/validation/identity.schemas";
@@ -102,7 +109,7 @@ type UserFormProps = {
 type FormData = CreateUserFormData;
 
 // ==================== COMPONENT ====================
-export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: UserFormProps) {
+export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: Readonly<UserFormProps>) {
   const router = useRouter();
   const isEditing = !!user;
 
@@ -221,6 +228,12 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         }
       });
       setErrors(newErrors);
+      return false;
+    }
+
+    // Validate position (required for creation)
+    if (!isEditing && !selectedPositionId) {
+      setErrors({ position_id: "La position est obligatoire" });
       return false;
     }
 
@@ -541,31 +554,45 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           {/* Roles */}
           <div className={SPACING.component.xs}>
             <Label htmlFor="roles">{dictionary.form.roles}</Label>
-            <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
-              {isLoadingRoles ? (
-                <p className="text-sm text-muted-foreground">Chargement...</p>
-              ) : availableRoles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun rôle disponible</p>
-              ) : (
-                availableRoles.map((role) => (
-                  <label key={role.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  type="button"
+                >
+                  <span className="truncate">
+                    {selectedRoleIds.length === 0
+                      ? "Sélectionner des rôles"
+                      : `${selectedRoleIds.length} rôle(s) sélectionné(s)`}
+                  </span>
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-60 overflow-y-auto" style={{ width: 'var(--radix-dropdown-menu-trigger-width)' }}>
+                {isLoadingRoles ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Chargement...</div>
+                ) : availableRoles.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Aucun rôle disponible</div>
+                ) : (
+                  availableRoles.map((role) => (
+                    <DropdownMenuCheckboxItem
+                      key={role.id}
                       checked={selectedRoleIds.includes(role.id.toString())}
-                      onChange={(e) => {
-                        if (e.target.checked) {
+                      onCheckedChange={(checked) => {
+                        if (checked) {
                           setSelectedRoleIds(prev => [...prev, role.id.toString()]);
                         } else {
                           setSelectedRoleIds(prev => prev.filter(id => id !== role.id.toString()));
                         }
                       }}
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm">{role.name}</span>
-                  </label>
-                ))
-              )}
-            </div>
+                    >
+                      {role.name}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             {errors.roles && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
                 {errors.roles}
@@ -581,8 +608,9 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
               value={selectedPositionId}
               onChange={(e) => setSelectedPositionId(e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              required
             >
-              <option value="">Aucune position</option>
+              <option value="" disabled>Sélectionner une position</option>
               {isLoadingPositions ? (
                 <option disabled>Chargement...</option>
               ) : (
