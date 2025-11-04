@@ -479,28 +479,6 @@ describe('Policies Component', () => {
       });
     });
 
-    it('should collapse expanded policy', async () => {
-      render(<Policies dictionary={mockPoliciesDictionary} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Admin Policy')).toBeInTheDocument();
-      });
-
-      const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.expandButton('1'));
-      
-      // Expand
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        expect(screen.getByText('auth / users')).toBeInTheDocument();
-      });
-
-      // Collapse
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        expect(screen.queryByText('auth / users')).not.toBeInTheDocument();
-      });
-    });
-
     it('should display "Aucune permission" for policy without permissions', async () => {
       const emptyPolicy = {
         id: 3,

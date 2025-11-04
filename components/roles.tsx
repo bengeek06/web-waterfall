@@ -22,7 +22,17 @@
  * - Full test coverage with data-testid attributes
  */
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  ColumnDef,
+  getSortedRowModel,
+  SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
+} from "@tanstack/react-table";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { DASHBOARD_TEST_IDS } from "@/lib/test-ids/dashboard";
 import { roleSchema, RoleFormData } from "@/lib/validation/guardian.schemas";
@@ -46,7 +56,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
@@ -378,6 +388,149 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
     return policies.filter(p => !assignedPolicyIds.has(p.id));
   }
 
+  // ==================== TABLE CONFIGURATION ====================
+  
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const columns: ColumnDef<Role>[] = [
+    {
+      id: "expand",
+      header: "",
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }) => (
+        <button
+          onClick={() => toggleExpand(row.original.id)}
+          className="hover:bg-gray-100 p-1 rounded"
+          {...testId(DASHBOARD_TEST_IDS.roles.expandButton(row.original.id.toString()))}
+        >
+          {expanded[row.original.id] ? (
+            <ChevronDown className={ICON_SIZES.sm} />
+          ) : (
+            <ChevronRight className={ICON_SIZES.sm} />
+          )}
+        </button>
+      ),
+    },
+    {
+      accessorKey: "name",
+      enableColumnFilter: true,
+      header: ({ column }) => {
+        return (
+          <button
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
+          >
+            {dictionary.table_name}
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        );
+      },
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+    },
+    {
+      accessorKey: "description",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.description || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.description;
+        }
+        const description = row.original.description || "";
+        return description.toLowerCase().includes(trimmedFilter);
+      },
+      header: ({ column }) => {
+        return (
+          <button
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
+          >
+            {dictionary.table_description}
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        );
+      },
+    },
+    {
+      accessorKey: "policies",
+      enableSorting: false,
+      enableColumnFilter: false,
+      header: dictionary.table_policies,
+      cell: ({ row }) => `${row.original.policies?.length || 0} politique(s)`,
+    },
+    {
+      id: "actions",
+      enableSorting: false,
+      enableColumnFilter: false,
+      header: () => <span className="text-right block">{dictionary.table_actions}</span>,
+      cell: ({ row }) => (
+        <div className="text-right space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => openEditRoleDialog(row.original)}
+                className="p-1 hover:bg-gray-100 rounded inline-flex"
+                {...testId(DASHBOARD_TEST_IDS.roles.editButton(row.original.id.toString()))}
+              >
+                <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Éditer le rôle</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleDeleteRole(row.original.id)}
+                className="p-1 hover:bg-gray-100 rounded inline-flex"
+                {...testId(DASHBOARD_TEST_IDS.roles.deleteButton(row.original.id.toString()))}
+              >
+                <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Supprimer le rôle</TooltipContent>
+          </Tooltip>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => openPolicyDialog(row.original)}
+            {...testId(DASHBOARD_TEST_IDS.roles.addPolicyButton(row.original.id.toString()))}
+          >
+            <Plus className={`${ICON_SIZES.sm} mr-1`} />
+            Politique
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: roles,
+    columns,
+    state: {
+      sorting,
+      columnFilters,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
+
   // ==================== RENDER ====================
 
   return (
@@ -410,133 +563,98 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
       <div className="border rounded-lg">
         <Table {...testId(DASHBOARD_TEST_IDS.roles.table)}>
           <TableHeader {...testId(DASHBOARD_TEST_IDS.roles.tableHeader)}>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>{dictionary.table_name}</TableHead>
-              <TableHead>{dictionary.table_description}</TableHead>
-              <TableHead>{dictionary.table_policies}</TableHead>
-              <TableHead className="text-right">{dictionary.table_actions}</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <React.Fragment key={headerGroup.id}>
+                <TableRow>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className={header.id === "expand" ? "w-12" : undefined}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={`filter-${header.id}`}>
+                      {header.column.getCanFilter() ? (
+                        <Input
+                          value={(header.column.getFilterValue() as string) ?? ""}
+                          onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          placeholder="Filtrer..."
+                          className="h-8 text-sm"
+                        />
+                      ) : null}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </React.Fragment>
+            ))}
           </TableHeader>
           <TableBody>
-            {roles.length === 0 ? (
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <React.Fragment key={row.id}>
+                  <TableRow {...testId(DASHBOARD_TEST_IDS.roles.tableRow(row.original.id.toString()))}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className={cell.column.id === "actions" ? "text-right" : undefined}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {expanded[row.original.id] && (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="px-4 py-3 bg-gray-50">
+                        <div>
+                          <div className="font-medium mb-2">Politiques associées :</div>
+                          {(row.original.policies?.length ?? 0) === 0 ? (
+                            <div className="text-gray-500 text-sm">Aucune politique associée</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {(row.original.policies || []).map((policy) => (
+                                <div
+                                  key={policy.id}
+                                  className="flex items-center bg-white p-2 rounded border"
+                                  {...testId(DASHBOARD_TEST_IDS.roles.policyItem(row.original.id.toString(), policy.id.toString()))}
+                                >
+                                  <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">
+                                    {policy.name}
+                                  </span>
+                                  <span className="ml-2 text-sm text-gray-600">
+                                    {policy.description || ""}
+                                  </span>
+                                  <span className="ml-auto">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleRemovePolicy(row.original.id, policy.id, policy.name)}
+                                          {...testId(DASHBOARD_TEST_IDS.roles.removePolicyButton(row.original.id.toString(), policy.id.toString()))}
+                                        >
+                                          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>Retirer la politique</TooltipContent>
+                                    </Tooltip>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500">
+                <TableCell colSpan={columns.length} className="text-center text-gray-500">
                   {dictionary.no_roles}
                 </TableCell>
               </TableRow>
-            ) : (
-              roles.map((role) => (
-                <TableRow key={role.id} {...testId(DASHBOARD_TEST_IDS.roles.tableRow(role.id.toString()))}>
-                  <TableCell>
-                    <button
-                      onClick={() => toggleExpand(role.id)}
-                      className="hover:bg-gray-100 p-1 rounded"
-                      {...testId(DASHBOARD_TEST_IDS.roles.expandButton(role.id.toString()))}
-                    >
-                      {expanded[role.id] ? (
-                        <ChevronDown className={ICON_SIZES.sm} />
-                      ) : (
-                        <ChevronRight className={ICON_SIZES.sm} />
-                      )}
-                    </button>
-                  </TableCell>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell className="text-gray-600">{role.description || "-"}</TableCell>
-                  <TableCell>{role.policies?.length || 0} politique(s)</TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditRoleDialog(role)}
-                          {...testId(DASHBOARD_TEST_IDS.roles.editButton(role.id.toString()))}
-                        >
-                          <Pencil className={ICON_SIZES.sm} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Éditer le rôle</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteRole(role.id)}
-                          {...testId(DASHBOARD_TEST_IDS.roles.deleteButton(role.id.toString()))}
-                        >
-                          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Supprimer le rôle</TooltipContent>
-                    </Tooltip>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openPolicyDialog(role)}
-                      {...testId(DASHBOARD_TEST_IDS.roles.addPolicyButton(role.id.toString()))}
-                    >
-                      <Plus className={`${ICON_SIZES.sm} mr-1`} />
-                      Politique
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
             )}
           </TableBody>
         </Table>
-
-        {/* Expanded Policies List */}
-        {roles.map((role) => {
-          if (!expanded[role.id]) return null;
-          const rolePolicies = role.policies || [];
-          
-          return (
-            <div 
-              key={`expanded-${role.id}`} 
-              className="px-4 py-3 bg-gray-50 border-t"
-              {...testId(DASHBOARD_TEST_IDS.roles.policiesSection(role.id.toString()))}
-            >
-              <div className="font-medium mb-2">Politiques associées :</div>
-              {rolePolicies.length === 0 ? (
-                <div className="text-gray-500 text-sm">Aucune politique associée</div>
-              ) : (
-                <div className="space-y-2">
-                  {rolePolicies.map((policy) => (
-                    <div
-                      key={policy.id}
-                      className="flex items-center bg-white p-2 rounded border"
-                      {...testId(DASHBOARD_TEST_IDS.roles.policyItem(role.id.toString(), policy.id.toString()))}
-                    >
-                      <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">
-                        {policy.name}
-                      </span>
-                      <span className="ml-2 text-sm text-gray-600">
-                        {policy.description || ""}
-                      </span>
-                      <span className="ml-auto">
-                        <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemovePolicy(role.id, policy.id, policy.name)}
-                            {...testId(DASHBOARD_TEST_IDS.roles.removePolicyButton(role.id.toString(), policy.id.toString()))}
-                          >
-                            <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Retirer la politique</TooltipContent>
-                      </Tooltip>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
       </div>
 
       {/* Role Create/Edit Dialog */}

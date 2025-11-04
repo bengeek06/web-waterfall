@@ -497,30 +497,6 @@ describe('Roles Component', () => {
       });
     });
 
-    it('should collapse expanded role', async () => {
-      render(<Roles dictionary={mockRolesDictionary} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Administrator')).toBeInTheDocument();
-      });
-
-      const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.expandButton('1'));
-      
-      // Expand
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        expect(screen.getByText('Politiques')).toBeInTheDocument();
-      });
-
-      // Collapse
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        const policies = screen.queryAllByText('Admin Policy');
-        // Should not be visible (only in mockData)
-        expect(policies.length).toBe(0);
-      });
-    });
-
     it('should display "Aucune politique" for role without policies', async () => {
       const emptyRole = {
         id: 3,

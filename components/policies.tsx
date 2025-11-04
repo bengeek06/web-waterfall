@@ -12,6 +12,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  ColumnDef,
+  getSortedRowModel,
+  SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
+} from "@tanstack/react-table";
 
 // ==================== UI COMPONENTS ====================
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -19,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
+import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 // ==================== CONSTANTS ====================
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
@@ -486,6 +496,147 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
     )
   ).sort((a, b) => a.localeCompare(b));
 
+  // ==================== TABLE CONFIGURATION ====================
+  
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const columns: ColumnDef<Policy>[] = [
+    {
+      id: "expand",
+      header: "",
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }) => (
+        <button 
+          onClick={() => toggleExpand(row.original.id)}
+          {...testId(DASHBOARD_TEST_IDS.policies.expandButton(row.original.id.toString()))}
+        >
+          {expanded[row.original.id] ? 
+            <ChevronDown className={ICON_SIZES.sm} /> : 
+            <ChevronRight className={ICON_SIZES.sm} />
+          }
+        </button>
+      ),
+    },
+    {
+      accessorKey: "name",
+      enableColumnFilter: true,
+      header: ({ column }) => {
+        return (
+          <button
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
+          >
+            {dictionary.table_name}
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        );
+      },
+      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+    },
+    {
+      accessorKey: "description",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.description || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.description;
+        }
+        const description = row.original.description || "";
+        return description.toLowerCase().includes(trimmedFilter);
+      },
+      header: ({ column }) => {
+        return (
+          <button
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
+          >
+            {dictionary.table_description}
+            {column.getIsSorted() === "asc" ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : column.getIsSorted() === "desc" ? (
+              <ArrowDown className="h-4 w-4" />
+            ) : (
+              <ArrowUpDown className="h-4 w-4 opacity-50" />
+            )}
+          </button>
+        );
+      },
+    },
+    {
+      accessorKey: "permissions",
+      enableSorting: false,
+      enableColumnFilter: false,
+      header: dictionary.table_permissions,
+      cell: ({ row }) => `${row.original.permissions?.length || 0} permission(s)`,
+    },
+    {
+      id: "actions",
+      enableSorting: false,
+      enableColumnFilter: false,
+      header: () => <span className="text-right block">{dictionary.table_actions}</span>,
+      cell: ({ row }) => (
+        <div className="text-right space-x-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => openEditPolicyDialog(row.original)}
+                className="p-1 hover:bg-gray-100 rounded inline-flex"
+                {...testId(DASHBOARD_TEST_IDS.policies.editButton(row.original.id.toString()))}
+              >
+                <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Éditer la politique</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => handleDeletePolicy(row.original.id)}
+                className="p-1 hover:bg-gray-100 rounded inline-flex"
+                {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(row.original.id.toString()))}
+              >
+                <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Supprimer la politique</TooltipContent>
+          </Tooltip>
+          <Button 
+            variant="outline"
+            size="sm" 
+            onClick={() => openPermissionDialog(row.original)}
+            {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(row.original.id.toString()))}
+          >
+            <Plus className={`${ICON_SIZES.sm} mr-1`} />
+            Permission
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: policies,
+    columns,
+    state: {
+      sorting,
+      columnFilters,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
+
   // ==================== RENDER ====================
   return (
     <section {...testId(DASHBOARD_TEST_IDS.policies.section)}>
@@ -561,168 +712,146 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
       <div className="border rounded-lg">
         <Table {...testId(DASHBOARD_TEST_IDS.policies.table)}>
           <TableHeader {...testId(DASHBOARD_TEST_IDS.policies.tableHeader)}>
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead>{dictionary.table_name}</TableHead>
-            <TableHead>{dictionary.table_description}</TableHead>
-            <TableHead>{dictionary.table_permissions}</TableHead>
-            <TableHead className="text-right">{dictionary.table_actions}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {policies.map(policy => (
-            <React.Fragment key={policy.id}>
-              <TableRow {...testId(DASHBOARD_TEST_IDS.policies.tableRow(policy.id.toString()))}>
-                <TableCell>
-                  <button 
-                    onClick={() => toggleExpand(policy.id)}
-                    {...testId(DASHBOARD_TEST_IDS.policies.expandButton(policy.id.toString()))}
-                  >
-                    {expanded[policy.id] ? 
-                      <ChevronDown className={ICON_SIZES.sm} /> : 
-                      <ChevronRight className={ICON_SIZES.sm} />
-                    }
-                  </button>
-                </TableCell>
-                <TableCell className="font-medium">{policy.name}</TableCell>
-                <TableCell className="text-gray-600">
-                  {policy.description || "-"}
-                </TableCell>
-                <TableCell>{policy.permissions?.length || 0} permission(s)</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost"
-                        size="sm" 
-                        onClick={() => openEditPolicyDialog(policy)}
-                        {...testId(DASHBOARD_TEST_IDS.policies.editButton(policy.id.toString()))}
-                      >
-                        <Pencil className={ICON_SIZES.sm} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Éditer la politique</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost"
-                        size="sm" 
-                        onClick={() => handleDeletePolicy(policy.id)}
-                        {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(policy.id.toString()))}
-                      >
-                        <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Supprimer la politique</TooltipContent>
-                  </Tooltip>
-                  <Button 
-                    variant="outline"
-                    size="sm" 
-                    onClick={() => openPermissionDialog(policy)}
-                    {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(policy.id.toString()))}
-                  >
-                    <Plus className={`${ICON_SIZES.sm} mr-1`} />
-                    Permission
-                  </Button>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <React.Fragment key={headerGroup.id}>
+                <TableRow>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className={header.id === "expand" ? "w-12" : undefined}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </TableHead>
+                  ))}
+                </TableRow>
+                <TableRow>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={`filter-${header.id}`}>
+                      {header.column.getCanFilter() ? (
+                        <Input
+                          value={(header.column.getFilterValue() as string) ?? ""}
+                          onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          placeholder="Filtrer..."
+                          className="h-8 text-sm"
+                        />
+                      ) : null}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </React.Fragment>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.length ? (
+              table.getRowModel().rows.map((row) => (
+                <React.Fragment key={row.id}>
+                  <TableRow {...testId(DASHBOARD_TEST_IDS.policies.tableRow(row.original.id.toString()))}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className={cell.column.id === "actions" ? "text-right" : undefined}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {expanded[row.original.id] && (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="px-4 py-3 bg-gray-50">
+                        <div>
+                          <div className="font-medium mb-2">Permissions associées :</div>
+                          {(row.original.permissions?.length ?? 0) === 0 ? (
+                            <div className="text-gray-500 text-sm">Aucune permission associée</div>
+                          ) : (
+                            <div className="space-y-2">
+                              {groupPermissions(row.original.permissions || []).map(group => (
+                                <div
+                                  key={group.service + group.resource_name}
+                                  className="flex items-center bg-white p-2 rounded border"
+                                  {...testId(DASHBOARD_TEST_IDS.policies.permissionGroup(
+                                    group.service, 
+                                    group.resource_name
+                                  ))}
+                                >
+                                  <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                    {group.service} / {group.resource_name}
+                                  </span>
+                                  <span className={`flex ${SPACING.gap.sm} ml-2 mr-4`}>
+                                    {group.perms.map(perm => (
+                                      <Tooltip key={perm.id}>
+                                        <TooltipTrigger asChild>
+                                          <span 
+                                            className="inline-flex items-center cursor-help"
+                                            {...testId(DASHBOARD_TEST_IDS.policies.permissionIcon(perm.id))}
+                                          >
+                                            {getOperationIcon(perm.operation, dictionary).icon}
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <div>{getOperationIcon(perm.operation, dictionary).label}</div>
+                                          {perm.description && (
+                                            <div className="text-xs opacity-80 mt-1">
+                                              {perm.description}
+                                            </div>
+                                          )}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    ))}
+                                  </span>
+                                  {/* Actions alignées à droite */}
+                                  <span className="ml-auto flex space-x-2">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            openPermissionDialog(
+                                              { ...row.original, permissions: group.perms },
+                                              group.service,
+                                              group.resource_name
+                                            );
+                                          }}
+                                          {...testId(DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
+                                            group.service,
+                                            group.resource_name
+                                          ))}
+                                        >
+                                          <Pencil className={ICON_SIZES.sm} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>Éditer les opérations</TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleRemovePermissionGroup(row.original.id, group.perms)}
+                                          {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
+                                            group.service,
+                                            group.resource_name
+                                          ))}
+                                        >
+                                          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>Supprimer toutes les permissions de ce groupe</TooltipContent>
+                                    </Tooltip>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="text-center text-gray-500">
+                  Aucune politique
                 </TableCell>
               </TableRow>
-              {expanded[policy.id] && (
-                <TableRow>
-                  <TableCell colSpan={5} className="px-4 py-3 bg-gray-50">
-                    <div>
-                      <div className="font-medium mb-2">Permissions associées :</div>
-                      {(policy.permissions?.length ?? 0) === 0 ? (
-                        <div className="text-gray-500 text-sm">Aucune permission associée</div>
-                      ) : (
-                        <div className="space-y-2">
-                          {groupPermissions(policy.permissions || []).map(group => (
-                            <div
-                              key={group.service + group.resource_name}
-                              className="flex items-center bg-white p-2 rounded border"
-                              {...testId(DASHBOARD_TEST_IDS.policies.permissionGroup(
-                                group.service, 
-                                group.resource_name
-                              ))}
-                            >
-                              <span className="bg-gray-100 px-2 py-1 rounded text-xs">
-                                {group.service} / {group.resource_name}
-                              </span>
-                              <span className={`flex ${SPACING.gap.sm} ml-2 mr-4`}>
-                                {group.perms.map(perm => (
-                                  <Tooltip key={perm.id}>
-                                    <TooltipTrigger asChild>
-                                      <span 
-                                        className="inline-flex items-center cursor-help"
-                                        {...testId(DASHBOARD_TEST_IDS.policies.permissionIcon(perm.id))}
-                                      >
-                                        {getOperationIcon(perm.operation, dictionary).icon}
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <div>{getOperationIcon(perm.operation, dictionary).label}</div>
-                                      {perm.description && (
-                                        <div className="text-xs opacity-80 mt-1">
-                                          {perm.description}
-                                        </div>
-                                      )}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ))}
-                              </span>
-                              {/* Actions alignées à droite */}
-                              <span className="ml-auto flex space-x-2">
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        openPermissionDialog(
-                                          { ...policy, permissions: group.perms },
-                                          group.service,
-                                          group.resource_name
-                                        );
-                                      }}
-                                      {...testId(DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
-                                        group.service,
-                                        group.resource_name
-                                      ))}
-                                    >
-                                      <Pencil className={ICON_SIZES.sm} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Éditer les opérations</TooltipContent>
-                                </Tooltip>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleRemovePermissionGroup(policy.id, group.perms)}
-                                      {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
-                                        group.service,
-                                        group.resource_name
-                                      ))}
-                                    >
-                                      <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Supprimer toutes les permissions de ce groupe</TooltipContent>
-                                </Tooltip>
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </React.Fragment>
-          ))}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
       </div>
       {/* Dialog pour ajouter des permissions */}
       <Dialog open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
