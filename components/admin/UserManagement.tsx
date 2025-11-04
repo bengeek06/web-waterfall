@@ -15,7 +15,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 // Components
-import { UserDataTable, type User } from "./UserDataTable";
+import UserDataTable, { type User } from "./UserDataTable";
 import { UserFormModal } from "./UserFormModal";
 import { UserDeleteDialog } from "./UserDeleteDialog";
 import { Button } from "@/components/ui/button";

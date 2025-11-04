@@ -19,12 +19,15 @@ import {
   ColumnDef,
   getSortedRowModel,
   SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
 } from "@tanstack/react-table";
 
 // UI Components
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 // Constants
@@ -82,17 +85,19 @@ type UserDataTableProps = {
 };
 
 // ==================== COMPONENT ====================
-export function UserDataTable({ users, onEdit, onDelete, onToggleActive, dictionary }: Readonly<UserDataTableProps>) {
+export default function UserDataTable({ users, onEdit, onDelete, onToggleActive, dictionary }: UserDataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const columns: ColumnDef<User>[] = [
     {
       accessorKey: "email",
+      enableColumnFilter: true,
       header: ({ column }) => {
         return (
           <button
-            className="flex items-center gap-1 hover:text-foreground"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
           >
             {dictionary.columns.email}
             {column.getIsSorted() === "asc" ? (
@@ -108,11 +113,21 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
     },
     {
       accessorKey: "first_name",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.first_name || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.first_name;
+        }
+        const firstName = row.original.first_name || "";
+        return firstName.toLowerCase().includes(trimmedFilter);
+      },
       header: ({ column }) => {
         return (
           <button
-            className="flex items-center gap-1 hover:text-foreground"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
           >
             {dictionary.columns.first_name}
             {column.getIsSorted() === "asc" ? (
@@ -128,11 +143,21 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
     },
     {
       accessorKey: "last_name",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.last_name || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.last_name;
+        }
+        const lastName = row.original.last_name || "";
+        return lastName.toLowerCase().includes(trimmedFilter);
+      },
       header: ({ column }) => {
         return (
           <button
-            className="flex items-center gap-1 hover:text-foreground"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2 hover:text-foreground"
           >
             {dictionary.columns.last_name}
             {column.getIsSorted() === "asc" ? (
@@ -149,16 +174,29 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
     {
       accessorKey: "roles",
       header: dictionary.columns.roles,
+      enableColumnFilter: true,
       cell: ({ row }) => {
         const roles = row.original.roles || [];
         if (roles.length === 0) return "-";
         return roles.map(r => r.name).join(", ");
+      },
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        const roles = row.original.roles || [];
+        
+        if (trimmedFilter === "-") {
+          return roles.length === 0;
+        }
+        
+        const rolesText = roles.map(r => r.name).join(", ").toLowerCase();
+        return rolesText.includes(trimmedFilter);
       },
       enableSorting: false,
     },
     {
       accessorKey: "is_active",
       header: dictionary.columns.is_active,
+      enableColumnFilter: true,
       cell: ({ row }) => (
         <Switch
           checked={row.original.is_active}
@@ -166,10 +204,17 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
           aria-label={dictionary.columns.is_active}
         />
       ),
+      filterFn: (row, _columnId, filterValue) => {
+        if (filterValue === "all") return true;
+        if (filterValue === "active") return row.original.is_active;
+        if (filterValue === "inactive") return !row.original.is_active;
+        return true;
+      },
       enableSorting: false,
     },
     {
       accessorKey: "last_login_at",
+      enableColumnFilter: true,
       header: ({ column }) => {
         return (
           <button
@@ -198,6 +243,26 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
         const minutes = String(d.getMinutes()).padStart(2, '0');
         return `${day}/${month}/${year} ${hours}:${minutes}`;
       },
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        const date = row.original.last_login_at;
+        
+        if (trimmedFilter === "-") {
+          return !date;
+        }
+        
+        if (!date) return false;
+        
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+        
+        return formattedDate.includes(trimmedFilter);
+      },
       sortingFn: (rowA, rowB) => {
         const dateA = rowA.original.last_login_at;
         const dateB = rowB.original.last_login_at;
@@ -209,6 +274,7 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
     },
     {
       accessorKey: "created_at",
+      enableColumnFilter: true,
       header: ({ column }) => {
         return (
           <button
@@ -237,6 +303,26 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
         const minutes = String(d.getMinutes()).padStart(2, '0');
         return `${day}/${month}/${year} ${hours}:${minutes}`;
       },
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        const date = row.original.created_at;
+        
+        if (trimmedFilter === "-") {
+          return !date;
+        }
+        
+        if (!date) return false;
+        
+        const d = new Date(date);
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
+        
+        return formattedDate.includes(trimmedFilter);
+      },
       sortingFn: (rowA, rowB) => {
         const dateA = rowA.original.created_at;
         const dateB = rowB.original.created_at;
@@ -254,10 +340,13 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
     columns,
     state: {
       sorting,
+      columnFilters,
     },
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
   });
 
   return (
@@ -265,14 +354,43 @@ export function UserDataTable({ users, onEdit, onDelete, onToggleActive, diction
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-              <TableHead className="text-right">{dictionary.columns.actions}</TableHead>
-            </TableRow>
+            <React.Fragment key={headerGroup.id}>
+              <TableRow>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+                <TableHead className="text-right">{dictionary.columns.actions}</TableHead>
+              </TableRow>
+              <TableRow>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={`filter-${header.id}`}>
+                    {header.column.getCanFilter() ? (
+                      header.column.id === "is_active" ? (
+                        <select
+                          value={(header.column.getFilterValue() as string) ?? "all"}
+                          onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          className="w-full px-2 py-1 border rounded text-sm"
+                        >
+                          <option value="all">Tous</option>
+                          <option value="active">Actif</option>
+                          <option value="inactive">Inactif</option>
+                        </select>
+                      ) : (
+                        <Input
+                          value={(header.column.getFilterValue() as string) ?? ""}
+                          onChange={(e) => header.column.setFilterValue(e.target.value)}
+                          placeholder="Filtrer..."
+                          className="h-8 text-sm"
+                        />
+                      )
+                    ) : null}
+                  </TableHead>
+                ))}
+                <TableHead />
+              </TableRow>
+            </React.Fragment>
           ))}
         </TableHeader>
         <TableBody>
