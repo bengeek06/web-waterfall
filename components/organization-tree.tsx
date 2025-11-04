@@ -17,7 +17,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type OrganizationUnit = {
@@ -299,7 +299,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       setError(null);
 
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits);
+        const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits);
 
         if (res.status === 401) {
           router.push("/login");
@@ -337,7 +337,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       setIsLoadingPositions(true);
 
       try {
-        const res = await clientSessionFetch(
+        const res = await fetchWithAuth(
           IDENTITY_ROUTES.organizationUnitPositions(selectedUnit.id)
         );
 
@@ -361,7 +361,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   // Reload units from API
   const reloadUnits = async () => {
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits);
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits);
       if (res.ok) {
         const data = await res.json();
         const unitsList = Array.isArray(data) ? data : [];
@@ -377,7 +377,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     if (!selectedUnit) return;
     
     try {
-      const res = await clientSessionFetch(
+      const res = await fetchWithAuth(
         IDENTITY_ROUTES.organizationUnitPositions(selectedUnit.id)
       );
       if (res.ok) {
@@ -413,7 +413,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     }
 
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnit(unitId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unitId), {
         method: "DELETE",
       });
 
@@ -445,7 +445,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     }
 
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.position(positionId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.position(positionId), {
         method: "DELETE",
       });
 

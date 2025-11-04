@@ -28,7 +28,7 @@ import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 export type User = {
@@ -126,7 +126,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     const loadRoles = async () => {
       setIsLoadingRoles(true);
       try {
-        const res = await clientSessionFetch(GUARDIAN_ROUTES.roles);
+        const res = await fetchWithAuth(GUARDIAN_ROUTES.roles);
         if (res.ok) {
           const roles = await res.json();
           setAvailableRoles(Array.isArray(roles) ? roles : []);
@@ -145,7 +145,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     const loadPositions = async () => {
       setIsLoadingPositions(true);
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.positions);
+        const res = await fetchWithAuth(IDENTITY_ROUTES.positions);
         if (res.ok) {
           const positions = await res.json();
           setAvailablePositions(Array.isArray(positions) ? positions : []);
@@ -264,7 +264,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       console.log('Sending payload:', payload); // Debug log
 
-      const res = await clientSessionFetch(url, {
+      const res = await fetchWithAuth(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -322,7 +322,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
   const handleRoleAssignments = async (userId: string) => {
     try {
       // Get existing user roles
-      const existingRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+      const existingRolesRes = await fetchWithAuth(GUARDIAN_ROUTES.userRoles);
       if (!existingRolesRes.ok) {
         console.error("Failed to fetch existing user roles");
         return;
@@ -343,7 +343,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       // Add new roles
       for (const roleId of rolesToAdd) {
-        await clientSessionFetch(GUARDIAN_ROUTES.userRoles, {
+        await fetchWithAuth(GUARDIAN_ROUTES.userRoles, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -355,7 +355,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       // Remove old roles
       for (const userRole of rolesToRemove) {
-        await clientSessionFetch(GUARDIAN_ROUTES.userRole(userRole.id), {
+        await fetchWithAuth(GUARDIAN_ROUTES.userRole(userRole.id), {
           method: "DELETE",
         });
       }

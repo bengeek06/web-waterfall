@@ -17,6 +17,7 @@ import {
   PermissionRequirements, 
   checkPermissions 
 } from '@/lib/permissions';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
 
 interface UsePermissionsReturn {
   permissions: Permission[];
@@ -40,7 +41,8 @@ export function usePermissions(): UsePermissionsReturn {
         setLoading(true);
         
         // Utiliser l'endpoint qui lit le cookie côté serveur (httpOnly)
-        const response = await fetch('/api/auth/me/permissions');
+        // fetchWithAuth gère automatiquement le refresh token sur 401
+        const response = await fetchWithAuth('/api/auth/me/permissions');
         
         if (!response.ok) {
           // 401 Unauthorized est normal pour les utilisateurs non connectés

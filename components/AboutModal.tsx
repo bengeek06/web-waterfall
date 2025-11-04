@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { clientFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 interface ServiceVersion {
   service: string;
@@ -45,7 +45,7 @@ export default function AboutModal({ children, className, testId }: AboutModalPr
       const updatedServices = await Promise.all(
         endpoints.map(async ({ name, url }) => {
           try {
-            const response = await clientFetch(url);
+            const response = await fetchWithAuth(url);
             const data = await response.json();
             return {
               service: name,

@@ -1,6 +1,6 @@
 'use client';
 
-import { clientFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
 
 interface LogoutButtonProps {
@@ -14,7 +14,7 @@ export default function LogoutButton({ children, className, testId }: LogoutButt
 
   const handleLogout = async () => {
     try {
-      await clientFetch('/api/auth/logout', {
+      await fetchWithAuth('/api/auth/logout', {
         method: 'POST',
       });
       

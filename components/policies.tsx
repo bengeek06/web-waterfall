@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 
 // ==================== CONSTANTS ====================
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
@@ -217,7 +218,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
       const policiesWithPermissions = await Promise.all(
         policiesArray.map(async (policy) => {
           try {
-            const policyPermsRes = await fetch(GUARDIAN_ROUTES.policyPermissions(policy.id.toString()));
+            const policyPermsRes = await fetchWithAuth(GUARDIAN_ROUTES.policyPermissions(policy.id.toString()));
             if (!policyPermsRes.ok) {
               console.warn(`Failed to fetch permissions for policy ${policy.id}`);
               return { ...policy, permissions: [] };
@@ -277,9 +278,9 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         body: JSON.stringify(payload),
       };
       if (editingPolicy) {
-        res = await fetch(GUARDIAN_ROUTES.policy(editingPolicy.id.toString()), options);
+        res = await fetchWithAuth(GUARDIAN_ROUTES.policy(editingPolicy.id.toString()), options);
       } else {
-        res = await fetch(GUARDIAN_ROUTES.policies, options);
+        res = await fetchWithAuth(GUARDIAN_ROUTES.policies, options);
       }
       if (res.status === 401) {
         window.location.href = "/login";
@@ -301,7 +302,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
   async function handleDeletePolicy(policyId: string | number) {
     if (!window.confirm("Supprimer cette politique ?")) return;
     try {
-      const res = await fetch(GUARDIAN_ROUTES.policy(policyId.toString()), {
+      const res = await fetchWithAuth(GUARDIAN_ROUTES.policy(policyId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
@@ -330,7 +331,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
 
   async function removePermissionWithoutConfirm(policyId: string | number, permissionId: string | number) {
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         GUARDIAN_ROUTES.policyPermission(policyId.toString(), permissionId.toString()), 
         { method: "DELETE" }
       );
@@ -381,7 +382,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         const url = GUARDIAN_ROUTES.policyPermissions(selectedPolicy.id.toString());
         console.log(`Posting permission ${permissionId} to ${url}`);
         try {
-          const response = await fetch(url, {
+          const response = await fetchWithAuth(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ permission_id: permissionId }),

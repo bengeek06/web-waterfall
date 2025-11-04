@@ -14,7 +14,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type CompanyData = {
@@ -96,7 +96,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
       setError(null);
 
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.company(companyId));
+        const res = await fetchWithAuth(IDENTITY_ROUTES.company(companyId));
 
         if (res.status === 401) {
           router.push("/login");
@@ -205,7 +205,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
         }
       });
 
-      const res = await clientSessionFetch(IDENTITY_ROUTES.company(companyId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.company(companyId), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

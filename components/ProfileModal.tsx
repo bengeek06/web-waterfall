@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { IDENTITY_ROUTES } from "@/lib/api-routes/identity";
 
 interface ProfileDictionary {
@@ -125,7 +125,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
         updateData.avatar_url = avatarPreview;
       }
 
-      const response = await clientSessionFetch(IDENTITY_ROUTES.user(userInfo.id), {
+      const response = await fetchWithAuth(IDENTITY_ROUTES.user(userInfo.id), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)

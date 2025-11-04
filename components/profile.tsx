@@ -23,7 +23,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { DASHBOARD_TEST_IDS } from "@/lib/test-ids";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // ==================== TYPES ====================
 type Locale = "fr" | "en";
@@ -104,7 +104,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
     setError(null);
 
     try {
-      const response = await clientSessionFetch(
+      const response = await fetchWithAuth(
         IDENTITY_ROUTES.user(user.id),
         {
           method: "PATCH",
@@ -173,7 +173,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
       if (oldPassword) payload.old_password = oldPassword;
       if (newPassword) payload.new_password = newPassword;
 
-      const res = await clientSessionFetch(IDENTITY_ROUTES.user(user.id), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.user(user.id), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

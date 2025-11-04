@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type OrganizationUnit = {
@@ -123,14 +123,14 @@ export default function OrganizationUnitModal({
       let res;
       if (isEditing && unit) {
         // Update
-        res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnit(unit.id), {
+        res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unit.id), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // Create
-        res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits, {
+        res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

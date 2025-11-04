@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
 
 // ==================== TYPES ====================
 type Locale = 'fr' | 'en';
@@ -42,11 +43,10 @@ export default function LanguageSwitcher() {
     
     try {
       // Update language preference in database via API route
-      const response = await fetch('/api/user/language', {
+      const response = await fetchWithAuth('/api/user/language', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language: newLocale }),
-        credentials: 'include',
       });
       
       if (!response.ok) {

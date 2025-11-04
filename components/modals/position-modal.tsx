@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type Position = {
@@ -122,14 +122,14 @@ export default function PositionModal({
       let res;
       if (isEditing && position) {
         // Update
-        res = await clientSessionFetch(IDENTITY_ROUTES.position(position.id), {
+        res = await fetchWithAuth(IDENTITY_ROUTES.position(position.id), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // Create
-        res = await clientSessionFetch(
+        res = await fetchWithAuth(
           IDENTITY_ROUTES.organizationUnitPositions(organizationUnit.id),
           {
             method: "POST",

@@ -15,7 +15,7 @@ import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
-import { clientSessionFetch } from "@/lib/clientFetch";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // ==================== TYPES ====================
 type UserManagementProps = {
@@ -92,7 +92,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
 
   // Function to fetch users (can be called multiple times)
   const fetchUsers = async () => {
-    const res = await clientSessionFetch(IDENTITY_ROUTES.users);
+    const res = await fetchWithAuth(IDENTITY_ROUTES.users);
     
     if (res.status === 401) {
       router.push("/login");
@@ -107,7 +107,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
         usersData.map(async (user: User) => {
           try {
             // Fetch roles
-            const userRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+            const userRolesRes = await fetchWithAuth(GUARDIAN_ROUTES.userRoles);
             let roles: Array<{ id: string; name: string }> = [];
             if (userRolesRes.ok) {
               const allUserRoles = await userRolesRes.json();
@@ -116,7 +116,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
                 : [];
               
               // Fetch role details
-              const rolesRes = await clientSessionFetch(GUARDIAN_ROUTES.roles);
+              const rolesRes = await fetchWithAuth(GUARDIAN_ROUTES.roles);
               if (rolesRes.ok) {
                 const allRoles = await rolesRes.json();
                 roles = userRoles
@@ -132,7 +132,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
             let position: { id: string; title: string } | undefined = undefined;
             if (user.position_id) {
               try {
-                const positionRes = await clientSessionFetch(IDENTITY_ROUTES.position(user.position_id));
+                const positionRes = await fetchWithAuth(IDENTITY_ROUTES.position(user.position_id));
                 if (positionRes.ok) {
                   const positionData = await positionRes.json();
                   position = { id: positionData.id, title: positionData.title };
@@ -188,7 +188,7 @@ export function UserManagement({ dictionary }: UserManagementProps) {
 
     setIsDeleting(true);
 
-    const res = await clientSessionFetch(IDENTITY_ROUTES.user(deletingUserId), {
+    const res = await fetchWithAuth(IDENTITY_ROUTES.user(deletingUserId), {
       method: "DELETE",
     });
 

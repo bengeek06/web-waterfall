@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -132,14 +133,9 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
     try {
       setError("");
       const [policiesRes, rolesRes] = await Promise.all([
-        fetch(GUARDIAN_ROUTES.policies),
-        fetch(GUARDIAN_ROUTES.roles),
+        fetchWithAuth(GUARDIAN_ROUTES.policies),
+        fetchWithAuth(GUARDIAN_ROUTES.roles),
       ]);
-
-      if (policiesRes.status === 401 || rolesRes.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
 
       // Parse policies
       let policiesArray: Policy[] = [];
@@ -176,7 +172,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
       const rolesWithPolicies = await Promise.all(
         rolesArray.map(async (role) => {
           try {
-            const rolePolsRes = await fetch(GUARDIAN_ROUTES.rolePolicies(role.id.toString()));
+            const rolePolsRes = await fetchWithAuth(GUARDIAN_ROUTES.rolePolicies(role.id.toString()));
             if (!rolePolsRes.ok) {
               console.warn(`Failed to fetch policies for role ${role.id}`);
               return { ...role, policies: [] };
@@ -231,9 +227,9 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         body: JSON.stringify(payload),
       };
       if (editingRole) {
-        res = await fetch(GUARDIAN_ROUTES.role(editingRole.id.toString()), options);
+        res = await fetchWithAuth(GUARDIAN_ROUTES.role(editingRole.id.toString()), options);
       } else {
-        res = await fetch(GUARDIAN_ROUTES.roles, options);
+        res = await fetchWithAuth(GUARDIAN_ROUTES.roles, options);
       }
       if (res.status === 401) {
         window.location.href = "/login";
@@ -255,7 +251,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   async function handleDeleteRole(roleId: string | number) {
     if (!window.confirm(dictionary.delete_confirm_message)) return;
     try {
-      const res = await fetch(GUARDIAN_ROUTES.role(roleId.toString()), {
+      const res = await fetchWithAuth(GUARDIAN_ROUTES.role(roleId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
@@ -307,7 +303,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         Array.from(selectedPoliciesToAdd).map(async (policyId) => {
           const url = GUARDIAN_ROUTES.rolePolicies(selectedRole.id.toString());
           console.log(`Posting policy ${policyId} to ${url}`);
-          const res = await fetch(url, {
+          const res = await fetchWithAuth(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ policy_id: policyId }),
@@ -335,7 +331,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
 
   async function removePolicyWithoutConfirm(roleId: string | number, policyId: string | number) {
     try {
-      const res = await fetch(
+      const res = await fetchWithAuth(
         GUARDIAN_ROUTES.rolePolicy(roleId.toString(), policyId.toString()), 
         { method: "DELETE" }
       );
