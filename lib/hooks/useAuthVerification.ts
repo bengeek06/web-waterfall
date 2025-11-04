@@ -1,0 +1,71 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { AUTH_ROUTES } from "@/lib/api-routes";
+
+/**
+ * Hook pour vérifier la validité du token JWT au chargement
+ * Tente automatiquement de rafraîchir le token si nécessaire
+ * Redirige vers /login en cas d'échec
+ * 
+ * @returns {Object} État de la vérification
+ * @returns {boolean} isVerifying - true pendant la vérification
+ * @returns {boolean} isAuthenticated - true si l'utilisateur est authentifié
+ * 
+ * @example
+ * function ProtectedPage() {
+ *   const { isVerifying, isAuthenticated } = useAuthVerification();
+ *   
+ *   if (isVerifying) {
+ *     return <div>Loading...</div>;
+ *   }
+ *   
+ *   return <div>Protected content</div>;
+ * }
+ */
+export function useAuthVerification() {
+  const router = useRouter();
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    async function verifyAuth() {
+      try {
+        // fetchWithAuth gère automatiquement le refresh du token en cas de 401
+        const response = await fetchWithAuth(AUTH_ROUTES.verify, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          setIsAuthenticated(true);
+          setIsVerifying(false);
+        } else {
+          // Si la requête échoue malgré la tentative de refresh, rediriger vers login
+          console.warn("Authentication verification failed, redirecting to login");
+          router.push("/login");
+        }
+      } catch (error) {
+        console.error("Error during authentication verification:", error);
+        router.push("/login");
+      }
+    }
+
+    verifyAuth();
+  }, [router]);
+
+  return { isVerifying, isAuthenticated };
+}
