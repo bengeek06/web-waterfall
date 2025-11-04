@@ -89,6 +89,7 @@ export const COLOR_CLASSES = {
     muted: 'text-muted-foreground',
     destructive: 'text-destructive',
     accent: 'text-accent',
+    action: 'text-foreground',
     success: 'text-green-600 dark:text-green-400',
     warning: 'text-yellow-600 dark:text-yellow-400',
     error: 'text-red-600 dark:text-red-400',
@@ -97,6 +98,13 @@ export const COLOR_CLASSES = {
     waterfallUser: 'text-[var(--waterfall-user-color)]',
     waterfallProject: 'text-[var(--waterfall-project-color)]',
     waterfallPrimaryDark: 'text-[var(--waterfall-primary-dark)]',
+  },
+  operations: {
+    read: 'text-blue-600',
+    create: 'text-green-600',
+    update: 'text-yellow-600',
+    delete: 'text-red-600',
+    list: 'text-purple-600',
   },
   bg: {
     primary: 'bg-primary',

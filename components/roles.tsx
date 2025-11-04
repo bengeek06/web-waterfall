@@ -34,8 +34,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -422,9 +424,9 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
                       {...testId(DASHBOARD_TEST_IDS.roles.expandButton(role.id.toString()))}
                     >
                       {expanded[role.id] ? (
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className={ICON_SIZES.sm} />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className={ICON_SIZES.sm} />
                       )}
                     </button>
                   </TableCell>
@@ -432,29 +434,39 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
                   <TableCell className="text-gray-600">{role.description || "-"}</TableCell>
                   <TableCell>{role.policies?.length || 0} politique(s)</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditRoleDialog(role)}
-                      {...testId(DASHBOARD_TEST_IDS.roles.editButton(role.id.toString()))}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteRole(role.id)}
-                      {...testId(DASHBOARD_TEST_IDS.roles.deleteButton(role.id.toString()))}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openEditRoleDialog(role)}
+                          {...testId(DASHBOARD_TEST_IDS.roles.editButton(role.id.toString()))}
+                        >
+                          <Pencil className={ICON_SIZES.sm} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Éditer le rôle</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteRole(role.id)}
+                          {...testId(DASHBOARD_TEST_IDS.roles.deleteButton(role.id.toString()))}
+                        >
+                          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Supprimer le rôle</TooltipContent>
+                    </Tooltip>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => openPolicyDialog(role)}
                       {...testId(DASHBOARD_TEST_IDS.roles.addPolicyButton(role.id.toString()))}
                     >
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className={`${ICON_SIZES.sm} mr-1`} />
                       Politique
                     </Button>
                   </TableCell>
@@ -483,23 +495,30 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
                   {rolePolicies.map((policy) => (
                     <div
                       key={policy.id}
-                      className="flex items-center justify-between bg-white p-2 rounded border"
+                      className="flex items-center bg-white p-2 rounded border"
                       {...testId(DASHBOARD_TEST_IDS.roles.policyItem(role.id.toString(), policy.id.toString()))}
                     >
-                      <div>
-                        <div className="font-medium">{policy.name}</div>
-                        {policy.description && (
-                          <div className="text-sm text-gray-600">{policy.description}</div>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemovePolicy(role.id, policy.id, policy.name)}
-                        {...testId(DASHBOARD_TEST_IDS.roles.removePolicyButton(role.id.toString(), policy.id.toString()))}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <span className="bg-gray-100 px-2 py-1 rounded text-xs font-medium">
+                        {policy.name}
+                      </span>
+                      <span className="ml-2 text-sm text-gray-600">
+                        {policy.description || ""}
+                      </span>
+                      <span className="ml-auto">
+                        <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemovePolicy(role.id, policy.id, policy.name)}
+                            {...testId(DASHBOARD_TEST_IDS.roles.removePolicyButton(role.id.toString(), policy.id.toString()))}
+                          >
+                            <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Retirer la politique</TooltipContent>
+                      </Tooltip>
+                      </span>
                     </div>
                   ))}
                 </div>

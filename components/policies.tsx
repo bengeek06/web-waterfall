@@ -5,8 +5,8 @@ import React, { useEffect, useState } from "react";
 // ==================== UI COMPONENTS ====================
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus } from "lucide-react";
 
@@ -77,11 +77,11 @@ type ExpandedPolicies = Record<string | number, boolean>;
 // ==================== CONSTANTS ====================
 function getOperationIcons(dictionary: PoliciesDictionary) {
   return {
-    READ: { icon: Eye, label: dictionary.operation_read },
-    CREATE: { icon: PlusSquare, label: dictionary.operation_create },
-    LIST: { icon: List, label: "List (LIST)" },
-    UPDATE: { icon: Pencil, label: dictionary.operation_update },
-    DELETE: { icon: Trash2, label: dictionary.operation_delete },
+    READ: { icon: Eye, label: dictionary.operation_read, color: COLOR_CLASSES.operations.read },
+    CREATE: { icon: PlusSquare, label: dictionary.operation_create, color: COLOR_CLASSES.operations.create },
+    LIST: { icon: List, label: "List (LIST)", color: COLOR_CLASSES.operations.list },
+    UPDATE: { icon: Pencil, label: dictionary.operation_update, color: COLOR_CLASSES.operations.update },
+    DELETE: { icon: Trash2, label: dictionary.operation_delete, color: COLOR_CLASSES.operations.delete },
   } as const;
 }
 
@@ -98,7 +98,7 @@ function getOperationIcon(operation: string, dictionary: PoliciesDictionary) {
   if (iconConfig) {
     const Icon = iconConfig.icon;
     return { 
-      icon: <Icon className={ICON_SIZES.sm} />, 
+      icon: <Icon className={`${ICON_SIZES.sm} ${iconConfig.color}`} />, 
       label: iconConfig.label 
     };
   }
@@ -112,6 +112,16 @@ function getOperationIcon(operation: string, dictionary: PoliciesDictionary) {
 // Regroupe les permissions par service/ressource
 function groupPermissions(permissions: Permission[]) {
   const groups: Record<string, { service: string; resource_name: string; perms: Permission[] }> = {};
+  
+  // Ordre de tri des opérations
+  const operationOrder: Record<string, number> = {
+    'LIST': 1,
+    'CREATE': 2,
+    'READ': 3,
+    'UPDATE': 4,
+    'DELETE': 5,
+  };
+  
   permissions.forEach(perm => {
     const key = `${perm.service}::${perm.resource_name}`;
     if (!groups[key]) {
@@ -119,12 +129,34 @@ function groupPermissions(permissions: Permission[]) {
     }
     groups[key].perms.push(perm);
   });
+  
+  // Trie les permissions dans chaque groupe
+  Object.values(groups).forEach(group => {
+    group.perms.sort((a, b) => {
+      const opA = a.operation.replace(/^OperationEnum\./, '');
+      const opB = b.operation.replace(/^OperationEnum\./, '');
+      const orderA = operationOrder[opA] || 999;
+      const orderB = operationOrder[opB] || 999;
+      return orderA - orderB;
+    });
+  });
+  
   return Object.values(groups);
 }
 
 // Ajoute cette fonction utilitaire pour regrouper les permissions disponibles
 function groupAvailablePermissions(perms: Permission[]) {
   const groups: Record<string, { service: string; resource_name: string; perms: Permission[] }> = {};
+  
+  // Ordre de tri des opérations
+  const operationOrder: Record<string, number> = {
+    'LIST': 1,
+    'CREATE': 2,
+    'READ': 3,
+    'UPDATE': 4,
+    'DELETE': 5,
+  };
+  
   perms.forEach(perm => {
     const key = `${perm.service}::${perm.resource_name}`;
     if (!groups[key]) {
@@ -132,6 +164,18 @@ function groupAvailablePermissions(perms: Permission[]) {
     }
     groups[key].perms.push(perm);
   });
+  
+  // Trie les permissions dans chaque groupe
+  Object.values(groups).forEach(group => {
+    group.perms.sort((a, b) => {
+      const opA = a.operation.replace(/^OperationEnum\./, '');
+      const opB = b.operation.replace(/^OperationEnum\./, '');
+      const orderA = operationOrder[opA] || 999;
+      const orderB = operationOrder[opB] || 999;
+      return orderA - orderB;
+    });
+  });
+  
   return Object.values(groups);
 }
 
@@ -421,8 +465,15 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
   );
 
   // Pour le filtrage, on extrait les services et ressources uniques
-  const uniqueServices = Array.from(new Set(permissions.map(p => p.service))).sort();
-  const uniqueResources = Array.from(new Set(permissions.map(p => p.resource_name))).sort();
+  const uniqueServices = Array.from(new Set(permissions.map(p => p.service))).sort((a, b) => a.localeCompare(b));
+  // Les ressources sont filtrées en fonction du service sélectionné
+  const uniqueResources = Array.from(
+    new Set(
+      permissions
+        .filter(p => !filterService || p.service === filterService)
+        .map(p => p.resource_name)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   // ==================== RENDER ====================
   return (
@@ -431,16 +482,16 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.policies.title)}>
           {dictionary.page_title}
         </h2>
-        <Dialog open={showPolicyDialog} onOpenChange={setShowPolicyDialog}>
-          <DialogTrigger asChild>
-            <Button 
-              onClick={openCreatePolicyDialog}
-              {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
-            >
-              {dictionary.create_button}
-            </Button>
-          </DialogTrigger>
-          <DialogContent 
+        <Button 
+          onClick={openCreatePolicyDialog}
+          {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          {dictionary.create_button}
+        </Button>
+      </div>
+      <Dialog open={showPolicyDialog} onOpenChange={setShowPolicyDialog}>
+        <DialogContent 
             aria-describedby={void 0} 
             aria-label="add_policy-dialog"
             {...testId(DASHBOARD_TEST_IDS.policies.dialog)}
@@ -496,14 +547,15 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
             </form>
           </DialogContent>
         </Dialog>
-      </div>
-      <Table {...testId(DASHBOARD_TEST_IDS.policies.table)}>
-        <TableHeader {...testId(DASHBOARD_TEST_IDS.policies.tableHeader)}>
-          <TableRow>
-            <TableHead></TableHead>
-            <TableHead>{dictionary.table_name}</TableHead>
+      <div className="border rounded-lg">
+        <Table {...testId(DASHBOARD_TEST_IDS.policies.table)}>
+          <TableHeader {...testId(DASHBOARD_TEST_IDS.policies.tableHeader)}>
+            <TableRow>
+              <TableHead className="w-12"></TableHead>
+              <TableHead>{dictionary.table_name}</TableHead>
             <TableHead>{dictionary.table_description}</TableHead>
-            <TableHead>{dictionary.table_actions}</TableHead>
+            <TableHead>{dictionary.table_permissions}</TableHead>
+            <TableHead className="text-right">{dictionary.table_actions}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -521,52 +573,62 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                     }
                   </button>
                 </TableCell>
-                <TableCell>{policy.name}</TableCell>
-                <TableCell>
-                  {policy.description || <span className={COLOR_CLASSES.text.muted}>—</span>}
+                <TableCell className="font-medium">{policy.name}</TableCell>
+                <TableCell className="text-gray-600">
+                  {policy.description || "-"}
                 </TableCell>
-                <TableCell>
+                <TableCell>{policy.permissions?.length || 0} permission(s)</TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost"
+                        size="sm" 
+                        onClick={() => openEditPolicyDialog(policy)}
+                        {...testId(DASHBOARD_TEST_IDS.policies.editButton(policy.id.toString()))}
+                      >
+                        <Pencil className={ICON_SIZES.sm} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Éditer la politique</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost"
+                        size="sm" 
+                        onClick={() => handleDeletePolicy(policy.id)}
+                        {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(policy.id.toString()))}
+                      >
+                        <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Supprimer la politique</TooltipContent>
+                  </Tooltip>
                   <Button 
+                    variant="outline"
                     size="sm" 
-                    variant="outline" 
-                    onClick={() => openEditPolicyDialog(policy)}
-                    {...testId(DASHBOARD_TEST_IDS.policies.editButton(policy.id.toString()))}
-                  >
-                    Éditer
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    className="ml-2" 
-                    onClick={() => handleDeletePolicy(policy.id)}
-                    {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(policy.id.toString()))}
-                  >
-                    Supprimer
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="default" 
-                    className="ml-2" 
                     onClick={() => openPermissionDialog(policy)}
                     {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(policy.id.toString()))}
                   >
-                    <Plus className={`${ICON_SIZES.sm} mr-1`} /> Ajouter permission
+                    <Plus className={`${ICON_SIZES.sm} mr-1`} />
+                    Permission
                   </Button>
                 </TableCell>
               </TableRow>
               {expanded[policy.id] && (
                 <TableRow>
-                  <TableCell colSpan={4}>
-                    <div className="pl-8">
-                      <div className="font-semibold mb-2">Permissions</div>
+                  <TableCell colSpan={5} className="px-4 py-3 bg-gray-50">
+                    <div>
+                      <div className="font-medium mb-2">Permissions associées :</div>
                       {(policy.permissions?.length ?? 0) === 0 ? (
-                        <span className={COLOR_CLASSES.text.muted}>Aucune permission</span>
+                        <div className="text-gray-500 text-sm">Aucune permission associée</div>
                       ) : (
-                        <ul className={SPACING.component.xs}>
+                        <div className="space-y-2">
                           {groupPermissions(policy.permissions || []).map(group => (
-                            <li
+                            <div
                               key={group.service + group.resource_name}
-                              className={`flex items-center ${SPACING.gap.sm}`}
+                              className="flex items-center bg-white p-2 rounded border"
                               {...testId(DASHBOARD_TEST_IDS.policies.permissionGroup(
                                 group.service, 
                                 group.resource_name
@@ -575,62 +637,72 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                               <span className="bg-gray-100 px-2 py-1 rounded text-xs">
                                 {group.service} / {group.resource_name}
                               </span>
-                              <span className={`flex ${SPACING.gap.xs}`}>
+                              <span className={`flex ${SPACING.gap.sm} ml-2 mr-4`}>
                                 {group.perms.map(perm => (
-                                  <HoverCard key={perm.id}>
-                                    <HoverCardTrigger asChild>
+                                  <Tooltip key={perm.id}>
+                                    <TooltipTrigger asChild>
                                       <span 
-                                        className="inline-flex items-center"
+                                        className="inline-flex items-center cursor-help"
                                         {...testId(DASHBOARD_TEST_IDS.policies.permissionIcon(perm.id))}
                                       >
                                         {getOperationIcon(perm.operation, dictionary).icon}
                                       </span>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="text-xs">
-                                      {getOperationIcon(perm.operation, dictionary).label}
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <div>{getOperationIcon(perm.operation, dictionary).label}</div>
                                       {perm.description && (
-                                        <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                        <div className="text-xs opacity-80 mt-1">
                                           {perm.description}
                                         </div>
                                       )}
-                                    </HoverCardContent>
-                                  </HoverCard>
+                                    </TooltipContent>
+                                  </Tooltip>
                                 ))}
                               </span>
                               {/* Actions alignées à droite */}
-                              <span className={`ml-auto flex ${SPACING.gap.sm}`}>
-                                <button
-                                  className="text-gray-500 hover:text-blue-600"
-                                  title="Éditer les opérations"
-                                  onClick={() => {
-                                    openPermissionDialog(
-                                      { ...policy, permissions: group.perms },
-                                      group.service,
-                                      group.resource_name
-                                    );
-                                  }}
-                                  {...testId(DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
-                                    group.service,
-                                    group.resource_name
-                                  ))}
-                                >
-                                  <Pencil className={ICON_SIZES.sm} />
-                                </button>
-                                <button
-                                  className={COLOR_CLASSES.text.destructive}
-                                  title="Supprimer toutes les permissions de ce groupe"
-                                  onClick={() => handleRemovePermissionGroup(policy.id, group.perms)}
-                                  {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
-                                    group.service,
-                                    group.resource_name
-                                  ))}
-                                >
-                                  <Trash2 className={ICON_SIZES.sm} />
-                                </button>
+                              <span className="ml-auto flex space-x-2">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        openPermissionDialog(
+                                          { ...policy, permissions: group.perms },
+                                          group.service,
+                                          group.resource_name
+                                        );
+                                      }}
+                                      {...testId(DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
+                                        group.service,
+                                        group.resource_name
+                                      ))}
+                                    >
+                                      <Pencil className={ICON_SIZES.sm} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Éditer les opérations</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleRemovePermissionGroup(policy.id, group.perms)}
+                                      {...testId(DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
+                                        group.service,
+                                        group.resource_name
+                                      ))}
+                                    >
+                                      <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`} />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Supprimer toutes les permissions de ce groupe</TooltipContent>
+                                </Tooltip>
                               </span>
-                            </li>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       )}
                     </div>
                   </TableCell>
@@ -640,12 +712,13 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
           ))}
         </TableBody>
       </Table>
+      </div>
       {/* Dialog pour ajouter des permissions */}
       <Dialog open={showPermissionDialog} onOpenChange={setShowPermissionDialog}>
         <DialogContent
           style={{
-            maxWidth: 700,
-            minWidth: 500,
+            maxWidth: 800,
+            minWidth: 600,
             maxHeight: "80vh",
             display: "flex",
             flexDirection: "column",
@@ -657,10 +730,10 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
           <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.addPermissionDialogTitle)}>
             Ajouter des permissions à {selectedPolicy?.name}
           </DialogTitle>
-          <div className={`flex flex-col md:flex-row ${SPACING.gap.lg} mt-4 flex-1`}>
+          <div className={`flex flex-col md:flex-row ${SPACING.gap.lg} mt-4 flex-1 overflow-hidden`}>
             <div className="flex-1 min-w-0">
               <div className="font-semibold mb-2">Permissions déjà associées</div>
-              <div className="overflow-y-auto max-h-[30vh] pr-2">
+              <div className="overflow-y-auto max-h-[30vh] pr-2 overflow-x-hidden">
                 {(selectedPolicy?.permissions?.length ?? 0) === 0 ? (
                   <div className={COLOR_CLASSES.text.muted}>Aucune permission</div>
                 ) : (
@@ -668,28 +741,28 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                     {groupPermissions(selectedPolicy?.permissions || []).map(group => (
                       <li 
                         key={group.service + group.resource_name} 
-                        className={`flex items-center ${SPACING.gap.sm}`}
+                        className="flex flex-col gap-2"
                       >
-                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                        <span className="bg-gray-100 px-2 py-1 rounded text-xs inline-block">
                           {group.service} / {group.resource_name}
                         </span>
-                        <span className={`flex ${SPACING.gap.xs}`}>
+                        <span className={`flex flex-wrap ${SPACING.gap.sm}`}>
                           {group.perms.map(perm => (
-                            <HoverCard key={perm.id}>
-                              <HoverCardTrigger asChild>
-                                <span className="inline-flex items-center">
+                            <Tooltip key={perm.id}>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center cursor-help">
                                   {getOperationIcon(perm.operation, dictionary).icon}
                                 </span>
-                              </HoverCardTrigger>
-                              <HoverCardContent className="text-xs">
-                                {getOperationIcon(perm.operation, dictionary).label}
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div>{getOperationIcon(perm.operation, dictionary).label}</div>
                                 {perm.description && (
-                                  <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                  <div className="text-xs opacity-80 mt-1">
                                     {perm.description}
                                   </div>
                                 )}
-                              </HoverCardContent>
-                            </HoverCard>
+                              </TooltipContent>
+                            </Tooltip>
                           ))}
                         </span>
                       </li>
@@ -700,11 +773,22 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold mb-2">Permissions disponibles</div>
-              <div className={`flex ${SPACING.gap.sm} mb-2`}>
+              <div className={`flex flex-wrap ${SPACING.gap.sm} mb-2`}>
                 <select
-                  className="border rounded px-2 py-1"
+                  className="border rounded px-2 py-1 min-w-[120px]"
                   value={filterService}
-                  onChange={e => setFilterService(e.target.value)}
+                  onChange={e => {
+                    setFilterService(e.target.value);
+                    // Réinitialiser le filtre de ressource si le nouveau service ne contient pas la ressource actuelle
+                    if (e.target.value && filterResource) {
+                      const resourceExistsInService = permissions.some(
+                        p => p.service === e.target.value && p.resource_name === filterResource
+                      );
+                      if (!resourceExistsInService) {
+                        setFilterResource("");
+                      }
+                    }
+                  }}
                   {...testId(DASHBOARD_TEST_IDS.policies.serviceFilter)}
                 >
                   <option value="">Service</option>
@@ -713,7 +797,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                   ))}
                 </select>
                 <select
-                  className="border rounded px-2 py-1"
+                  className="border rounded px-2 py-1 min-w-[120px]"
                   value={filterResource}
                   onChange={e => setFilterResource(e.target.value)}
                   {...testId(DASHBOARD_TEST_IDS.policies.resourceFilter)}
@@ -724,7 +808,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                   ))}
                 </select>
               </div>
-              <div className="overflow-y-auto max-h-[30vh] pr-2">
+              <div className="overflow-y-auto max-h-[30vh] pr-2 overflow-x-hidden">
                 {filteredAvailablePermissions.length === 0 ? (
                   <div className={COLOR_CLASSES.text.muted}>Aucune permission disponible</div>
                 ) : (
@@ -732,16 +816,16 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                     {groupAvailablePermissions(filteredAvailablePermissions).map(group => (
                       <li 
                         key={group.service + group.resource_name} 
-                        className={`flex items-center ${SPACING.gap.sm}`}
+                        className="flex flex-col gap-2"
                       >
-                        <span className="bg-gray-100 px-2 py-1 rounded text-xs">
+                        <span className="bg-gray-100 px-2 py-1 rounded text-xs inline-block">
                           {group.service} / {group.resource_name}
                         </span>
-                        <span className={`flex ${SPACING.gap.xs}`}>
+                        <span className={`flex flex-wrap ${SPACING.gap.sm}`}>
                           {group.perms.map(perm => (
                             <label 
                               key={perm.id} 
-                              className={`flex items-center ${SPACING.gap.xs} cursor-pointer`}
+                              className={`flex items-center ${SPACING.gap.sm} cursor-pointer`}
                             >
                               <input
                                 type="checkbox"
@@ -749,21 +833,21 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
                                 onChange={() => handleSelectPermissionToAdd(perm.id)}
                                 {...testId(DASHBOARD_TEST_IDS.policies.permissionCheckbox(perm.id))}
                               />
-                              <HoverCard>
-                                <HoverCardTrigger asChild>
-                                  <span className="inline-flex items-center">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center cursor-help">
                                     {getOperationIcon(perm.operation, dictionary).icon}
                                   </span>
-                                </HoverCardTrigger>
-                                <HoverCardContent className="text-xs">
-                                  {getOperationIcon(perm.operation, dictionary).label}
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <div>{getOperationIcon(perm.operation, dictionary).label}</div>
                                   {perm.description && (
-                                    <div className={`mt-1 ${COLOR_CLASSES.text.muted}`}>
+                                    <div className="text-xs opacity-80 mt-1">
                                       {perm.description}
                                     </div>
                                   )}
-                                </HoverCardContent>
-                              </HoverCard>
+                                </TooltipContent>
+                              </Tooltip>
                             </label>
                           ))}
                         </span>

@@ -464,7 +464,6 @@ describe('Policies Component', () => {
       fireEvent.click(expandButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Permissions')).toBeInTheDocument();
         expect(screen.getByText('auth / users')).toBeInTheDocument();
       });
     });
@@ -481,7 +480,7 @@ describe('Policies Component', () => {
       // Expand
       fireEvent.click(expandButton);
       await waitFor(() => {
-        expect(screen.getByText('Permissions')).toBeInTheDocument();
+        expect(screen.getByText('auth / users')).toBeInTheDocument();
       });
 
       // Collapse
@@ -529,7 +528,7 @@ describe('Policies Component', () => {
       fireEvent.click(expandButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Aucune permission')).toBeInTheDocument();
+        expect(screen.getByText('Aucune permission associée')).toBeInTheDocument();
       });
     });
   });
