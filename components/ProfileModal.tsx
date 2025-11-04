@@ -169,6 +169,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
             <div className="relative">
               <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
                 {avatarPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={avatarPreview}
                     alt="Avatar preview"

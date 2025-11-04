@@ -125,6 +125,7 @@ export function UserDataTable({ users, onEdit, onDelete, dictionary }: UserDataT
     },
   ];
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: users,
     columns,
