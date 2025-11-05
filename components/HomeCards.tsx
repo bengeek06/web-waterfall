@@ -64,7 +64,7 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
             <CardTitle>{dictionary.company}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/home/company" className="w-full mt-2">
+            <Link href="/home/settings" className="w-full mt-2">
               <Button variant="outline" className="w-full">
                 {dictionary.access_company}
               </Button>

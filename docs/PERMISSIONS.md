@@ -515,7 +515,7 @@ export function HomeCards() {
             <CardTitle>Paramètres de l'entreprise</CardTitle>
           </CardHeader>
           <CardContent>
-            <Link href="/home/company">
+            <Link href="/home/settings">
               <Button>Accéder</Button>
             </Link>
           </CardContent>
