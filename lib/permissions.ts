@@ -168,6 +168,20 @@ export const PERMISSIONS = {
   IDENTITY_POSITION_UPDATE: { service: 'identity', resource: 'position', action: 'update' },
   IDENTITY_POSITION_DELETE: { service: 'identity', resource: 'position', action: 'delete' },
 
+  // Identity - Customers
+  IDENTITY_CUSTOMER_LIST: { service: 'identity', resource: 'customer', action: 'list' },
+  IDENTITY_CUSTOMER_READ: { service: 'identity', resource: 'customer', action: 'read' },
+  IDENTITY_CUSTOMER_CREATE: { service: 'identity', resource: 'customer', action: 'create' },
+  IDENTITY_CUSTOMER_UPDATE: { service: 'identity', resource: 'customer', action: 'update' },
+  IDENTITY_CUSTOMER_DELETE: { service: 'identity', resource: 'customer', action: 'delete' },
+
+  // Identity - Subcontractors
+  IDENTITY_SUBCONTRACTOR_LIST: { service: 'identity', resource: 'subcontractor', action: 'list' },
+  IDENTITY_SUBCONTRACTOR_READ: { service: 'identity', resource: 'subcontractor', action: 'read' },
+  IDENTITY_SUBCONTRACTOR_CREATE: { service: 'identity', resource: 'subcontractor', action: 'create' },
+  IDENTITY_SUBCONTRACTOR_UPDATE: { service: 'identity', resource: 'subcontractor', action: 'update' },
+  IDENTITY_SUBCONTRACTOR_DELETE: { service: 'identity', resource: 'subcontractor', action: 'delete' },
+
   // Guardian - Roles
   GUARDIAN_ROLE_LIST: { service: 'guardian', resource: 'role', action: 'list' },
   GUARDIAN_ROLE_READ: { service: 'guardian', resource: 'role', action: 'read' },
@@ -218,6 +232,16 @@ export const PERMISSION_REQUIREMENTS = {
       PERMISSIONS.IDENTITY_POSITION_UPDATE,
       PERMISSIONS.IDENTITY_POSITION_DELETE,
     ],
+  ],
+
+  // Gestion des clients: nécessite list sur customer
+  CUSTOMERS_MANAGEMENT: [
+    [PERMISSIONS.IDENTITY_CUSTOMER_LIST],
+  ],
+
+  // Gestion des sous-traitants: nécessite list sur subcontractor
+  SUBCONTRACTORS_MANAGEMENT: [
+    [PERMISSIONS.IDENTITY_SUBCONTRACTOR_LIST],
   ],
 
   // Gestion des rôles: nécessite list sur role

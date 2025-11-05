@@ -204,6 +204,73 @@ export const positionSchema = z.object({
 
 export type PositionFormData = z.infer<typeof positionSchema>;
 
+// ==================== CUSTOMER SCHEMA ====================
+export const customerSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nom du client requis')
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(200, 'Le nom ne peut pas dépasser 200 caractères'),
+  email: z
+    .string()
+    .email('Email invalide')
+    .optional()
+    .or(z.literal('')),
+  contact_person: z
+    .string()
+    .max(100, 'Le nom de contact ne peut pas dépasser 100 caractères')
+    .optional()
+    .or(z.literal('')),
+  phone_number: z
+    .string()
+    .regex(/^[\d\s+()-]*$/, 'Numéro de téléphone invalide')
+    .optional()
+    .or(z.literal('')),
+  address: z
+    .string()
+    .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type CustomerFormData = z.infer<typeof customerSchema>;
+
+// ==================== SUBCONTRACTOR SCHEMA ====================
+export const subcontractorSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nom du sous-traitant requis')
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(200, 'Le nom ne peut pas dépasser 200 caractères'),
+  email: z
+    .string()
+    .email('Email invalide')
+    .optional()
+    .or(z.literal('')),
+  contact_person: z
+    .string()
+    .max(100, 'Le nom de contact ne peut pas dépasser 100 caractères')
+    .optional()
+    .or(z.literal('')),
+  phone_number: z
+    .string()
+    .regex(/^[\d\s+()-]*$/, 'Numéro de téléphone invalide')
+    .optional()
+    .or(z.literal('')),
+  address: z
+    .string()
+    .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
+    .optional()
+    .or(z.literal('')),
+  services_offered: z
+    .string()
+    .max(1000, 'Les services ne peuvent pas dépasser 1000 caractères')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type SubcontractorFormData = z.infer<typeof subcontractorSchema>;
+
 // ==================== PROFILE UPDATE SCHEMA ====================
 export const profileUpdateSchema = z.object({
   name: z
