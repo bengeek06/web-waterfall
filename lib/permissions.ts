@@ -154,6 +154,20 @@ export const PERMISSIONS = {
   IDENTITY_COMPANY_READ: { service: 'identity', resource: 'company', action: 'read' },
   IDENTITY_COMPANY_UPDATE: { service: 'identity', resource: 'company', action: 'update' },
 
+  // Identity - Organization Units
+  IDENTITY_ORGANIZATION_UNIT_LIST: { service: 'identity', resource: 'organization_unit', action: 'list' },
+  IDENTITY_ORGANIZATION_UNIT_READ: { service: 'identity', resource: 'organization_unit', action: 'read' },
+  IDENTITY_ORGANIZATION_UNIT_CREATE: { service: 'identity', resource: 'organization_unit', action: 'create' },
+  IDENTITY_ORGANIZATION_UNIT_UPDATE: { service: 'identity', resource: 'organization_unit', action: 'update' },
+  IDENTITY_ORGANIZATION_UNIT_DELETE: { service: 'identity', resource: 'organization_unit', action: 'delete' },
+
+  // Identity - Positions
+  IDENTITY_POSITION_LIST: { service: 'identity', resource: 'position', action: 'list' },
+  IDENTITY_POSITION_READ: { service: 'identity', resource: 'position', action: 'read' },
+  IDENTITY_POSITION_CREATE: { service: 'identity', resource: 'position', action: 'create' },
+  IDENTITY_POSITION_UPDATE: { service: 'identity', resource: 'position', action: 'update' },
+  IDENTITY_POSITION_DELETE: { service: 'identity', resource: 'position', action: 'delete' },
+
   // Guardian - Roles
   GUARDIAN_ROLE_LIST: { service: 'guardian', resource: 'role', action: 'list' },
   GUARDIAN_ROLE_READ: { service: 'guardian', resource: 'role', action: 'read' },
@@ -183,6 +197,27 @@ export const PERMISSION_REQUIREMENTS = {
   COMPANY_SETTINGS: [
     [PERMISSIONS.IDENTITY_COMPANY_READ],
     [PERMISSIONS.IDENTITY_COMPANY_UPDATE],
+  ],
+
+  // Informations de l'entreprise: nécessite update sur company
+  COMPANY_INFO: [
+    [PERMISSIONS.IDENTITY_COMPANY_UPDATE],
+  ],
+
+  // Structure organisationnelle: nécessite toutes les permissions sur organization_unit et position
+  ORGANIZATION_STRUCTURE: [
+    [
+      PERMISSIONS.IDENTITY_ORGANIZATION_UNIT_LIST,
+      PERMISSIONS.IDENTITY_ORGANIZATION_UNIT_READ,
+      PERMISSIONS.IDENTITY_ORGANIZATION_UNIT_CREATE,
+      PERMISSIONS.IDENTITY_ORGANIZATION_UNIT_UPDATE,
+      PERMISSIONS.IDENTITY_ORGANIZATION_UNIT_DELETE,
+      PERMISSIONS.IDENTITY_POSITION_LIST,
+      PERMISSIONS.IDENTITY_POSITION_READ,
+      PERMISSIONS.IDENTITY_POSITION_CREATE,
+      PERMISSIONS.IDENTITY_POSITION_UPDATE,
+      PERMISSIONS.IDENTITY_POSITION_DELETE,
+    ],
   ],
 
   // Gestion des rôles: nécessite list sur role

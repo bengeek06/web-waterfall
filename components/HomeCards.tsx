@@ -43,10 +43,10 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
             <ShieldCheck className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallUser}`} />
             <CardTitle>{dictionary.administration}</CardTitle>
           </CardHeader>
-          <CardContent>
+                    <CardContent>
             <Link href="/home/admin" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                {dictionary.access_administration}
+                Accéder
               </Button>
             </Link>
           </CardContent>
@@ -59,6 +59,33 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
         loadingBehavior="hide"
       >
         <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+          <CardHeader className="flex flex-row items-center gap-3">
+            <Building2 className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
+            <CardTitle>{dictionary.company}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Link href="/home/settings" className="w-full mt-2">
+              <Button variant="outline" className="w-full">
+                Accéder
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </ProtectedCard>
+
+      {/* Card Projects - Always visible for now */}
+      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallProject} shadow-sm hover:shadow-md transition-shadow`}>
+        <CardHeader className="flex flex-row items-center gap-3">
+          <FolderKanban className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallProject}`} />
+          <CardTitle>{dictionary.projects}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link href="/home/projects" className="w-full mt-2">
+            <Button variant="outline" className="w-full">
+              Accéder
+            </Button>
+          </Link>
+          </CardContent>
           <CardHeader className="flex flex-row items-center gap-3">
             <Building2 className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>{dictionary.company}</CardTitle>

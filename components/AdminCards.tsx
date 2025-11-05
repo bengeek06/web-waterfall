@@ -44,7 +44,7 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
           <CardContent>
             <Link href="/home/admin/users" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                {dictionary.manage_users}
+                Accéder
               </Button>
             </Link>
           </CardContent>
@@ -64,7 +64,7 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
           <CardContent>
             <Link href="/home/admin/roles" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                {dictionary.manage_roles}
+                Accéder
               </Button>
             </Link>
           </CardContent>

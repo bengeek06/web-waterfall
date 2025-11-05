@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -5,27 +16,9 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Company from "@/components/company";
-import OrganizationTree from "@/components/organization-tree";
-import { getDictionary } from "@/lib/dictionaries";
-import { getLocale } from "@/lib/locale";
-import { cookies } from "next/headers";
-import { getCompanyIdFromToken } from "@/lib/user";
-import { redirect } from "next/navigation";
+import SettingsCards from "@/components/SettingsCards";
 
-export default async function CompanyPage() {
-  const locale = await getLocale();
-  const dict = await getDictionary(locale);
-  
-  // Get company_id from token
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-  const companyId = getCompanyIdFromToken(token);
-  
-  if (!companyId) {
-    redirect("/login");
-  }
-
+export default async function SettingsPage() {
   return (
     <main>
       <div className="flex justify-center mb-4">
@@ -36,15 +29,12 @@ export default async function CompanyPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <span>Entreprise</span>
+              <span>Paramètres</span>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className="grid gap-6 lg:grid-cols-1 xl:grid-cols-2">
-        <Company companyId={companyId} dictionary={dict.company} />
-        <OrganizationTree companyId={companyId} dictionary={dict.organization} />
-      </div>
+      <SettingsCards dictionary={{}} />
     </main>
   );
 }
