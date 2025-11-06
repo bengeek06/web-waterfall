@@ -82,15 +82,15 @@ export default function OrganizationUnitModal({
   dictionary,
 }: OrganizationUnitModalProps) {
   const router = useRouter();
-  // Initialize state from props - will reset when component remounts (via key)
+  const isEditing = !!unit;
+  const isCreatingChild = !!parentUnit;
+  
+  // State - will be reset by Dialog key prop when modal reopens
   const [name, setName] = useState(unit?.name || "");
   const [description, setDescription] = useState(unit?.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
-  const isEditing = !!unit;
-  const isCreatingChild = !!parentUnit;
 
   const getTitle = () => {
     if (isEditing) return dictionary.unit_modal.edit_title;
@@ -177,7 +177,7 @@ export default function OrganizationUnitModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} key={unit?.id || parentUnit?.id || "new"}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{getTitle()}</DialogTitle>

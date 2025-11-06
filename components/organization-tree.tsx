@@ -123,6 +123,7 @@ function TreeNode({
   onAddChild,
   onEdit,
   onDelete,
+  onMove,
 }: {
   unit: OrganizationUnit;
   level?: number;
@@ -131,10 +132,86 @@ function TreeNode({
   onAddChild: (_parentUnit: OrganizationUnit) => void;
   onEdit: (_unit: OrganizationUnit) => void;
   onDelete: (_unitId: string) => void;
+  onMove: (_unitId: string, _newParentId: string | null) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const hasChildren = unit.children && unit.children.length > 0;
   const isSelected = selectedId === unit.id;
+
+  // Drag handlers
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("unitId", unit.id);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedUnitId = e.dataTransfer.getData("unitId");
+    
+    // Ne pas autoriser le drop sur soi-même
+    if (draggedUnitId === unit.id) {
+      e.dataTransfer.dropEffect = "none";
+      return;
+    }
+    
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const draggedUnitId = e.dataTransfer.getData("unitId");
+
+    // Ne pas autoriser le drop sur soi-même
+    if (draggedUnitId === unit.id) {
+      return;
+    }
+
+    // Vérifier si on déplace vers un descendant (créerait une boucle)
+    const isDescendant = (parentId: string, checkId: string): boolean => {
+      if (parentId === checkId) return true;
+      const parent = findUnitById(unit, parentId);
+      if (!parent || !parent.parent_id) return false;
+      return isDescendant(parent.parent_id, checkId);
+    };
+
+    if (isDescendant(unit.id, draggedUnitId)) {
+      // Optionnel : afficher un toast ou simplement ignorer silencieusement
+      return;
+    }
+
+    // Déplacer directement sans confirmation
+    onMove(draggedUnitId, unit.id);
+  };
+
+  // Fonction helper pour trouver une unité par ID dans l'arbre
+  const findUnitById = (node: OrganizationUnit, id: string): OrganizationUnit | null => {
+    if (node.id === id) return node;
+    if (node.children) {
+      for (const child of node.children) {
+        const found = findUnitById(child, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   return (
     <div>
@@ -144,8 +221,13 @@ function TreeNode({
           flex items-center gap-2 py-2 px-3 rounded-md cursor-pointer
           hover:bg-accent transition-colors
           ${isSelected ? "bg-accent border-l-4 border-primary" : ""}
+          ${isDragOver ? "bg-primary/10 border-2 border-primary border-dashed" : ""}
+          ${isDragging ? "opacity-50" : ""}
         `}
         style={{ paddingLeft: `${level * 24 + 12}px` }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {/* Expand/Collapse Icon */}
         <div className="w-5 flex items-center justify-center">
@@ -168,8 +250,20 @@ function TreeNode({
           )}
         </div>
 
-        {/* Icon */}
-        <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        {/* Icon - Draggable */}
+        <div
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          className="cursor-move"
+          title="Glisser pour déplacer l'unité"
+        >
+          <Building2 
+            className={`h-4 w-4 flex-shrink-0 transition-colors ${
+              isDragging ? "text-primary opacity-50" : "text-muted-foreground hover:text-primary"
+            }`}
+          />
+        </div>
 
         {/* Name */}
         <div
@@ -238,6 +332,7 @@ function TreeNode({
               onAddChild={onAddChild}
               onEdit={onEdit}
               onDelete={onDelete}
+              onMove={onMove}
             />
           ))}
         </div>
@@ -487,6 +582,38 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     await reloadPositions();
   };
 
+  const handleMove = async (unitId: string, newParentId: string | null) => {
+    try {
+      const payload: { parent_id: string | null } = {
+        parent_id: newParentId,
+      };
+
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unitId), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Error moving unit:", errorText);
+        alert("Erreur lors du déplacement de l'unité");
+        return;
+      }
+
+      // Reload the tree
+      await reloadUnits();
+    } catch (err) {
+      console.error("Error moving unit:", err);
+      alert("Erreur lors du déplacement de l'unité");
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -541,6 +668,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                       onAddChild={handleAddChild}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onMove={handleMove}
                     />
                   ))}
                 </div>
@@ -623,6 +751,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       {/* Modals */}
       <OrganizationUnitModal
+        key={`unit-modal-${editingUnit?.id || 'new'}-${parentUnit?.id || 'root'}-${isUnitModalOpen}`}
         isOpen={isUnitModalOpen}
         onClose={handleUnitModalClose}
         onSuccess={handleUnitModalSuccess}
@@ -634,6 +763,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       {selectedUnit && (
         <PositionModal
+          key={`position-modal-${editingPosition?.id || 'new'}-${selectedUnit.id}-${isPositionModalOpen}`}
           isOpen={isPositionModalOpen}
           onClose={handlePositionModalClose}
           onSuccess={handlePositionModalSuccess}

@@ -1,22 +1,20 @@
 import '@testing-library/jest-dom'
 
-// Suppress act() warnings in tests
-// These warnings occur when async state updates happen after render()
-// but are already handled by waitFor() in the tests
+// Suppress console outputs during tests
+// This includes act() warnings, expected error logs, and debug logs
 const originalError = console.error;
+const originalWarn = console.warn;
+const originalLog = console.log;
+
 beforeAll(() => {
-  console.error = (...args) => {
-    if (
-      typeof args[0] === 'string' &&
-      args[0].includes('An update to') &&
-      args[0].includes('inside a test was not wrapped in act')
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
+  // Suppress all console outputs during tests
+  console.error = jest.fn();
+  console.warn = jest.fn();
+  console.log = jest.fn();
 });
 
 afterAll(() => {
   console.error = originalError;
+  console.warn = originalWarn;
+  console.log = originalLog;
 });

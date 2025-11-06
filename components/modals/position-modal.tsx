@@ -181,7 +181,7 @@ export default function PositionModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose} key={position?.id || organizationUnit.id}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
