@@ -89,7 +89,6 @@ export default function PositionModal({
   // Initialize state from props - will reset when component remounts (via key)
   const [title, setTitle] = useState(position?.title || "");
   const [description, setDescription] = useState(position?.description || "");
-  const [level, setLevel] = useState(position?.level !== undefined ? String(position.level) : "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -115,7 +114,6 @@ export default function PositionModal({
         description?: string;
         company_id: string;
         organization_unit_id: string;
-        level?: number;
       } = {
         title: title.trim(),
         company_id: companyId,
@@ -124,10 +122,6 @@ export default function PositionModal({
 
       if (description.trim()) {
         payload.description = description.trim();
-      }
-
-      if (level.trim() && !Number.isNaN(Number.parseInt(level))) {
-        payload.level = Number.parseInt(level);
       }
 
       let res;
@@ -215,19 +209,6 @@ export default function PositionModal({
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isLoading}
                 maxLength={200}
-              />
-            </div>
-
-            {/* Level */}
-            <div className="grid gap-2">
-              <Label htmlFor="level">{dictionary.position_modal.level}</Label>
-              <Input
-                id="level"
-                type="number"
-                min="0"
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                disabled={isLoading}
               />
             </div>
 
