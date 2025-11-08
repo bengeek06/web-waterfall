@@ -9,12 +9,17 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-/**
- * Centralized API routes
- * Import from here to access all API endpoints
- */
+import { NextRequest } from "next/server";
+import { proxyRequest } from "@/lib/proxy";
 
-export * from './auth';
-export * from './identity';
-export * from './guardian';
-export * from './storage';
+export async function GET(req: NextRequest) {
+  return proxyRequest(req, {
+    service: 'STORAGE_SERVICE_URL',
+    path: '/version',
+    method: 'GET',
+    mock: {
+      status: 200,
+      body: { version: '1.0.0', service: 'storage' },
+    },
+  });
+}
