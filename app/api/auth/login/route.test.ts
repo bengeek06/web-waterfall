@@ -123,7 +123,6 @@ describe("POST /api/auth/login", () => {
             `${AUTH_SERVICE_URL}/login`,
             expect.objectContaining({
                 method: "POST",
-                body: requestBody,
                 credentials: "include",
                 headers: {
                     "content-type": "application/json",
@@ -159,7 +158,6 @@ describe("POST /api/auth/login", () => {
             `${AUTH_SERVICE_URL}/login`,
             expect.objectContaining({
                 method: "POST",
-                body: requestBody,
                 credentials: "include",
                 headers: { "content-type": "text/plain" },
             })

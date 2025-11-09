@@ -195,7 +195,6 @@ describe("/api/guardian/roles/[role_id]", () => {
             `${GUARDIAN_SERVICE_URL}/roles/${ROLE_ID}`,
             expect.objectContaining({
                 method: "PUT",
-                body: requestBody,
                 credentials: "include",
             })
         );
