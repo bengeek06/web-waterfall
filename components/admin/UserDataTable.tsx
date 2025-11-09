@@ -29,6 +29,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import AvatarImage from "@/components/AvatarImage";
 
 // Constants
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
@@ -90,6 +91,22 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const columns: ColumnDef<User>[] = [
+    {
+      id: "avatar",
+      header: "",
+      enableSorting: false,
+      enableColumnFilter: false,
+      cell: ({ row }) => (
+        <div className="w-10 h-10 flex items-center justify-center">
+          <AvatarImage
+            userId={row.original.id}
+            size={32}
+            className="rounded-full object-cover"
+            iconSize={20}
+          />
+        </div>
+      ),
+    },
     {
       accessorKey: "email",
       enableColumnFilter: true,

@@ -68,6 +68,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
   const [open, setOpen] = useState(false);
   const [isLoading, setSaving] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -87,7 +88,13 @@ export default function ProfileModal({ children, className, testId, dictionary, 
         phoneNumber: userInfo.phoneNumber || '',
         language: userInfo.language || 'en'
       });
-      setAvatarPreview(userInfo.avatarUrl || null);
+      // Load existing avatar from endpoint
+      if (userInfo.id) {
+        setAvatarPreview(`/api/identity/users/${userInfo.id}/avatar?t=${Date.now()}`);
+      } else {
+        setAvatarPreview(null);
+      }
+      setAvatarFile(null);
     }
   }, [userInfo, open]);
 
@@ -106,6 +113,10 @@ export default function ProfileModal({ children, className, testId, dictionary, 
         return;
       }
 
+      // Store the file for upload
+      setAvatarFile(file);
+
+      // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
         setAvatarPreview(e.target?.result as string);
@@ -123,32 +134,61 @@ export default function ProfileModal({ children, className, testId, dictionary, 
     
     setSaving(true);
     try {
-      const updateData: any = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        phone_number: formData.phoneNumber,
-        language: formData.language
-      };
+      // Use FormData if we have an avatar file to upload
+      if (avatarFile) {
+        const formDataPayload = new FormData();
+        formDataPayload.append('first_name', formData.firstName);
+        formDataPayload.append('last_name', formData.lastName);
+        formDataPayload.append('email', formData.email);
+        formDataPayload.append('phone_number', formData.phoneNumber);
+        formDataPayload.append('language', formData.language);
+        formDataPayload.append('avatar', avatarFile);
 
-      // If avatar changed and it's a base64 image, include it
-      if (avatarPreview && avatarPreview !== userInfo.avatarUrl && avatarPreview.startsWith('data:image/')) {
-        updateData.avatar_url = avatarPreview;
-      }
+        const response = await fetchWithAuth(IDENTITY_ROUTES.user(userInfo.id), {
+          method: 'PATCH',
+          body: formDataPayload
+        });
 
-      const response = await fetchWithAuth(IDENTITY_ROUTES.user(userInfo.id), {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData)
-      });
-
-      if (response.ok) {
-        // Refresh the page to update the UI
-        window.location.reload();
+        if (response.ok) {
+          // Refresh the page to update the UI
+          globalThis.window.location.reload();
+        } else {
+          const errorData = await response.text();
+          console.error('Failed to update profile:', response.status, errorData);
+          alert(`Erreur lors de la mise à jour: ${response.status}`);
+        }
       } else {
-        const errorData = await response.text();
-        console.error('Failed to update profile:', response.status, errorData);
-        alert(`Erreur lors de la mise à jour: ${response.status}`);
+        // Use JSON for simple updates without avatar
+        const updateData: {
+          first_name: string;
+          last_name: string;
+          email: string;
+          phone_number: string;
+          language: string;
+        } = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone_number: formData.phoneNumber,
+          language: formData.language
+        };
+
+        // NEVER send avatar_url in the payload
+
+        const response = await fetchWithAuth(IDENTITY_ROUTES.user(userInfo.id), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData)
+        });
+
+        if (response.ok) {
+          // Refresh the page to update the UI
+          globalThis.window.location.reload();
+        } else {
+          const errorData = await response.text();
+          console.error('Failed to update profile:', response.status, errorData);
+          alert(`Erreur lors de la mise à jour: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error('Error updating profile:', error);

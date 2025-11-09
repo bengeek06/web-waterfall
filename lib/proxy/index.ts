@@ -116,8 +116,17 @@ export async function proxyRequest(
   logger.debug(`Request headers: ${JSON.stringify(serializeHeaders(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${fullUrl}`);
 
-  // Read request body
-  const body = await req.text();
+  // Read request body - preserve FormData for multipart requests
+  const requestContentType = req.headers.get('content-type') || '';
+  let body: string | ReadableStream<Uint8Array> | null = null;
+  
+  if (requestContentType.includes('multipart/form-data')) {
+    // For multipart/form-data, pass the stream directly without reading it
+    body = req.body;
+  } else if (req.body) {
+    // For other content types, read as text
+    body = await req.text();
+  }
 
   // Prepare headers (exclude 'host' header)
   const headers = Object.fromEntries(
@@ -134,6 +143,8 @@ export async function proxyRequest(
       headers,
       body: body || undefined,
       credentials: "include",
+      // @ts-expect-error - duplex is required for streaming bodies but not in TypeScript types yet
+      duplex: requestContentType.includes('multipart/form-data') ? 'half' : undefined,
     });
   } catch (err: unknown) {
     // Handle fetch errors
@@ -190,6 +201,28 @@ export async function proxyRequest(
     }
     
     nextRes = NextResponse.json(data, { status: upstream.status });
+  } else if (contentType && (contentType.startsWith("image/") || contentType.includes("octet-stream"))) {
+    // Handle binary content (images, files, etc.) - don't log binary data
+    const buffer = await upstream.arrayBuffer();
+    
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        contentType,
+        size: buffer.byteLength
+      }, `HTTP ${upstream.status} Error Response (binary)`);
+    } else {
+      logger.debug(`Binary response: ${contentType}, size: ${buffer.byteLength} bytes`);
+    }
+    
+    nextRes = new NextResponse(buffer, { 
+      status: upstream.status,
+      headers: {
+        'Content-Type': contentType,
+      }
+    });
   } else {
     const text = await upstream.text();
     

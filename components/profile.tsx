@@ -78,7 +78,8 @@ export default function Profile({ user, dictionary }: ProfileProps) {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState(user.avatar_url || "");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState(user.avatar_url || "");
   const [language, setLanguage] = useState<Locale>((user.language as Locale) || "fr");
   
   // UI state
@@ -89,14 +90,18 @@ export default function Profile({ user, dictionary }: ProfileProps) {
   // ==================== HANDLERS ====================
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
-      setAvatarUrl(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setAvatarUrl(URL.createObjectURL(e.dataTransfer.files[0]));
+      const file = e.dataTransfer.files[0];
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
     }
   }
 
@@ -165,43 +170,75 @@ export default function Profile({ user, dictionary }: ProfileProps) {
     }
 
     try {
-      const payload: {
-        email: string;
-        first_name: string;
-        last_name: string;
-        phone_number: string;
-        language: string;
-        old_password?: string;
-        new_password?: string;
-      } = {
-        email,
-        first_name: firstName,
-        last_name: lastName,
-        phone_number: phone,
-        language,
-      };
+      // Use FormData if we have an avatar file to upload
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("first_name", firstName);
+        formData.append("last_name", lastName);
+        formData.append("phone_number", phone);
+        formData.append("language", language);
+        formData.append("avatar", avatarFile);
+        
+        if (oldPassword) formData.append("old_password", oldPassword);
+        if (newPassword) formData.append("new_password", newPassword);
 
-      if (oldPassword) payload.old_password = oldPassword;
-      if (newPassword) payload.new_password = newPassword;
+        const res = await fetchWithAuth(IDENTITY_ROUTES.user(user.id), {
+          method: "PATCH",
+          body: formData,
+        });
 
-      const res = await fetchWithAuth(IDENTITY_ROUTES.user(user.id), {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setError(
+            data.error ||
+              data.message ||
+              (typeof dictionary.profile_update_error === "string"
+                ? dictionary.profile_update_error
+                : "Erreur lors de la mise à jour.")
+          );
+          return;
+        }
+      } else {
+        // Use JSON for simple updates without avatar
+        const payload: {
+          email: string;
+          first_name: string;
+          last_name: string;
+          phone_number: string;
+          language: string;
+          old_password?: string;
+          new_password?: string;
+        } = {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: phone,
+          language,
+        };
 
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(
-          data.error ||
-            data.message ||
-            (typeof dictionary.profile_update_error === "string"
-              ? dictionary.profile_update_error
-              : "Erreur lors de la mise à jour.")
-        );
-        return;
+        if (oldPassword) payload.old_password = oldPassword;
+        if (newPassword) payload.new_password = newPassword;
+
+        const res = await fetchWithAuth(IDENTITY_ROUTES.user(user.id), {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setError(
+            data.error ||
+              data.message ||
+              (typeof dictionary.profile_update_error === "string"
+                ? dictionary.profile_update_error
+                : "Erreur lors de la mise à jour.")
+          );
+          return;
+        }
       }
 
       // Success message
@@ -294,9 +331,9 @@ export default function Profile({ user, dictionary }: ProfileProps) {
           onDragOver={handleDragOver}
           data-testid="profile-avatar"
         >
-          {avatarUrl ? (
+          {avatarPreview ? (
             <Image
-              src={avatarUrl}
+              src={avatarPreview}
               alt="Avatar"
               width={96}
               height={96}

@@ -25,9 +25,10 @@ import {
 import LogoutButton from "@/components/LogoutButton";
 import AboutModal from "@/components/AboutModal";
 import ProfileModal from "@/components/ProfileModal";
+import AvatarImage from "@/components/AvatarImage";
 
 // Utils
-import { getAvatarUrl, getUserData } from "@/lib/user";
+import { getUserData } from "@/lib/user";
 import { getDictionary } from "@/lib/dictionaries";
 import { getUserLanguage } from "@/lib/locale";
 
@@ -37,10 +38,10 @@ import { ICON_SIZES, ICON_COLORS } from "@/lib/design-tokens";
 
 // ==================== COMPONENT ====================
 export default async function TopBar() {
-  const avatarUrl = await getAvatarUrl();
   const userData = await getUserData();
   const userLanguage = await getUserLanguage();
   const dictionary = await getDictionary(userLanguage);
+  const userId = userData?.id;
 
   // ==================== RENDER ====================
   return (
@@ -77,14 +78,14 @@ export default async function TopBar() {
                 className={`rounded-full overflow-hidden border border-waterfall-icon bg-white ${ICON_SIZES.xl} flex items-center justify-center`}
                 {...testId(COMMON_TEST_IDS.topBar.avatarButton)}
               >
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt="Avatar"
-                    width={40}
-                    height={40}
+                {userId ? (
+                  <AvatarImage
+                    userId={userId}
+                    size={40}
                     className={`object-cover ${ICON_SIZES.xl}`}
-                    {...testId(COMMON_TEST_IDS.topBar.avatarImage)}
+                    iconSize={24}
+                    iconColor={ICON_COLORS.waterfall}
+                    testId={testId(COMMON_TEST_IDS.topBar.avatarImage)}
                   />
                 ) : (
                   <User 
@@ -111,7 +112,6 @@ export default async function TopBar() {
                     lastName: userData.last_name,
                     email: userData.email,
                     phoneNumber: userData.phone_number,
-                    avatarUrl: userData.avatar_url,
                     language: userData.language
                   } : undefined}
                 >
