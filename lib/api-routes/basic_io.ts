@@ -10,12 +10,18 @@
  */
 
 /**
- * Centralized API routes
- * Import from here to access all API endpoints
+ * Basic I/O Service API routes
  */
 
-export * from './auth';
-export * from './identity';
-export * from './guardian';
-export * from './storage';
-export * from './basic_io';
+const BASE = '/api/basic_io';
+
+export const BASIC_IO_ROUTES = {
+  // System endpoints
+  health: `${BASE}/health`,
+  version: `${BASE}/version`,
+  config: `${BASE}/config`,
+  
+  // Import/Export endpoints
+  export: `${BASE}/export`,
+  import: `${BASE}/import`,
+};
