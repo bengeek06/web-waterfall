@@ -44,6 +44,27 @@ export function useAuthVerification() {
   useEffect(() => {
     async function verifyAuth() {
       try {
+        // Vérifier d'abord si l'application est initialisée
+        const initCheckIdentity = await fetch("/api/identity/init-app", { cache: "no-store" });
+        const initCheckGuardian = await fetch("/api/guardian/init-app", { cache: "no-store" });
+        
+        if (!initCheckIdentity.ok || !initCheckGuardian.ok) {
+          console.warn("Cannot check initialization status");
+          router.push("/");
+          return;
+        }
+
+        const dataIdentity = await initCheckIdentity.json();
+        const dataGuardian = await initCheckGuardian.json();
+
+        // Si l'application n'est pas initialisée, rediriger vers /init-app
+        if (!dataIdentity.initialized || !dataGuardian.initialized) {
+          console.log("Application not initialized, redirecting to /init-app");
+          router.push("/init-app");
+          return;
+        }
+
+        // L'application est initialisée, vérifier l'authentification
         // fetchWithAuth gère automatiquement le refresh du token en cas de 401
         const response = await fetchWithAuth(AUTH_ROUTES.verify, {
           method: "GET",
