@@ -26,15 +26,15 @@ jest.mock('@/lib/proxy', () => ({
   }),
 }));
 
-describe('GET /api/basic_io/version', () => {
-  it('should return version information', async () => {
-    const req = new NextRequest('http://localhost:3000/api/basic_io/version');
+describe('GET /api/basic-io/health', () => {
+  it('should return health check status', async () => {
+    const req = new NextRequest('http://localhost:3000/api/basic-io/health');
     const response = await GET(req);
     const data = await response.json();
 
     expect(response.status).toBe(200);
     expect(data).toEqual({
-      version: '0.0.1',
+      status: 'healthy',
       service: 'basic_io',
     });
   });

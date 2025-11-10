@@ -176,15 +176,42 @@ export async function proxyRequest(
   }
 
   // Process response
-  const setCookieHeaders = upstream.headers.get("set-cookie");
   const contentType = upstream.headers.get("content-type");
+  
+  // Prepare headers to forward (skip hop-by-hop headers)
+  const headersToForward = new Headers();
+  const hopByHopHeaders = ['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer'];
+  
+  // Forward headers from upstream response
+  if (upstream.headers && typeof upstream.headers.entries === 'function') {
+    // Real Headers object with entries
+    for (const [key, value] of upstream.headers.entries()) {
+      if (!hopByHopHeaders.includes(key.toLowerCase())) {
+        headersToForward.set(key, value);
+      }
+    }
+  } else {
+    // Fallback for mock objects with only .get() - manually copy important headers
+    const contentTypeValue = upstream.headers.get("content-type");
+    const setCookieValue = upstream.headers.get("set-cookie");
+    const contentDispositionValue = upstream.headers.get("content-disposition");
+    const cacheControlValue = upstream.headers.get("cache-control");
+    
+    if (contentTypeValue) headersToForward.set("content-type", contentTypeValue);
+    if (setCookieValue) headersToForward.set("set-cookie", setCookieValue);
+    if (contentDispositionValue) headersToForward.set("content-disposition", contentDispositionValue);
+    if (cacheControlValue) headersToForward.set("cache-control", cacheControlValue);
+  }
   
   let nextRes: NextResponse;
   
   // Handle 204 No Content - must not have a body
   if (upstream.status === 204) {
     logger.debug("204 No Content response");
-    nextRes = new NextResponse(null, { status: 204 });
+    nextRes = new NextResponse(null, { 
+      status: 204,
+      headers: headersToForward
+    });
   } else if (contentType && contentType.includes("application/json")) {
     const data = await upstream.json();
     
@@ -200,7 +227,10 @@ export async function proxyRequest(
       logger.debug(`Response data: ${JSON.stringify(data)}`);
     }
     
-    nextRes = NextResponse.json(data, { status: upstream.status });
+    nextRes = NextResponse.json(data, { 
+      status: upstream.status,
+      headers: headersToForward
+    });
   } else if (contentType && (contentType.startsWith("image/") || contentType.includes("octet-stream"))) {
     // Handle binary content (images, files, etc.) - don't log binary data
     const buffer = await upstream.arrayBuffer();
@@ -219,9 +249,7 @@ export async function proxyRequest(
     
     nextRes = new NextResponse(buffer, { 
       status: upstream.status,
-      headers: {
-        'Content-Type': contentType,
-      }
+      headers: headersToForward
     });
   } else {
     const text = await upstream.text();
@@ -238,12 +266,10 @@ export async function proxyRequest(
       logger.debug(`Response text: ${text}`);
     }
     
-    nextRes = new NextResponse(text, { status: upstream.status });
-  }
-
-  // Forward Set-Cookie headers if present
-  if (setCookieHeaders) {
-    nextRes.headers.set("set-cookie", setCookieHeaders);
+    nextRes = new NextResponse(text, { 
+      status: upstream.status,
+      headers: headersToForward
+    });
   }
 
   return nextRes;

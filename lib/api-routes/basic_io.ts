@@ -13,7 +13,7 @@
  * Basic I/O Service API routes
  */
 
-const BASE = '/api/basic_io';
+const BASE = '/api/basic-io';
 
 export const BASIC_IO_ROUTES = {
   // System endpoints

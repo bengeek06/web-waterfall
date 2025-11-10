@@ -13,7 +13,7 @@ import { NextRequest } from "next/server";
 import { proxyRequest } from "@/lib/proxy";
 
 /**
- * POST /api/basic_io/import
+ * POST /api/basic-io/import
  * Import data from file to a Waterfall service endpoint
  * 
  * Query parameters:

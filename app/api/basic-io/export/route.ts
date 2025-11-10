@@ -13,7 +13,7 @@ import { NextRequest } from "next/server";
 import { proxyRequest } from "@/lib/proxy";
 
 /**
- * GET /api/basic_io/export
+ * GET /api/basic-io/export
  * Export data from a Waterfall service endpoint
  * 
  * Query parameters:

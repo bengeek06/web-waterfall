@@ -1,0 +1,68 @@
+/**
+ * @jest-environment node
+ */
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+import { NextRequest } from 'next/server';
+import { GET } from './route';
+
+// Mock proxyRequest to simulate upstream response with Content-Disposition header
+jest.mock('@/lib/proxy', () => ({
+  proxyRequest: jest.fn((req, config) => {
+    // Simulate JSON export response
+    const mockHeaders = new Headers();
+    mockHeaders.set('content-type', 'application/json');
+    mockHeaders.set('content-disposition', 'attachment; filename="users_export.json"');
+    mockHeaders.set('cache-control', 'no-cache');
+    
+    return Promise.resolve(
+      new Response(JSON.stringify({ data: [] }), {
+        status: 200,
+        headers: mockHeaders,
+      })
+    );
+  }),
+}));
+
+describe('GET /api/basic-io/export', () => {
+  it('should forward Content-Disposition header from upstream service', async () => {
+    const req = new NextRequest(
+      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/users&type=json',
+      {
+        method: 'GET',
+        headers: {
+          cookie: 'access_token=test-jwt-token',
+        },
+      }
+    );
+
+    const response = await GET(req);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('application/json');
+    expect(response.headers.get('content-disposition')).toBe('attachment; filename="users_export.json"');
+  });
+
+  it('should forward Cache-Control header from upstream service', async () => {
+    const req = new NextRequest(
+      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/companies&type=csv',
+      {
+        method: 'GET',
+      }
+    );
+
+    const response = await GET(req);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('cache-control')).toBe('no-cache');
+  });
+});

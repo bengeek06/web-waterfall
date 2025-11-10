@@ -26,9 +26,9 @@ jest.mock('@/lib/proxy', () => ({
   }),
 }));
 
-describe('GET /api/basic_io/config', () => {
+describe('GET /api/basic-io/config', () => {
   it('should return configuration information', async () => {
-    const req = new NextRequest('http://localhost:3000/api/basic_io/config');
+    const req = new NextRequest('http://localhost:3000/api/basic-io/config');
     const response = await GET(req);
     const data = await response.json();
 
