@@ -113,7 +113,7 @@ export async function proxyRequest(
 
   const fullUrl = `${serviceUrl}${path}`;
   logger.debug(`Environment ${service}: ${serviceUrl}`);
-  logger.debug(`Request headers: ${JSON.stringify(serializeHeaders(req.headers))}`);
+  logger.debug(`Request headers received from client: ${JSON.stringify(serializeHeaders(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${fullUrl}`);
 
   // Read request body - preserve FormData for multipart requests
@@ -134,6 +134,8 @@ export async function proxyRequest(
       ([key]) => key.toLowerCase() !== "host"
     )
   );
+  
+  logger.debug(`Headers being sent to backend: ${JSON.stringify(headers)}`);
 
   // Make upstream request
   let upstream: Response;
@@ -175,19 +177,37 @@ export async function proxyRequest(
     );
   }
 
-  // Process response
+    // Process response
   const contentType = upstream.headers.get("content-type");
   
-  // Prepare headers to forward (skip hop-by-hop headers)
+  // Prepare headers to forward (skip hop-by-hop headers and Content-Length)
   const headersToForward = new Headers();
   const hopByHopHeaders = ['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer'];
+  const skipHeaders = [...hopByHopHeaders, 'content-length']; // Content-Length will be recalculated by Next.js
   
   // Forward headers from upstream response
   if (upstream.headers && typeof upstream.headers.entries === 'function') {
-    // Real Headers object with entries
+    // Real HTTP responses - iterate all headers
     for (const [key, value] of upstream.headers.entries()) {
-      if (!hopByHopHeaders.includes(key.toLowerCase())) {
+      const lowerKey = key.toLowerCase();
+      // Skip hop-by-hop headers, content-length, and set-cookie (handled separately)
+      if (!skipHeaders.includes(lowerKey) && lowerKey !== 'set-cookie') {
         headersToForward.set(key, value);
+      }
+    }
+    
+    // Handle Set-Cookie separately - there can be multiple Set-Cookie headers
+    // Using getSetCookie() to get all Set-Cookie headers as an array
+    if (typeof upstream.headers.getSetCookie === 'function') {
+      const setCookies = upstream.headers.getSetCookie();
+      setCookies.forEach(cookie => {
+        headersToForward.append('set-cookie', cookie);
+      });
+    } else {
+      // Fallback for environments without getSetCookie
+      const setCookie = upstream.headers.get('set-cookie');
+      if (setCookie) {
+        headersToForward.append('set-cookie', setCookie);
       }
     }
   } else {
@@ -198,7 +218,7 @@ export async function proxyRequest(
     const cacheControlValue = upstream.headers.get("cache-control");
     
     if (contentTypeValue) headersToForward.set("content-type", contentTypeValue);
-    if (setCookieValue) headersToForward.set("set-cookie", setCookieValue);
+    if (setCookieValue) headersToForward.append("set-cookie", setCookieValue);
     if (contentDispositionValue) headersToForward.set("content-disposition", contentDispositionValue);
     if (cacheControlValue) headersToForward.set("cache-control", cacheControlValue);
   }

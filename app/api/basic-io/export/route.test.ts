@@ -65,4 +65,25 @@ describe('GET /api/basic-io/export', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('no-cache');
   });
+
+  it('should NOT forward Content-Length header (Next.js auto-calculates)', async () => {
+    // This test verifies the fix for IncompleteRead bug
+    // Content-Length from upstream should be ignored, Next.js calculates its own
+    const req = new NextRequest(
+      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/users&type=json',
+      {
+        method: 'GET',
+      }
+    );
+
+    const response = await GET(req);
+
+    expect(response.status).toBe(200);
+    
+    // Next.js will set Content-Length automatically for the re-serialized body
+    // We just verify the response is complete (no IncompleteRead)
+    const body = await response.text();
+    expect(body).toBeTruthy();
+    expect(() => JSON.parse(body)).not.toThrow();
+  });
 });

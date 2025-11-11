@@ -194,6 +194,61 @@ describe("POST /api/auth/login", () => {
         expect(response.headers.get("set-cookie")).toBe(cookieValue);
     });
 
+    it("forwards BOTH access_token and refresh_token cookies (multiple Set-Cookie headers)", async () => {
+        const requestBody = '{"email":"admin@example.com","password":"password"}';
+        // @ts-expect-error: mock request
+        req = buildReq(requestBody);
+        
+        const mockJson = { 
+          message: "Login successful",
+          user: { id: "123", email: "admin@example.com" }
+        };
+        
+        // Simulate auth service response with MULTIPLE Set-Cookie headers
+        const mockHeaders = new Headers();
+        mockHeaders.set('content-type', 'application/json');
+        mockHeaders.append('set-cookie', 'access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test; HttpOnly; Path=/; SameSite=Lax');
+        mockHeaders.append('set-cookie', 'refresh_token=8_ittpRmYNmFnvuYd5WbpmPog_HQG; HttpOnly; Path=/; SameSite=Lax');
+        
+        const mockRes = {
+            status: 200,
+            headers: mockHeaders,
+            json: jest.fn().mockResolvedValue(mockJson),
+            text: jest.fn(),
+        };
+        mockFetch.mockResolvedValue(mockRes);
+        
+        const response = await POSTFn(req as unknown as NextRequest);
+        
+        expect(response.status).toBe(200);
+        
+        // Critical: Verify BOTH cookies are forwarded
+        const setCookieHeaders = response.headers.getSetCookie?.() || [];
+        
+        expect(setCookieHeaders.length).toBeGreaterThanOrEqual(2);
+        
+        // Check for access_token cookie
+        const hasAccessToken = setCookieHeaders.some(cookie => 
+          cookie.includes('access_token=')
+        );
+        expect(hasAccessToken).toBe(true);
+        
+        // Check for refresh_token cookie
+        const hasRefreshToken = setCookieHeaders.some(cookie => 
+          cookie.includes('refresh_token=')
+        );
+        expect(hasRefreshToken).toBe(true);
+        
+        // Verify cookie attributes are preserved
+        setCookieHeaders.forEach(cookie => {
+          if (cookie.includes('access_token=') || cookie.includes('refresh_token=')) {
+            expect(cookie).toContain('HttpOnly');
+            expect(cookie).toContain('Path=/');
+            expect(cookie).toContain('SameSite=Lax');
+          }
+        });
+    });
+
     it("handles connection refused error", async () => {
         const requestBody = '{"email":"user@test.com","password":"pass"}';
         // @ts-expect-error: mock request
