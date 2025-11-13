@@ -34,9 +34,16 @@ jest.mock('@/lib/proxy', () => ({
 }));
 
 describe('GET /api/basic-io/export', () => {
+  // Set up environment variables for service URLs
+  beforeAll(() => {
+    process.env.BASIC_IO_IDENTITY_SERVICE_URL = 'http://identity_service:5000';
+    process.env.BASIC_IO_GUARDIAN_SERVICE_URL = 'http://guardian_service:5000';
+    process.env.BASIC_IO_PROJECT_SERVICE_URL = 'http://project_service:5000';
+    process.env.BASIC_IO_STORAGE_SERVICE_URL = 'http://storage_service:5000';
+  });
   it('should forward Content-Disposition header from upstream service', async () => {
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/users&type=json',
+      'http://localhost:3000/api/basic-io/export?service=identity&path=/users&type=json',
       {
         method: 'GET',
         headers: {
@@ -54,7 +61,7 @@ describe('GET /api/basic-io/export', () => {
 
   it('should forward Cache-Control header from upstream service', async () => {
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/companies&type=csv',
+      'http://localhost:3000/api/basic-io/export?service=identity&path=/companies&type=csv',
       {
         method: 'GET',
       }
@@ -70,7 +77,7 @@ describe('GET /api/basic-io/export', () => {
     // This test verifies the fix for IncompleteRead bug
     // Content-Length from upstream should be ignored, Next.js calculates its own
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?url=http://identity_service:5000/users&type=json',
+      'http://localhost:3000/api/basic-io/export?service=identity&path=/users&type=json',
       {
         method: 'GET',
       }
