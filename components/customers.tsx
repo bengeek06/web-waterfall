@@ -32,7 +32,7 @@ import {
   getFilteredRowModel,
   ColumnFiltersState,
 } from "@tanstack/react-table";
-import { IDENTITY_ROUTES } from "@/lib/api-routes/identity";
+import { IDENTITY_ROUTES, BASIC_IO_ROUTES } from "@/lib/api-routes";
 import { customerSchema, CustomerFormData } from "@/lib/validation/identity.schemas";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -54,7 +61,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, FileJson, FileText } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
@@ -117,6 +124,18 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
   // Customer dialog (create/edit)
   const [showCustomerDialog, setShowCustomerDialog] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  // Import/Export state
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<{
+    total_records: number;
+    successful_imports: number;
+    failed_imports: number;
+    errors?: Array<{ record_index: number; error: string; record?: unknown }>;
+    warnings?: Array<{ record_index: number; warning: string }>;
+  } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Customer form with Zod validation
   const customerForm = useZodForm({
@@ -241,6 +260,115 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
     } catch (err) {
       console.error("handleDeleteCustomer error:", err);
       setError(dictionary.error_delete);
+    }
+  }
+
+  // ==================== IMPORT/EXPORT OPERATIONS ====================
+
+  async function handleExport(format: 'json' | 'csv') {
+    try {
+      setIsExporting(true);
+      setError("");
+      
+      // Build export URL with parameters
+      const exportUrl = new URL(BASIC_IO_ROUTES.export, globalThis.location.origin);
+      exportUrl.searchParams.set('service', 'identity');
+      exportUrl.searchParams.set('path', '/customers');
+      exportUrl.searchParams.set('type', format);
+      exportUrl.searchParams.set('enrich', 'true');
+      
+      const res = await fetchWithAuth(exportUrl.toString());
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Export failed: ${errorText}`);
+      }
+      
+      // Download file
+      const blob = await res.blob();
+      const downloadUrl = globalThis.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `customers_export.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      globalThis.URL.revokeObjectURL(downloadUrl);
+      
+    } catch (err) {
+      console.error("Export error:", err);
+      setError(err instanceof Error ? err.message : "Erreur lors de l'export");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleImport(format: 'json' | 'csv') {
+    try {
+      // Create file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = format === 'json' ? '.json' : '.csv';
+      
+      input.onchange = async (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+        
+        try {
+          setIsImporting(true);
+          setError("");
+          
+          // Build import URL with parameters
+          const importUrl = new URL(BASIC_IO_ROUTES.import, globalThis.location.origin);
+          importUrl.searchParams.set('service', 'identity');
+          importUrl.searchParams.set('path', '/customers');
+          importUrl.searchParams.set('type', format);
+          
+          // Create FormData with file
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const res = await fetchWithAuth(importUrl.toString(), {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Import failed: ${errorText}`);
+          }
+          
+          const responseData = await res.json();
+          console.log('Import report received:', responseData);
+          
+          // Extract and map the import_report to expected format
+          const importData = responseData.import_report || responseData;
+          const mappedReport = {
+            total_records: importData.total || 0,
+            successful_imports: importData.success || 0,
+            failed_imports: importData.failed || 0,
+            errors: importData.errors || [],
+            warnings: importData.warnings || []
+          };
+          
+          setImportReport(mappedReport);
+          setShowImportReport(true);
+          
+          // Refresh data after import
+          fetchData();
+          
+        } catch (err) {
+          console.error("Import error:", err);
+          setError(err instanceof Error ? err.message : "Erreur lors de l'import");
+        } finally {
+          setIsImporting(false);
+        }
+      };
+      
+      input.click();
+    } catch (err) {
+      console.error("handleImport error:", err);
+      setError("Erreur lors de la sélection du fichier");
     }
   }
 
@@ -421,13 +549,64 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
         <h2 className="text-xl font-bold" {...testId("customers-title")}>
           {dictionary.page_title}
         </h2>
-        <Button 
-          onClick={openCreateCustomerDialog}
-          {...testId("customer-add-button")}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {dictionary.create_button}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Import Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={isImporting}
+                {...testId("customer-import-button")}
+              >
+                <Upload className={`${ICON_SIZES.sm} mr-2`} />
+                Importer depuis
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleImport('json')}>
+                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
+                JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleImport('csv')}>
+                <FileText className={`${ICON_SIZES.sm} mr-2`} />
+                CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={isExporting}
+                {...testId("customer-export-button")}
+              >
+                <Download className={`${ICON_SIZES.sm} mr-2`} />
+                Exporter vers
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
+                JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <FileText className={`${ICON_SIZES.sm} mr-2`} />
+                CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Create Button */}
+          <Button 
+            onClick={openCreateCustomerDialog}
+            {...testId("customer-add-button")}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {dictionary.create_button}
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -584,6 +763,85 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Report Dialog */}
+      <Dialog open={showImportReport} onOpenChange={setShowImportReport}>
+        <DialogContent {...testId("import-report-dialog")} className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Rapport d&apos;import</DialogTitle>
+            <DialogDescription>
+              Résumé de l&apos;opération d&apos;import
+            </DialogDescription>
+          </DialogHeader>
+          {importReport && (
+            <div className="space-y-4">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {importReport.total_records}
+                  </div>
+                  <div className="text-sm text-blue-800">Total</div>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    {importReport.successful_imports}
+                  </div>
+                  <div className="text-sm text-green-800">Réussis</div>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600">
+                    {importReport.failed_imports}
+                  </div>
+                  <div className="text-sm text-red-800">Échecs</div>
+                </div>
+              </div>
+
+              {/* Errors */}
+              {importReport.errors && importReport.errors.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-red-600">Erreurs</h3>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2 max-h-60 overflow-y-auto">
+                    {importReport.errors.map((err) => (
+                      <div key={`error-${err.record_index}`} className="text-sm">
+                        <div>
+                          <span className="font-medium">Ligne {err.record_index + 1}:</span>{' '}
+                          {err.error}
+                        </div>
+                        {err.record !== undefined && err.record !== null && (
+                          <pre className="mt-1 text-xs bg-red-100 p-2 rounded overflow-x-auto">
+                            {JSON.stringify(err.record)}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {importReport.warnings && importReport.warnings.length > 0 && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-yellow-600">Avertissements</h3>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 max-h-40 overflow-y-auto">
+                    {importReport.warnings.map((warn) => (
+                      <div key={`warning-${warn.record_index}`} className="text-sm">
+                        <span className="font-medium">Ligne {warn.record_index + 1}:</span>{' '}
+                        {warn.warning}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setShowImportReport(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
