@@ -262,9 +262,9 @@ export const subcontractorSchema = z.object({
     .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
     .optional()
     .or(z.literal('')),
-  services_offered: z
+  description: z
     .string()
-    .max(1000, 'Les services ne peuvent pas dépasser 1000 caractères')
+    .max(200, 'La description ne peut pas dépasser 200 caractères')
     .optional()
     .or(z.literal('')),
 });

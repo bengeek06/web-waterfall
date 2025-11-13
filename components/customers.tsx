@@ -70,6 +70,12 @@ import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 type CustomersDictionary = {
   page_title: string;
   create_button: string;
+  import_button: string;
+  export_button: string;
+  import_json: string;
+  import_csv: string;
+  export_json: string;
+  export_csv: string;
   table_name: string;
   table_email: string;
   table_contact: string;
@@ -93,6 +99,15 @@ type CustomersDictionary = {
   error_create: string;
   error_update: string;
   error_delete: string;
+  error_export: string;
+  error_import: string;
+  import_report_title: string;
+  import_report_close: string;
+  import_report_total: string;
+  import_report_success: string;
+  import_report_failed: string;
+  import_report_errors: string;
+  import_report_warnings: string;
 };
 
 type Customer = {
@@ -113,9 +128,160 @@ function testId(id: string) {
   return { "data-testid": id };
 }
 
+// Helper types and functions for sort icons
+type SortState = false | "asc" | "desc";
+
+function getSortIcon(sortState: SortState) {
+  if (sortState === "asc") return <ArrowUp className="h-4 w-4" />;
+  if (sortState === "desc") return <ArrowDown className="h-4 w-4" />;
+  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
+}
+
+// Table header components
+type ColumnHelper = { toggleSorting: (_desc?: boolean) => void; getIsSorted: () => SortState };
+
+const NameHeaderCell = ({ column, label }: { readonly column: ColumnHelper; readonly label: string }) => (
+  <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="px-1">
+    {label}
+    {getSortIcon(column.getIsSorted())}
+  </Button>
+);
+
+const SortableHeaderCell = ({ column, label }: { readonly column: ColumnHelper; readonly label: string }) => (
+  <button
+    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    className="flex items-center gap-2 hover:text-foreground"
+  >
+    {label}
+    {getSortIcon(column.getIsSorted())}
+  </button>
+);
+
+const NameCell = ({ name }: { readonly name: string }) => <span className="font-medium">{name}</span>;
+
+const ActionsHeaderCell = ({ label }: { readonly label: string }) => <span className="text-right block">{label}</span>;
+
+const ActionsCell = ({ 
+  customer, 
+  onEdit, 
+  onDelete 
+}: { 
+  readonly customer: Customer; 
+  readonly onEdit: (_customer: Customer) => void; 
+  readonly onDelete: (_id: string | number) => void;
+}) => (
+  <div className="text-right space-x-2">
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => onEdit(customer)}
+          className="p-1 hover:bg-gray-100 rounded inline-flex"
+          {...testId(`customer-edit-${customer.id}`)}
+        >
+          <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Éditer le client</TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => onDelete(customer.id)}
+          className="p-1 hover:bg-gray-100 rounded inline-flex"
+          {...testId(`customer-delete-${customer.id}`)}
+        >
+          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Supprimer le client</TooltipContent>
+    </Tooltip>
+  </div>
+);
+
+// Columns factory function
+function createCustomerColumns(
+  dictionary: CustomersDictionary,
+  onEdit: (_customer: Customer) => void,
+  onDelete: (_id: string | number) => void
+): ColumnDef<Customer>[] {
+  return [
+    {
+      accessorKey: "name",
+      enableColumnFilter: true,
+      header: ({ column }) => <NameHeaderCell column={column} label={dictionary.table_name} />,
+      cell: ({ row }) => <NameCell name={row.original.name} />,
+    },
+    {
+      accessorKey: "email",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.email || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.email;
+        }
+        const email = row.original.email || "";
+        return email.toLowerCase().includes(trimmedFilter);
+      },
+      header: ({ column }) => <SortableHeaderCell column={column} label={dictionary.table_email} />,
+    },
+    {
+      accessorKey: "contact_person",
+      enableColumnFilter: true,
+      cell: ({ row }) => row.original.contact_person || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.contact_person;
+        }
+        const contact = row.original.contact_person || "";
+        return contact.toLowerCase().includes(trimmedFilter);
+      },
+      header: ({ column }) => <SortableHeaderCell column={column} label={dictionary.table_contact} />,
+    },
+    {
+      accessorKey: "phone_number",
+      enableColumnFilter: true,
+      enableSorting: false,
+      header: dictionary.table_phone,
+      cell: ({ row }) => row.original.phone_number || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.phone_number;
+        }
+        const phone = row.original.phone_number || "";
+        return phone.toLowerCase().includes(trimmedFilter);
+      },
+    },
+    {
+      accessorKey: "address",
+      enableColumnFilter: true,
+      enableSorting: false,
+      header: dictionary.table_address,
+      cell: ({ row }) => row.original.address || "-",
+      filterFn: (row, _columnId, filterValue) => {
+        const trimmedFilter = filterValue.toLowerCase().trim();
+        if (trimmedFilter === "-") {
+          return !row.original.address;
+        }
+        const address = row.original.address || "";
+        return address.toLowerCase().includes(trimmedFilter);
+      },
+    },
+    {
+      id: "actions",
+      enableSorting: false,
+      enableColumnFilter: false,
+      header: () => <ActionsHeaderCell label={dictionary.table_actions} />,
+      cell: ({ row }) => <ActionsCell customer={row.original} onEdit={onEdit} onDelete={onDelete} />,
+    },
+  ];
+}
+
 // ==================== MAIN COMPONENT ====================
 
-export default function Customers({ dictionary }: { dictionary: CustomersDictionary }) {
+export default function Customers({ dictionary }: { readonly dictionary: CustomersDictionary }) {
   // ==================== STATE MANAGEMENT ====================
   
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -131,8 +297,8 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
     total_records: number;
     successful_imports: number;
     failed_imports: number;
-    errors?: Array<{ record_index: number; error: string; record?: unknown }>;
-    warnings?: Array<{ record_index: number; warning: string }>;
+    errors?: Array<{ record_index?: number; original_id?: string; status_code?: number; error: string; record?: unknown }>;
+    warnings?: Array<{ record_index?: number; warning: string } | string>;
   } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -178,7 +344,7 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
       if (Array.isArray(data)) {
         customersArray = data;
       } else {
-        throw new Error(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
+        throw new TypeError(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
       }
 
       setCustomers(customersArray);
@@ -229,7 +395,7 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
         res = await fetchWithAuth(IDENTITY_ROUTES.customers, options);
       }
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) {
@@ -246,16 +412,16 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
   }
 
   async function handleDeleteCustomer(customerId: string | number) {
-    if (!window.confirm(dictionary.delete_confirm_message)) return;
+    if (!globalThis.confirm(dictionary.delete_confirm_message)) return;
     try {
       const res = await fetchWithAuth(IDENTITY_ROUTES.customer(customerId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
-      if (!res.ok) throw new Error(dictionary.error_delete);
+      if (!res.ok) throw new TypeError(dictionary.error_delete);
       fetchData();
     } catch (err) {
       console.error("handleDeleteCustomer error:", err);
@@ -333,29 +499,40 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
             body: formData,
           });
           
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(`Import failed: ${errorText}`);
+          // Parse response - even if status is 400, there might be a valid import report
+          let responseData;
+          try {
+            responseData = await res.json();
+          } catch {
+            // If JSON parsing fails, show generic error
+            throw new Error(dictionary.error_import);
           }
-          
-          const responseData = await res.json();
-          console.log('Import report received:', responseData);
-          
-          // Extract and map the import_report to expected format
-          const importData = responseData.import_report || responseData;
-          const mappedReport = {
-            total_records: importData.total || 0,
-            successful_imports: importData.success || 0,
-            failed_imports: importData.failed || 0,
-            errors: importData.errors || [],
-            warnings: importData.warnings || []
-          };
-          
-          setImportReport(mappedReport);
-          setShowImportReport(true);
-          
-          // Refresh data after import
-          fetchData();
+
+          // Check if we have an import_report (even with errors)
+          if (responseData.import_report) {
+            console.log('Import report received:', responseData);
+            
+            // Extract and map the import_report to expected format
+            const importData = responseData.import_report;
+            const mappedReport = {
+              total_records: importData.total || 0,
+              successful_imports: importData.success || 0,
+              failed_imports: importData.failed || 0,
+              errors: importData.errors || [],
+              warnings: importData.warnings || []
+            };
+            
+            setImportReport(mappedReport);
+            setShowImportReport(true);
+            
+            // Refresh data if there were some successful imports
+            if (mappedReport.successful_imports > 0) {
+              fetchData();
+            }
+          } else if (!res.ok) {
+            // No import report and not OK - this is a real error
+            throw new Error(dictionary.error_import);
+          }
           
         } catch (err) {
           console.error("Import error:", err);
@@ -377,154 +554,7 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  const columns: ColumnDef<Customer>[] = [
-    {
-      accessorKey: "name",
-      enableColumnFilter: true,
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_name}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
-    },
-    {
-      accessorKey: "email",
-      enableColumnFilter: true,
-      cell: ({ row }) => row.original.email || "-",
-      filterFn: (row, _columnId, filterValue) => {
-        const trimmedFilter = filterValue.toLowerCase().trim();
-        if (trimmedFilter === "-") {
-          return !row.original.email;
-        }
-        const email = row.original.email || "";
-        return email.toLowerCase().includes(trimmedFilter);
-      },
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_email}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
-    },
-    {
-      accessorKey: "contact_person",
-      enableColumnFilter: true,
-      cell: ({ row }) => row.original.contact_person || "-",
-      filterFn: (row, _columnId, filterValue) => {
-        const trimmedFilter = filterValue.toLowerCase().trim();
-        if (trimmedFilter === "-") {
-          return !row.original.contact_person;
-        }
-        const contact = row.original.contact_person || "";
-        return contact.toLowerCase().includes(trimmedFilter);
-      },
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_contact}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
-    },
-    {
-      accessorKey: "phone_number",
-      enableColumnFilter: true,
-      enableSorting: false,
-      header: dictionary.table_phone,
-      cell: ({ row }) => row.original.phone_number || "-",
-      filterFn: (row, _columnId, filterValue) => {
-        const trimmedFilter = filterValue.toLowerCase().trim();
-        if (trimmedFilter === "-") {
-          return !row.original.phone_number;
-        }
-        const phone = row.original.phone_number || "";
-        return phone.toLowerCase().includes(trimmedFilter);
-      },
-    },
-    {
-      accessorKey: "address",
-      enableColumnFilter: true,
-      enableSorting: false,
-      header: dictionary.table_address,
-      cell: ({ row }) => row.original.address || "-",
-      filterFn: (row, _columnId, filterValue) => {
-        const trimmedFilter = filterValue.toLowerCase().trim();
-        if (trimmedFilter === "-") {
-          return !row.original.address;
-        }
-        const address = row.original.address || "";
-        return address.toLowerCase().includes(trimmedFilter);
-      },
-    },
-    {
-      id: "actions",
-      enableSorting: false,
-      enableColumnFilter: false,
-      header: () => <span className="text-right block">{dictionary.table_actions}</span>,
-      cell: ({ row }) => (
-        <div className="text-right space-x-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => openEditCustomerDialog(row.original)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(`customer-edit-${row.original.id}`)}
-              >
-                <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Éditer le client</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => handleDeleteCustomer(row.original.id)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(`customer-delete-${row.original.id}`)}
-              >
-                <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Supprimer le client</TooltipContent>
-          </Tooltip>
-        </div>
-      ),
-    },
-  ];
+  const columns = createCustomerColumns(dictionary, openEditCustomerDialog, handleDeleteCustomer);
 
   const table = useReactTable({
     data: customers,
@@ -804,10 +834,15 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
                 <div className="space-y-2">
                   <h3 className="font-semibold text-red-600">Erreurs</h3>
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-2 max-h-60 overflow-y-auto">
-                    {importReport.errors.map((err) => (
-                      <div key={`error-${err.record_index}`} className="text-sm">
+                    {importReport.errors.map((err, idx) => (
+                      <div key={err.original_id || err.record_index !== undefined ? `error-${err.record_index}` : `error-${idx}`} className="text-sm">
                         <div>
-                          <span className="font-medium">Ligne {err.record_index + 1}:</span>{' '}
+                          {err.record_index !== undefined && (
+                            <span className="font-medium">Ligne {err.record_index + 1}: </span>
+                          )}
+                          {err.original_id && (
+                            <span className="font-medium">ID {err.original_id}: </span>
+                          )}
                           {err.error}
                         </div>
                         {err.record !== undefined && err.record !== null && (
@@ -826,10 +861,18 @@ export default function Customers({ dictionary }: { dictionary: CustomersDiction
                 <div className="space-y-2">
                   <h3 className="font-semibold text-yellow-600">Avertissements</h3>
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-2 max-h-40 overflow-y-auto">
-                    {importReport.warnings.map((warn) => (
-                      <div key={`warning-${warn.record_index}`} className="text-sm">
-                        <span className="font-medium">Ligne {warn.record_index + 1}:</span>{' '}
-                        {warn.warning}
+                    {importReport.warnings.map((warn, idx) => (
+                      <div key={typeof warn === 'string' ? `warning-${idx}` : `warning-${warn.record_index ?? idx}`} className="text-sm">
+                        {typeof warn === 'string' ? (
+                          warn
+                        ) : (
+                          <>
+                            {warn.record_index !== undefined && (
+                              <span className="font-medium">Ligne {warn.record_index + 1}: </span>
+                            )}
+                            {warn.warning}
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

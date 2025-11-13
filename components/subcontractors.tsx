@@ -54,8 +54,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, FileJson, FileText } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { BASIC_IO_ROUTES } from "@/lib/api-routes";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
 // ==================== TYPE DEFINITIONS ====================
@@ -63,12 +70,18 @@ import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 type SubcontractorsDictionary = {
   page_title: string;
   create_button: string;
+  import_button: string;
+  export_button: string;
+  import_json: string;
+  import_csv: string;
+  export_json: string;
+  export_csv: string;
   table_name: string;
   table_email: string;
   table_contact: string;
   table_phone: string;
   table_address: string;
-  table_services: string;
+  table_description: string;
   table_actions: string;
   no_subcontractors: string;
   modal_create_title: string;
@@ -79,7 +92,7 @@ type SubcontractorsDictionary = {
   form_contact: string;
   form_phone: string;
   form_address: string;
-  form_services: string;
+  form_description: string;
   form_cancel: string;
   form_create: string;
   form_save: string;
@@ -88,6 +101,15 @@ type SubcontractorsDictionary = {
   error_create: string;
   error_update: string;
   error_delete: string;
+  error_export: string;
+  error_import: string;
+  import_report_title: string;
+  import_report_close: string;
+  import_report_total: string;
+  import_report_success: string;
+  import_report_failed: string;
+  import_report_errors: string;
+  import_report_warnings: string;
 };
 
 type Subcontractor = {
@@ -97,7 +119,7 @@ type Subcontractor = {
   contact_person?: string;
   phone_number?: string;
   address?: string;
-  services_offered?: string;
+  description?: string;
   company_id?: string | number;
   created_at?: string;
   updated_at?: string;
@@ -109,174 +131,88 @@ function testId(id: string) {
   return { "data-testid": id };
 }
 
-// ==================== MAIN COMPONENT ====================
+// Helper types and functions for sort icons
+type SortState = false | "asc" | "desc";
 
-export default function Subcontractors({ dictionary }: { dictionary: SubcontractorsDictionary }) {
-  // ==================== STATE MANAGEMENT ====================
-  
-  const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
-  const [error, setError] = useState("");
+function getSortIcon(sortState: SortState) {
+  if (sortState === "asc") return <ArrowUp className="h-4 w-4" />;
+  if (sortState === "desc") return <ArrowDown className="h-4 w-4" />;
+  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
+}
 
-  // Subcontractor dialog (create/edit)
-  const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
-  const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
+// Table header components
+type ColumnHelper = { toggleSorting: (_desc?: boolean) => void; getIsSorted: () => SortState };
 
-  // Subcontractor form with Zod validation
-  const subcontractorForm = useZodForm({
-    schema: subcontractorSchema,
-    defaultValues: {
-      name: "",
-      email: "",
-      contact_person: "",
-      phone_number: "",
-      address: "",
-      services_offered: "",
-    },
-  });
+const NameHeaderCell = ({ column, label }: { readonly column: ColumnHelper; readonly label: string }) => (
+  <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="px-1">
+    {label}
+    {getSortIcon(column.getIsSorted())}
+  </Button>
+);
 
-  // ==================== DATA FETCHING ====================
+const SortableHeaderCell = ({ column, label }: { readonly column: ColumnHelper; readonly label: string }) => (
+  <button
+    onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    className="flex items-center gap-2 hover:text-foreground"
+  >
+    {label}
+    {getSortIcon(column.getIsSorted())}
+  </button>
+);
 
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+const NameCell = ({ name }: { readonly name: string }) => <span className="font-medium">{name}</span>;
 
-  async function fetchData() {
-    try {
-      setError("");
-      const res = await fetchWithAuth(IDENTITY_ROUTES.subcontractors);
+const ActionsHeaderCell = ({ label }: { readonly label: string }) => <span className="text-right block">{label}</span>;
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        let errorMsg = dictionary.error_fetch;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.message) errorMsg = errorJson.message;
-        } catch {
-          // Keep default error message
-        }
-        throw new Error(errorMsg);
-      }
+const ActionsCell = ({ 
+  subcontractor, 
+  onEdit, 
+  onDelete 
+}: { 
+  readonly subcontractor: Subcontractor; 
+  readonly onEdit: (_subcontractor: Subcontractor) => void; 
+  readonly onDelete: (_id: string | number) => void;
+}) => (
+  <div className="text-right space-x-2">
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => onEdit(subcontractor)}
+          className="p-1 hover:bg-gray-100 rounded inline-flex"
+          {...testId(`subcontractor-edit-${subcontractor.id}`)}
+        >
+          <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Éditer le sous-traitant</TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => onDelete(subcontractor.id)}
+          className="p-1 hover:bg-gray-100 rounded inline-flex"
+          {...testId(`subcontractor-delete-${subcontractor.id}`)}
+        >
+          <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>Supprimer le sous-traitant</TooltipContent>
+    </Tooltip>
+  </div>
+);
 
-      const data = await res.json();
-      let subcontractorsArray: Subcontractor[] = [];
-      if (Array.isArray(data)) {
-        subcontractorsArray = data;
-      } else {
-        throw new Error(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
-      }
-
-      setSubcontractors(subcontractorsArray);
-    } catch (err) {
-      if (err instanceof Error) setError(err.message);
-      else setError(dictionary.error_fetch);
-    }
-  }
-
-  // ==================== SUBCONTRACTOR CRUD OPERATIONS ====================
-
-  function openCreateSubcontractorDialog() {
-    setEditingSubcontractor(null);
-    subcontractorForm.reset({ name: "", email: "", contact_person: "", phone_number: "", address: "", services_offered: "" });
-    setShowSubcontractorDialog(true);
-  }
-
-  function openEditSubcontractorDialog(subcontractor: Subcontractor) {
-    setEditingSubcontractor(subcontractor);
-    subcontractorForm.reset({
-      name: subcontractor.name,
-      email: subcontractor.email || "",
-      contact_person: subcontractor.contact_person || "",
-      phone_number: subcontractor.phone_number || "",
-      address: subcontractor.address || "",
-      services_offered: subcontractor.services_offered || "",
-    });
-    setShowSubcontractorDialog(true);
-  }
-
-  async function handleSubcontractorSubmit(data: SubcontractorFormData) {
-    const payload = {
-      name: data.name,
-      email: data.email || undefined,
-      contact_person: data.contact_person || undefined,
-      phone_number: data.phone_number || undefined,
-      address: data.address || undefined,
-      services_offered: data.services_offered || undefined,
-    };
-    try {
-      let res;
-      const options = {
-        method: editingSubcontractor ? "PATCH" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      };
-      if (editingSubcontractor) {
-        res = await fetchWithAuth(IDENTITY_ROUTES.subcontractor(editingSubcontractor.id.toString()), options);
-      } else {
-        res = await fetchWithAuth(IDENTITY_ROUTES.subcontractors, options);
-      }
-      if (res.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Erreur API subcontractors:", errorText);
-        throw new Error(dictionary.error_create);
-      }
-      setShowSubcontractorDialog(false);
-      fetchData();
-    } catch (err) {
-      console.error("handleSubcontractorSubmit error:", err);
-      setError(editingSubcontractor ? dictionary.error_update : dictionary.error_create);
-    }
-  }
-
-  async function handleDeleteSubcontractor(subcontractorId: string | number) {
-    if (!window.confirm(dictionary.delete_confirm_message)) return;
-    try {
-      const res = await fetchWithAuth(IDENTITY_ROUTES.subcontractor(subcontractorId.toString()), {
-        method: "DELETE",
-      });
-      if (res.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
-      if (!res.ok) throw new Error(dictionary.error_delete);
-      fetchData();
-    } catch (err) {
-      console.error("handleDeleteSubcontractor error:", err);
-      setError(dictionary.error_delete);
-    }
-  }
-
-  // ==================== TABLE CONFIGURATION ====================
-  
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-
-  const columns: ColumnDef<Subcontractor>[] = [
+// Columns factory function
+function createSubcontractorColumns(
+  dictionary: SubcontractorsDictionary,
+  onEdit: (_subcontractor: Subcontractor) => void,
+  onDelete: (_id: string | number) => void
+): ColumnDef<Subcontractor>[] {
+  return [
     {
       accessorKey: "name",
       enableColumnFilter: true,
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_name}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      header: ({ column }) => <NameHeaderCell column={column} label={dictionary.table_name} />,
+      cell: ({ row }) => <NameCell name={row.original.name} />,
     },
     {
       accessorKey: "email",
@@ -290,23 +226,7 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
         const email = row.original.email || "";
         return email.toLowerCase().includes(trimmedFilter);
       },
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_email}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
+      header: ({ column }) => <SortableHeaderCell column={column} label={dictionary.table_email} />,
     },
     {
       accessorKey: "contact_person",
@@ -320,23 +240,7 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
         const contact = row.original.contact_person || "";
         return contact.toLowerCase().includes(trimmedFilter);
       },
-      header: ({ column }) => {
-        return (
-          <button
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="flex items-center gap-2 hover:text-foreground"
-          >
-            {dictionary.table_contact}
-            {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
-            ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
-            )}
-          </button>
-        );
-      },
+      header: ({ column }) => <SortableHeaderCell column={column} label={dictionary.table_contact} />,
     },
     {
       accessorKey: "phone_number",
@@ -369,58 +273,304 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
       },
     },
     {
-      accessorKey: "services_offered",
+      accessorKey: "description",
       enableColumnFilter: true,
       enableSorting: false,
-      header: dictionary.table_services,
+      header: dictionary.table_description,
       cell: ({ row }) => {
-        const services = row.original.services_offered || "-";
-        return services.length > 50 ? services.slice(0, 50) + "..." : services;
+        const description = row.original.description || "-";
+        return description.length > 50 ? description.slice(0, 50) + "..." : description;
       },
       filterFn: (row, _columnId, filterValue) => {
         const trimmedFilter = filterValue.toLowerCase().trim();
         if (trimmedFilter === "-") {
-          return !row.original.services_offered;
+          return !row.original.description;
         }
-        const services = row.original.services_offered || "";
-        return services.toLowerCase().includes(trimmedFilter);
+        const description = row.original.description || "";
+        return description.toLowerCase().includes(trimmedFilter);
       },
     },
     {
       id: "actions",
       enableSorting: false,
       enableColumnFilter: false,
-      header: () => <span className="text-right block">{dictionary.table_actions}</span>,
-      cell: ({ row }) => (
-        <div className="text-right space-x-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => openEditSubcontractorDialog(row.original)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(`subcontractor-edit-${row.original.id}`)}
-              >
-                <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Éditer le sous-traitant</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => handleDeleteSubcontractor(row.original.id)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(`subcontractor-delete-${row.original.id}`)}
-              >
-                <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>Supprimer le sous-traitant</TooltipContent>
-          </Tooltip>
-        </div>
-      ),
+      header: () => <ActionsHeaderCell label={dictionary.table_actions} />,
+      cell: ({ row }) => <ActionsCell subcontractor={row.original} onEdit={onEdit} onDelete={onDelete} />,
     },
   ];
+}
+
+// ==================== MAIN COMPONENT ====================
+
+export default function Subcontractors({ dictionary }: { readonly dictionary: SubcontractorsDictionary }) {
+  // ==================== STATE MANAGEMENT ====================
+  
+  const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
+  const [error, setError] = useState("");
+
+  // Subcontractor dialog (create/edit)
+  const [showSubcontractorDialog, setShowSubcontractorDialog] = useState(false);
+  const [editingSubcontractor, setEditingSubcontractor] = useState<Subcontractor | null>(null);
+
+  // Import/Export states
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<{
+    total_records: number;
+    successful_imports: number;
+    failed_imports: number;
+    errors: Array<string | { original_id?: string; status_code?: number; error?: string }>;
+    warnings: string[];
+  } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
+  // Subcontractor form with Zod validation
+  const subcontractorForm = useZodForm({
+    schema: subcontractorSchema,
+    defaultValues: {
+      name: "",
+      email: "",
+      contact_person: "",
+      phone_number: "",
+      address: "",
+      description: "",
+    },
+  });
+
+  // ==================== DATA FETCHING ====================
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function fetchData() {
+    try {
+      setError("");
+      const res = await fetchWithAuth(IDENTITY_ROUTES.subcontractors);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        let errorMsg = dictionary.error_fetch;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.message) errorMsg = errorJson.message;
+        } catch {
+          // Keep default error message
+        }
+        throw new Error(errorMsg);
+      }
+
+      const data = await res.json();
+      let subcontractorsArray: Subcontractor[] = [];
+      if (Array.isArray(data)) {
+        subcontractorsArray = data;
+      } else {
+        throw new TypeError(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
+      }
+
+      setSubcontractors(subcontractorsArray);
+    } catch (err) {
+      if (err instanceof Error) setError(err.message);
+      else setError(dictionary.error_fetch);
+    }
+  }
+
+  // ==================== SUBCONTRACTOR CRUD OPERATIONS ====================
+
+  function openCreateSubcontractorDialog() {
+    setEditingSubcontractor(null);
+    subcontractorForm.reset({ name: "", email: "", contact_person: "", phone_number: "", address: "", description: "" });
+    setShowSubcontractorDialog(true);
+  }
+
+  function openEditSubcontractorDialog(subcontractor: Subcontractor) {
+    setEditingSubcontractor(subcontractor);
+    subcontractorForm.reset({
+      name: subcontractor.name,
+      email: subcontractor.email || "",
+      contact_person: subcontractor.contact_person || "",
+      phone_number: subcontractor.phone_number || "",
+      address: subcontractor.address || "",
+      description: subcontractor.description || "",
+    });
+    setShowSubcontractorDialog(true);
+  }
+
+  async function handleSubcontractorSubmit(data: SubcontractorFormData) {
+    const payload = {
+      name: data.name,
+      email: data.email || undefined,
+      contact_person: data.contact_person || undefined,
+      phone_number: data.phone_number || undefined,
+      address: data.address || undefined,
+      description: data.description || undefined,
+    };
+    try {
+      let res;
+      const options = {
+        method: editingSubcontractor ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      };
+      if (editingSubcontractor) {
+        res = await fetchWithAuth(IDENTITY_ROUTES.subcontractor(editingSubcontractor.id.toString()), options);
+      } else {
+        res = await fetchWithAuth(IDENTITY_ROUTES.subcontractors, options);
+      }
+      if (res.status === 401) {
+        globalThis.location.href = "/login";
+        return;
+      }
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Erreur API subcontractors:", errorText);
+        throw new Error(dictionary.error_create);
+      }
+      setShowSubcontractorDialog(false);
+      fetchData();
+    } catch (err) {
+      console.error("handleSubcontractorSubmit error:", err);
+      setError(editingSubcontractor ? dictionary.error_update : dictionary.error_create);
+    }
+  }
+
+  async function handleDeleteSubcontractor(subcontractorId: string | number) {
+    if (!globalThis.confirm(dictionary.delete_confirm_message)) return;
+    try {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.subcontractor(subcontractorId.toString()), {
+        method: "DELETE",
+      });
+      if (res.status === 401) {
+        globalThis.location.href = "/login";
+        return;
+      }
+      if (!res.ok) throw new Error(dictionary.error_delete);
+      fetchData();
+    } catch (err) {
+      console.error("handleDeleteSubcontractor error:", err);
+      setError(dictionary.error_delete);
+    }
+  }
+
+  // ==================== IMPORT/EXPORT OPERATIONS ====================
+
+  async function handleExport(format: 'json' | 'csv') {
+    try {
+      setIsExporting(true);
+      setError("");
+
+      const url = `${BASIC_IO_ROUTES.export}?service=identity&path=/subcontractors&type=${format}&enrich=true`;
+      const res = await fetchWithAuth(url);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Export error:", errorText);
+        throw new Error(dictionary.error_export);
+      }
+
+      const blob = await res.blob();
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `subcontractors_export.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("handleExport error:", err);
+      if (err instanceof Error) setError(err.message);
+      else setError(dictionary.error_export);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleImport(format: 'json' | 'csv') {
+    try {
+      setIsImporting(true);
+      setError("");
+
+      // Create file input
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = format === 'json' ? 'application/json' : 'text/csv';
+      
+      input.onchange = async (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const file = target.files?.[0];
+        if (!file) {
+          setIsImporting(false);
+          return;
+        }
+
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const url = `${BASIC_IO_ROUTES.import}?service=identity&path=/subcontractors&type=${format}`;
+          const res = await fetchWithAuth(url, {
+            method: 'POST',
+            body: formData,
+          });
+
+          // Parse response - even if status is 400, there might be a valid import report
+          let responseData;
+          try {
+            responseData = await res.json();
+          } catch {
+            // If JSON parsing fails, show generic error
+            throw new Error(dictionary.error_import);
+          }
+
+          // Check if we have an import_report (even with errors)
+          if (responseData.import_report) {
+            // Map the response format to match our import report structure
+            const importData = responseData.import_report;
+            const mappedReport = {
+              total_records: importData.total || 0,
+              successful_imports: importData.success || 0,
+              failed_imports: importData.failed || 0,
+              errors: importData.errors || [],
+              warnings: importData.warnings || [],
+            };
+
+            setImportReport(mappedReport);
+            setShowImportReport(true);
+            
+            // Refresh data if there were some successful imports
+            if (mappedReport.successful_imports > 0) {
+              await fetchData();
+            }
+          } else if (!res.ok) {
+            // No import report and not OK - this is a real error
+            throw new Error(dictionary.error_import);
+          }
+        } catch (err) {
+          console.error("handleImport file processing error:", err);
+          if (err instanceof Error) setError(err.message);
+          else setError(dictionary.error_import);
+        } finally {
+          setIsImporting(false);
+        }
+      };
+
+      input.click();
+    } catch (err) {
+      console.error("handleImport error:", err);
+      if (err instanceof Error) setError(err.message);
+      else setError(dictionary.error_import);
+      setIsImporting(false);
+    }
+  }
+
+  // ==================== TABLE CONFIGURATION ====================
+  
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const columns = createSubcontractorColumns(dictionary, openEditSubcontractorDialog, handleDeleteSubcontractor);
 
   const table = useReactTable({
     data: subcontractors,
@@ -445,13 +595,63 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
         <h2 className="text-xl font-bold" {...testId("subcontractors-title")}>
           {dictionary.page_title}
         </h2>
-        <Button 
-          onClick={openCreateSubcontractorDialog}
-          {...testId("subcontractor-add-button")}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {dictionary.create_button}
-        </Button>
+        <div className="flex gap-2">
+          {/* Import Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={isImporting}
+                {...testId("subcontractor-import-button")}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {dictionary.import_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleImport('json')}>
+                <FileJson className="h-4 w-4 mr-2" />
+                JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleImport('csv')}>
+                <FileText className="h-4 w-4 mr-2" />
+                CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={isExporting}
+                {...testId("subcontractor-export-button")}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {dictionary.export_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                <FileJson className="h-4 w-4 mr-2" />
+                JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <FileText className="h-4 w-4 mr-2" />
+                CSV
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button 
+            onClick={openCreateSubcontractorDialog}
+            {...testId("subcontractor-add-button")}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {dictionary.create_button}
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -592,15 +792,15 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
               )}
             </div>
             <div>
-              <Label htmlFor="services_offered">{dictionary.form_services}</Label>
+              <Label htmlFor="description">{dictionary.form_description}</Label>
               <Input
-                id="services_offered"
-                {...subcontractorForm.register("services_offered")}
-                {...testId("subcontractor-services-input")}
+                id="description"
+                {...subcontractorForm.register("description")}
+                {...testId("subcontractor-description-input")}
               />
-              {subcontractorForm.formState.errors.services_offered && (
+              {subcontractorForm.formState.errors.description && (
                 <p className="text-red-500 text-sm mt-1">
-                  {subcontractorForm.formState.errors.services_offered.message}
+                  {subcontractorForm.formState.errors.description.message}
                 </p>
               )}
             </div>
@@ -621,6 +821,63 @@ export default function Subcontractors({ dictionary }: { dictionary: Subcontract
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Report Dialog */}
+      <Dialog open={showImportReport} onOpenChange={setShowImportReport}>
+        <DialogContent {...testId("subcontractor-import-report-dialog")}>
+          <DialogHeader>
+            <DialogTitle>{dictionary.import_report_title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg">
+                <p className="text-sm text-gray-600">{dictionary.import_report_total}</p>
+                <p className="text-2xl font-bold">{importReport?.total_records || 0}</p>
+              </div>
+              <div className="p-4 border rounded-lg bg-green-50">
+                <p className="text-sm text-gray-600">{dictionary.import_report_success}</p>
+                <p className="text-2xl font-bold text-green-600">{importReport?.successful_imports || 0}</p>
+              </div>
+              <div className="p-4 border rounded-lg bg-red-50">
+                <p className="text-sm text-gray-600">{dictionary.import_report_failed}</p>
+                <p className="text-2xl font-bold text-red-600">{importReport?.failed_imports || 0}</p>
+              </div>
+            </div>
+
+            {/* Errors List */}
+            {importReport?.errors && importReport.errors.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-red-600 mb-2">{dictionary.import_report_errors}</h3>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  {importReport.errors.map((error, idx) => (
+                    <li key={typeof error === 'string' ? `error-${idx}` : error.original_id || `error-${idx}`} className="text-red-600">
+                      {typeof error === 'string' ? error : error.error || JSON.stringify(error)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Warnings List */}
+            {importReport?.warnings && importReport.warnings.length > 0 && (
+              <div>
+                <h3 className="font-semibold text-yellow-600 mb-2">{dictionary.import_report_warnings}</h3>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  {importReport.warnings.map((warning, idx) => (
+                    <li key={`warn-${idx}-${warning.substring(0, 20)}`} className="text-yellow-600">{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowImportReport(false)}>
+              {dictionary.import_report_close}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
