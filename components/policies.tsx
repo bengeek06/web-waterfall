@@ -29,7 +29,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
-import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, FileJson, FileText } from "lucide-react";
 
 // ==================== CONSTANTS ====================
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
@@ -46,6 +52,12 @@ import { policySchema, PolicyFormData } from "@/lib/validation";
 type PoliciesDictionary = {
   page_title: string;
   create_button: string;
+  import_button: string;
+  export_button: string;
+  import_json: string;
+  import_csv: string;
+  export_json: string;
+  export_csv: string;
   table_name: string;
   table_description: string;
   table_permissions: string;
@@ -74,6 +86,15 @@ type PoliciesDictionary = {
   error_create: string;
   error_update: string;
   error_delete: string;
+  error_export: string;
+  error_import: string;
+  import_report_title: string;
+  import_report_close: string;
+  import_report_total: string;
+  import_report_success: string;
+  import_report_failed: string;
+  import_report_errors: string;
+  import_report_warnings: string;
 };
 
 type Permission = {
@@ -200,7 +221,7 @@ function groupAvailablePermissions(perms: Permission[]) {
   return Object.values(groups);
 }
 
-export default function Policies({ dictionary }: { dictionary: PoliciesDictionary }) {
+export default function Policies({ dictionary }: { readonly dictionary: PoliciesDictionary }) {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -232,6 +253,18 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
   // Permissions selected to add
   const [selectedPermissionsToAdd, setSelectedPermissionsToAdd] = useState<Set<string | number>>(new Set());
 
+  // Import/Export state
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<{
+    total_records: number;
+    successful_imports: number;
+    failed_imports: number;
+    errors: Array<string | { original_id?: string; status_code?: number; error?: string }>;
+    warnings: string[];
+  } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
   // ==================== HANDLERS ====================
   async function fetchData() {
     try {
@@ -240,7 +273,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         fetch(GUARDIAN_ROUTES.policies),
       ]);
       if (permissionsRes.status === 401 || policiesRes.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!permissionsRes.ok) throw new Error(dictionary.error_fetch);
@@ -348,7 +381,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         res = await fetchWithAuth(GUARDIAN_ROUTES.policies, options);
       }
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) {
@@ -365,13 +398,13 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
   }
 
   async function handleDeletePolicy(policyId: string | number) {
-    if (!window.confirm("Supprimer cette politique ?")) return;
+    if (!globalThis.confirm("Supprimer cette politique ?")) return;
     try {
       const res = await fetchWithAuth(GUARDIAN_ROUTES.policy(policyId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
@@ -401,7 +434,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         { method: "DELETE" }
       );
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
@@ -412,7 +445,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
   }
 
   async function handleRemovePermissionGroup(policyId: string | number, permissions: Permission[]) {
-    if (!window.confirm(`Supprimer toutes les permissions de ce groupe (${permissions.length} permission${permissions.length > 1 ? 's' : ''}) ?`)) return;
+    if (!globalThis.confirm(`Supprimer toutes les permissions de ce groupe (${permissions.length} permission${permissions.length > 1 ? 's' : ''}) ?`)) return;
     try {
       await Promise.all(
         permissions.map(perm => removePermissionWithoutConfirm(policyId, perm.id))
@@ -462,7 +495,7 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
       
       const results = await Promise.all(promises);
       if (results.some(res => res.status === 401)) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (results.some(res => !res.ok)) {
@@ -495,6 +528,195 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         .map(p => p.resource_name)
     )
   ).sort((a, b) => a.localeCompare(b));
+
+  // ==================== IMPORT/EXPORT HANDLERS ====================
+  
+  async function handleExport(type: 'json' | 'csv') {
+    setIsExporting(true);
+    try {
+      // We need to fetch policies with their permissions manually
+      // because the guardian API doesn't return permissions in GET /policies
+      
+      // Fetch all policies (already loaded in state with permissions)
+      const policiesWithPermissions = policies.map(policy => ({
+        id: policy.id,
+        name: policy.name,
+        description: policy.description,
+        permissions: policy.permissions.map(p => ({
+          id: p.id,
+          service: p.service,
+          resource_name: p.resource_name,
+          operation: p.operation,
+          description: p.description,
+        })),
+      }));
+      
+      if (type === 'json') {
+        // Export as JSON
+        const jsonContent = JSON.stringify(policiesWithPermissions, null, 2);
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const downloadUrl = globalThis.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'policies_export.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        globalThis.URL.revokeObjectURL(downloadUrl);
+      } else {
+        // For CSV, we need to flatten the structure
+        // Each row will be: policy_id, policy_name, policy_description, permission_ids (comma-separated)
+        const csvRows = [
+          ['policy_id', 'policy_name', 'policy_description', 'permission_ids'].join(',')
+        ];
+        
+        for (const policy of policiesWithPermissions) {
+          const permissionIds = policy.permissions.map(p => p.id).join(';');
+          csvRows.push([
+            policy.id,
+            `"${(policy.name || '').replaceAll('"', '""')}"`,
+            `"${(policy.description || '').replaceAll('"', '""')}"`,
+            `"${permissionIds}"`
+          ].join(','));
+        }
+        
+        const csvContent = csvRows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const downloadUrl = globalThis.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'policies_export.csv';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        globalThis.URL.revokeObjectURL(downloadUrl);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : dictionary.error_export);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleImport(type: 'json' | 'csv') {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = type === 'json' ? 'application/json' : 'text/csv';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      setIsImporting(true);
+      const errors: string[] = [];
+      const warnings: string[] = [];
+      let totalRecords = 0;
+      let successfulImports = 0;
+      
+      try {
+        const fileContent = await file.text();
+        let policiesToImport: Array<{
+          id?: string;
+          name: string;
+          description?: string;
+          permissions: Array<{ id: string | number }>;
+        }> = [];
+        
+        if (type === 'json') {
+          policiesToImport = JSON.parse(fileContent);
+        } else {
+          // Parse CSV
+          const lines = fileContent.split('\n').filter(l => l.trim());
+          // Skip header line
+          
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const permissionIds = values[3]?.replaceAll('"', '').split(';').filter(id => id.trim());
+            
+            policiesToImport.push({
+              id: values[0],
+              name: values[1]?.replaceAll('"', ''),
+              description: values[2]?.replaceAll('"', ''),
+              permissions: permissionIds.map(id => ({ id: id.trim() })),
+            });
+          }
+        }
+        
+        totalRecords = policiesToImport.length;
+        
+        // Import each policy
+        for (const policyData of policiesToImport) {
+          try {
+            // 1. Create the policy (without permissions)
+            const createRes = await fetchWithAuth(GUARDIAN_ROUTES.policies, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: policyData.name,
+                description: policyData.description,
+              }),
+            });
+            
+            if (!createRes.ok) {
+              const errorData = await createRes.json();
+              errors.push(`Policy "${policyData.name}": ${errorData.message || 'Failed to create'}`);
+              continue;
+            }
+            
+            const createdPolicy = await createRes.json();
+            
+            // 2. Add permissions to the policy
+            if (policyData.permissions && policyData.permissions.length > 0) {
+              for (const perm of policyData.permissions) {
+                try {
+                  const addPermRes = await fetchWithAuth(
+                    GUARDIAN_ROUTES.policyPermissions(createdPolicy.id.toString()),
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ permission_id: perm.id }),
+                    }
+                  );
+                  
+                  if (!addPermRes.ok) {
+                    warnings.push(`Policy "${policyData.name}": Failed to add permission ${perm.id}`);
+                  }
+                } catch (error_) {
+                  warnings.push(`Policy "${policyData.name}": Error adding permission ${perm.id}`);
+                  console.error('Permission addition error:', error_);
+                }
+              }
+            }
+            
+            successfulImports++;
+          } catch (err) {
+            errors.push(`Policy "${policyData.name}": ${err instanceof Error ? err.message : 'Unknown error'}`);
+          }
+        }
+        
+        // Show import report
+        setImportReport({
+          total_records: totalRecords,
+          successful_imports: successfulImports,
+          failed_imports: totalRecords - successfulImports,
+          errors,
+          warnings,
+        });
+        setShowImportReport(true);
+        
+        // Refresh data if there were any successful imports
+        if (successfulImports > 0) {
+          await fetchData();
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : dictionary.error_import);
+      } finally {
+        setIsImporting(false);
+      }
+    };
+    
+    input.click();
+  }
 
   // ==================== TABLE CONFIGURATION ====================
   
@@ -644,13 +866,64 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
         <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.policies.title)}>
           {dictionary.page_title}
         </h2>
-        <Button 
-          onClick={openCreatePolicyDialog}
-          {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {dictionary.create_button}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Import Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={isImporting}
+                {...testId("policy-import-button")}
+              >
+                <Upload className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.import_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleImport('json')}>
+                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.import_json}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleImport('csv')}>
+                <FileText className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.import_csv}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                disabled={isExporting}
+                {...testId("policy-export-button")}
+              >
+                <Download className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.export_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.export_json}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <FileText className={`${ICON_SIZES.sm} mr-2`} />
+                {dictionary.export_csv}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          {/* Create Button */}
+          <Button 
+            onClick={openCreatePolicyDialog}
+            {...testId(DASHBOARD_TEST_IDS.policies.addButton)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {dictionary.create_button}
+          </Button>
+        </div>
       </div>
       <Dialog open={showPolicyDialog} onOpenChange={setShowPolicyDialog}>
         <DialogContent 
@@ -1026,6 +1299,73 @@ export default function Policies({ dictionary }: { dictionary: PoliciesDictionar
           {error}
         </div>
       )}
+
+      {/* Import Report Dialog */}
+      <Dialog open={showImportReport} onOpenChange={setShowImportReport}>
+        <DialogContent aria-describedby={void 0} aria-label="import-report-dialog">
+          <DialogTitle>{dictionary.import_report_title}</DialogTitle>
+          {importReport && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold">{importReport.total_records}</div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_total}</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-600">{importReport.successful_imports}</div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_success}</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-red-600">{importReport.failed_imports}</div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_failed}</div>
+                </div>
+              </div>
+
+              {importReport.errors && importReport.errors.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-red-600 mb-2">{dictionary.import_report_errors}</h4>
+                  <div className="max-h-48 overflow-y-auto space-y-1 text-sm">
+                    {importReport.errors.map((err, idx) => {
+                      const errorKey = typeof err === 'string' 
+                        ? `error-${idx}` 
+                        : (err.original_id || `error-${idx}`);
+                      return (
+                        <div key={errorKey} className="text-red-600">
+                          {typeof err === 'string' ? err : (
+                            <>
+                              {err.original_id && <span>ID {err.original_id}: </span>}
+                              {err.error}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {importReport.warnings && importReport.warnings.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-yellow-600 mb-2">{dictionary.import_report_warnings}</h4>
+                  <div className="max-h-48 overflow-y-auto space-y-1 text-sm">
+                    {importReport.warnings.map((warning, idx) => (
+                      <div key={`warning-${idx}-${warning.substring(0, 20)}`} className="text-yellow-600">
+                        {warning}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={() => setShowImportReport(false)}>
+                  {dictionary.import_report_close}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

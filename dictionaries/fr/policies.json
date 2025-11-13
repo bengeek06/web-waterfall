@@ -1,6 +1,12 @@
 {
   "page_title": "Gestion des politiques",
   "create_button": "Créer une politique",
+  "import_button": "Importer",
+  "export_button": "Exporter",
+  "import_json": "Importer JSON",
+  "import_csv": "Importer CSV",
+  "export_json": "Exporter JSON",
+  "export_csv": "Exporter CSV",
   "table_name": "Nom",
   "table_description": "Description",
   "table_permissions": "Permissions",
@@ -28,5 +34,14 @@
   "error_fetch": "Erreur lors de la récupération des données",
   "error_create": "Erreur lors de la création",
   "error_update": "Erreur lors de la mise à jour",
-  "error_delete": "Erreur lors de la suppression"
+  "error_delete": "Erreur lors de la suppression",
+  "error_export": "Erreur lors de l'export",
+  "error_import": "Erreur lors de l'import",
+  "import_report_title": "Rapport d'import",
+  "import_report_close": "Fermer",
+  "import_report_total": "Total",
+  "import_report_success": "Succès",
+  "import_report_failed": "Échecs",
+  "import_report_errors": "Erreurs",
+  "import_report_warnings": "Avertissements"
 }

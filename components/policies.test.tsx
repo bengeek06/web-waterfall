@@ -51,6 +51,21 @@ const mockPoliciesDictionary = {
   error_create: "Erreur lors de l'enregistrement de la politique",
   error_update: "Erreur lors de la mise à jour de la politique",
   error_delete: "Erreur lors de la suppression de la politique",
+  import_button: "Importer",
+  export_button: "Exporter",
+  import_json: "Importer JSON",
+  import_csv: "Importer CSV",
+  export_json: "Exporter JSON",
+  export_csv: "Exporter CSV",
+  error_export: "Erreur lors de l'export",
+  error_import: "Erreur lors de l'import",
+  import_report_title: "Rapport d'import",
+  import_report_close: "Fermer",
+  import_report_total: "Total",
+  import_report_success: "Succès",
+  import_report_failed: "Échecs",
+  import_report_errors: "Erreurs",
+  import_report_warnings: "Avertissements",
 };
 
 describe('Policies Component', () => {
