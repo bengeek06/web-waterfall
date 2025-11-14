@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -21,9 +32,30 @@ jest.mock('next/link', () => ({
   },
 }));
 
-// Mock getAvatarUrl
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  usePathname: jest.fn(() => '/'),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
+}));
+
+// Mock user functions
 jest.mock('@/lib/user', () => ({
   getAvatarUrl: jest.fn(() => Promise.resolve('https://example.com/avatar.jpg')),
+  getUserData: jest.fn(() => Promise.resolve({
+    id: '123',
+    email: 'test@example.com',
+    first_name: 'John',
+    last_name: 'Doe',
+    language: 'fr',
+  })),
 }));
 
 // Mock getUserLanguage
@@ -80,7 +112,7 @@ describe('TopBar Component', () => {
       
       const logoLink = screen.getByTestId(COMMON_TEST_IDS.topBar.logoLink);
       expect(logoLink).toBeInTheDocument();
-      expect(logoLink).toHaveAttribute('href', '/welcome');
+      expect(logoLink).toHaveAttribute('href', '/home');
     });
 
     it('should render the logo image', async () => {
@@ -129,13 +161,14 @@ describe('TopBar Component', () => {
       expect(dropdownContent).toBeInTheDocument();
     });
 
-    it('should render profile link', async () => {
+    it('should render profile modal button', async () => {
       const Component = await TopBar();
       render(Component);
       
-      const profileLink = screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink);
-      expect(profileLink).toBeInTheDocument();
-      expect(profileLink).toHaveAttribute('href', '/welcome/profile');
+      const profileButton = screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink);
+      expect(profileButton).toBeInTheDocument();
+      // ProfileModal est maintenant un bouton, pas un lien
+      expect(profileButton.tagName).not.toBe('A');
     });
   });
 

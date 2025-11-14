@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import Image from "next/image";
 import { getDictionary } from "@/lib/dictionaries";
 import Login from "@/components/login";
@@ -18,18 +29,21 @@ export default async function Home() {
 
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-12">
-      <Image
-        src="/waterfall_logo.png"
-        alt="Waterfall Logo"
-        width={400}
-        height={104}
-        priority
-      />
-      <p className="mt-4 text-lg text-waterfall-description">
-        {dictionary.description}
-      </p>
-      <div className="mt-8 w-full max-w-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white p-8">
+      <div className="mb-8 text-center">
+        <Image
+          src="/waterfall_logo.svg"
+          alt="Waterfall Logo"
+          width={240}
+          height={66}
+          priority
+          className="mb-4"
+        />
+        <p className="text-lg text-[var(--waterfall-primary-dark)] font-medium">
+          {dictionary.description}
+        </p>
+      </div>
+      <div className="w-full max-w-2xl mx-auto">
         <Login dictionary={dictionary.login_component} />
       </div>
     </div>

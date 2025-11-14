@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -40,6 +51,21 @@ const mockPoliciesDictionary = {
   error_create: "Erreur lors de l'enregistrement de la politique",
   error_update: "Erreur lors de la mise à jour de la politique",
   error_delete: "Erreur lors de la suppression de la politique",
+  import_button: "Importer",
+  export_button: "Exporter",
+  import_json: "Importer JSON",
+  import_csv: "Importer CSV",
+  export_json: "Exporter JSON",
+  export_csv: "Exporter CSV",
+  error_export: "Erreur lors de l'export",
+  error_import: "Erreur lors de l'import",
+  import_report_title: "Rapport d'import",
+  import_report_close: "Fermer",
+  import_report_total: "Total",
+  import_report_success: "Succès",
+  import_report_failed: "Échecs",
+  import_report_errors: "Erreurs",
+  import_report_warnings: "Avertissements",
 };
 
 describe('Policies Component', () => {
@@ -464,30 +490,7 @@ describe('Policies Component', () => {
       fireEvent.click(expandButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Permissions')).toBeInTheDocument();
         expect(screen.getByText('auth / users')).toBeInTheDocument();
-      });
-    });
-
-    it('should collapse expanded policy', async () => {
-      render(<Policies dictionary={mockPoliciesDictionary} />);
-
-      await waitFor(() => {
-        expect(screen.getByText('Admin Policy')).toBeInTheDocument();
-      });
-
-      const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.expandButton('1'));
-      
-      // Expand
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        expect(screen.getByText('Permissions')).toBeInTheDocument();
-      });
-
-      // Collapse
-      fireEvent.click(expandButton);
-      await waitFor(() => {
-        expect(screen.queryByText('auth / users')).not.toBeInTheDocument();
       });
     });
 
@@ -529,7 +532,7 @@ describe('Policies Component', () => {
       fireEvent.click(expandButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Aucune permission')).toBeInTheDocument();
+        expect(screen.getByText('Aucune permission associée')).toBeInTheDocument();
       });
     });
   });

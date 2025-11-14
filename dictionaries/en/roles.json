@@ -25,5 +25,20 @@
   "error_fetch": "Error fetching data",
   "error_create": "Error creating",
   "error_update": "Error updating",
-  "error_delete": "Error deleting"
+  "error_delete": "Error deleting",
+  "import_button": "Import",
+  "export_button": "Export",
+  "import_json": "Import JSON",
+  "import_csv": "Import CSV",
+  "export_json": "Export as JSON",
+  "export_csv": "Export as CSV",
+  "error_export": "Error exporting roles",
+  "error_import": "Error importing roles",
+  "import_report_title": "Import Report",
+  "import_report_close": "Close",
+  "import_report_total": "Total Records",
+  "import_report_success": "Successful",
+  "import_report_failed": "Failed",
+  "import_report_errors": "Errors",
+  "import_report_warnings": "Warnings"
 }

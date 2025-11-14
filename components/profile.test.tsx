@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
@@ -20,11 +31,8 @@ jest.mock('next/navigation', () => ({
 // Mock Next.js Image
 jest.mock('next/image', () => ({
   __esModule: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
-    return <img {...props} />;
-  },
+  // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
+  default: (props: any) => <img {...props} />,
 }));
 
 describe('Profile Component', () => {
@@ -224,6 +232,73 @@ describe('Profile Component', () => {
       fireEvent.change(fileInput, { target: { files: [file] } });
 
       expect(global.URL.createObjectURL).toHaveBeenCalledWith(file);
+    });
+
+    it('should send avatar file in FormData when submitting with avatar', async () => {
+      render(<Profile user={mockUser} dictionary={mockDictionary} />);
+
+      const fileInput = screen.getByTestId('profile-avatar-input');
+      const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+
+      // Mock URL.createObjectURL
+      global.URL.createObjectURL = jest.fn(() => 'blob:http://localhost/test');
+
+      // Select avatar file
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      // Submit form
+      const saveButton = screen.getByTestId(DASHBOARD_TEST_IDS.profile.saveButton);
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          IDENTITY_ROUTES.user('123'),
+          expect.objectContaining({
+            method: 'PATCH',
+            body: expect.any(FormData),
+          })
+        );
+      });
+
+      // Verify FormData contains the avatar file
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+      const formData = fetchCall[1].body as FormData;
+      expect(formData.get('avatar')).toBe(file);
+      expect(formData.get('email')).toBe('user@example.com');
+      expect(formData.get('first_name')).toBe('John');
+      expect(formData.get('last_name')).toBe('Doe');
+    });
+
+    it('should send JSON when submitting without avatar', async () => {
+      render(<Profile user={mockUser} dictionary={mockDictionary} />);
+
+      // Change email
+      const emailInput = screen.getByTestId(DASHBOARD_TEST_IDS.profile.emailInput);
+      fireEvent.change(emailInput, { target: { value: 'newemail@example.com' } });
+
+      // Submit form
+      const saveButton = screen.getByTestId(DASHBOARD_TEST_IDS.profile.saveButton);
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          IDENTITY_ROUTES.user('123'),
+          expect.objectContaining({
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: expect.any(String),
+          })
+        );
+      });
+
+      // Verify JSON body does NOT contain avatar_url
+      const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+      const bodyString = fetchCall[1].body;
+      const bodyJson = JSON.parse(bodyString);
+      expect(bodyJson).not.toHaveProperty('avatar_url');
+      expect(bodyJson.email).toBe('newemail@example.com');
     });
   });
 });

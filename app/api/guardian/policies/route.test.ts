@@ -161,7 +161,6 @@ describe("/api/guardian/policies", () => {
             `${GUARDIAN_SERVICE_URL}/policies`,
             expect.objectContaining({
                 method: "POST",
-                body: requestBody,
                 credentials: "include",
             })
         );

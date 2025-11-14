@@ -68,6 +68,6 @@ This contract is governed by French law. In case of dispute, the parties agree t
 10. Contact
 
 For any commercial or technical request:
-📧 bengeek06@gmail.com
+📧 benjamin@waterfall-project.pro
 🌐 https://github.com/bengeek06/pm-auth-api
 

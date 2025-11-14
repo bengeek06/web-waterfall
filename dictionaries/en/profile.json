@@ -12,5 +12,17 @@
   "profile_save": "Save",
   "profile_password_mismatch": "New passwords do not match.",
   "profile_update_error": "Error updating profile.",
-  "profile_update_success": "Profile updated successfully."
+  "profile_update_success": "Profile updated successfully.",
+  "modal_title": "Edit Your Profile",
+  "modal_avatar_hint": "JPG, PNG or GIF. Max 5MB.",
+  "modal_language": "Language",
+  "modal_saving": "Saving...",
+  "modal_save_changes": "Save Changes",
+  "modal_phone_number": "Phone Number",
+  "modal_enter_first_name": "Enter first name",
+  "modal_enter_last_name": "Enter last name",
+  "modal_enter_email": "Enter email address",
+  "modal_enter_phone": "Enter phone number",
+  "modal_file_type_error": "Please select a valid image file",
+  "modal_file_size_error": "File size must be less than 5MB"
 }

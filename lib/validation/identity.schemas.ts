@@ -1,4 +1,15 @@
 /**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+/**
  * Zod validation schemas for Identity service forms
  * Provides type-safe validation with automatic TypeScript inference
  */
@@ -192,6 +203,73 @@ export const positionSchema = z.object({
 });
 
 export type PositionFormData = z.infer<typeof positionSchema>;
+
+// ==================== CUSTOMER SCHEMA ====================
+export const customerSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nom du client requis')
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(200, 'Le nom ne peut pas dépasser 200 caractères'),
+  email: z
+    .string()
+    .email('Email invalide')
+    .optional()
+    .or(z.literal('')),
+  contact_person: z
+    .string()
+    .max(100, 'Le nom de contact ne peut pas dépasser 100 caractères')
+    .optional()
+    .or(z.literal('')),
+  phone_number: z
+    .string()
+    .regex(/^[\d\s+()-]*$/, 'Numéro de téléphone invalide')
+    .optional()
+    .or(z.literal('')),
+  address: z
+    .string()
+    .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type CustomerFormData = z.infer<typeof customerSchema>;
+
+// ==================== SUBCONTRACTOR SCHEMA ====================
+export const subcontractorSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Nom du sous-traitant requis')
+    .min(2, 'Le nom doit contenir au moins 2 caractères')
+    .max(200, 'Le nom ne peut pas dépasser 200 caractères'),
+  email: z
+    .string()
+    .email('Email invalide')
+    .optional()
+    .or(z.literal('')),
+  contact_person: z
+    .string()
+    .max(100, 'Le nom de contact ne peut pas dépasser 100 caractères')
+    .optional()
+    .or(z.literal('')),
+  phone_number: z
+    .string()
+    .regex(/^[\d\s+()-]*$/, 'Numéro de téléphone invalide')
+    .optional()
+    .or(z.literal('')),
+  address: z
+    .string()
+    .max(500, 'L\'adresse ne peut pas dépasser 500 caractères')
+    .optional()
+    .or(z.literal('')),
+  description: z
+    .string()
+    .max(200, 'La description ne peut pas dépasser 200 caractères')
+    .optional()
+    .or(z.literal('')),
+});
+
+export type SubcontractorFormData = z.infer<typeof subcontractorSchema>;
 
 // ==================== PROFILE UPDATE SCHEMA ====================
 export const profileUpdateSchema = z.object({

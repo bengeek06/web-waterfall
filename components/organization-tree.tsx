@@ -1,23 +1,49 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, ChevronDown, Building2, Plus, Edit, Trash2 } from "lucide-react";
+import { ChevronRight, ChevronDown, Building2, Plus, Edit, Trash2, Download, Upload, Image as ImageIcon } from "lucide-react";
 
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Modals
 import OrganizationUnitModal from "@/components/modals/organization-unit-modal";
 import PositionModal from "@/components/modals/position-modal";
+import MermaidPreviewModal from "@/components/modals/mermaid-preview-modal";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
+import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type OrganizationUnit = {
@@ -44,6 +70,20 @@ type Position = {
   updated_at?: string;
 };
 
+type ImportReport = {
+  total_records: number;
+  successful_imports: number;
+  failed_imports: number;
+  errors: Array<{
+    record_index: number;
+    error_message: string;
+  }>;
+  warnings: Array<{
+    record_index: number;
+    message: string;
+  }>;
+};
+
 type OrganizationTreeProps = {
   companyId: string;
   dictionary: {
@@ -52,6 +92,30 @@ type OrganizationTreeProps = {
     no_units: string;
     loading: string;
     error_loading: string;
+    import_button: string;
+    export_button: string;
+    import_json: string;
+    import_csv: string;
+    export_json: string;
+    export_csv: string;
+    export_mermaid: string;
+    error_export: string;
+    error_import: string;
+    import_report_title: string;
+    import_report_total: string;
+    import_report_success: string;
+    import_report_failed: string;
+    import_report_errors: string;
+    import_report_warnings: string;
+    import_report_close: string;
+    mermaid_modal_title: string;
+    mermaid_diagram_type: string;
+    mermaid_flowchart: string;
+    mermaid_graph: string;
+    mermaid_mindmap: string;
+    mermaid_download: string;
+    mermaid_loading: string;
+    mermaid_error: string;
     actions: {
       add_root: string;
       add_child: string;
@@ -112,18 +176,95 @@ function TreeNode({
   onAddChild,
   onEdit,
   onDelete,
+  onMove,
 }: {
   unit: OrganizationUnit;
   level?: number;
-  onSelect: (unit: OrganizationUnit) => void;
+  onSelect: (_unit: OrganizationUnit) => void;
   selectedId: string | null;
-  onAddChild: (parentUnit: OrganizationUnit) => void;
-  onEdit: (unit: OrganizationUnit) => void;
-  onDelete: (unitId: string) => void;
+  onAddChild: (_parentUnit: OrganizationUnit) => void;
+  onEdit: (_unit: OrganizationUnit) => void;
+  onDelete: (_unitId: string) => void;
+  onMove: (_unitId: string, _newParentId: string | null) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
+  const [isDragging, setIsDragging] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const hasChildren = unit.children && unit.children.length > 0;
   const isSelected = selectedId === unit.id;
+
+  // Drag handlers
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragging(true);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("unitId", unit.id);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedUnitId = e.dataTransfer.getData("unitId");
+    
+    // Ne pas autoriser le drop sur soi-même
+    if (draggedUnitId === unit.id) {
+      e.dataTransfer.dropEffect = "none";
+      return;
+    }
+    
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+
+    const draggedUnitId = e.dataTransfer.getData("unitId");
+
+    // Ne pas autoriser le drop sur soi-même
+    if (draggedUnitId === unit.id) {
+      return;
+    }
+
+    // Vérifier si on déplace vers un descendant (créerait une boucle)
+    const isDescendant = (parentId: string, checkId: string): boolean => {
+      if (parentId === checkId) return true;
+      const parent = findUnitById(unit, parentId);
+      if (!parent || !parent.parent_id) return false;
+      return isDescendant(parent.parent_id, checkId);
+    };
+
+    if (isDescendant(unit.id, draggedUnitId)) {
+      // Optionnel : afficher un toast ou simplement ignorer silencieusement
+      return;
+    }
+
+    // Déplacer directement sans confirmation
+    onMove(draggedUnitId, unit.id);
+  };
+
+  // Fonction helper pour trouver une unité par ID dans l'arbre
+  const findUnitById = (node: OrganizationUnit, id: string): OrganizationUnit | null => {
+    if (node.id === id) return node;
+    if (node.children) {
+      for (const child of node.children) {
+        const found = findUnitById(child, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
 
   return (
     <div>
@@ -133,8 +274,13 @@ function TreeNode({
           flex items-center gap-2 py-2 px-3 rounded-md cursor-pointer
           hover:bg-accent transition-colors
           ${isSelected ? "bg-accent border-l-4 border-primary" : ""}
+          ${isDragOver ? "bg-primary/10 border-2 border-primary border-dashed" : ""}
+          ${isDragging ? "opacity-50" : ""}
         `}
         style={{ paddingLeft: `${level * 24 + 12}px` }}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {/* Expand/Collapse Icon */}
         <div className="w-5 flex items-center justify-center">
@@ -157,8 +303,20 @@ function TreeNode({
           )}
         </div>
 
-        {/* Icon */}
-        <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        {/* Icon - Draggable */}
+        <div
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          className="cursor-move"
+          title="Glisser pour déplacer l'unité"
+        >
+          <Building2 
+            className={`h-4 w-4 flex-shrink-0 transition-colors ${
+              isDragging ? "text-primary opacity-50" : "text-muted-foreground hover:text-primary"
+            }`}
+          />
+        </div>
 
         {/* Name */}
         <div
@@ -227,6 +385,7 @@ function TreeNode({
               onAddChild={onAddChild}
               onEdit={onEdit}
               onDelete={onDelete}
+              onMove={onMove}
             />
           ))}
         </div>
@@ -238,8 +397,6 @@ function TreeNode({
 // Main Component
 export default function OrganizationTree({ companyId, dictionary }: OrganizationTreeProps) {
   const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [units, setUnits] = useState<OrganizationUnit[]>([]);
   const [treeData, setTreeData] = useState<OrganizationUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<OrganizationUnit | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -253,6 +410,12 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   const [parentUnit, setParentUnit] = useState<OrganizationUnit | null>(null);
   const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
+
+  // Import/Export states
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importReport, setImportReport] = useState<ImportReport | null>(null);
+  const [isMermaidModalOpen, setIsMermaidModalOpen] = useState(false);
 
   // Build tree structure from flat list
   const buildTree = (units: OrganizationUnit[]): OrganizationUnit[] => {
@@ -301,7 +464,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       setError(null);
 
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits);
+        const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits);
 
         if (res.status === 401) {
           router.push("/login");
@@ -316,7 +479,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
         const data = await res.json();
         const unitsList = Array.isArray(data) ? data : [];
-        setUnits(unitsList);
         setTreeData(buildTree(unitsList));
       } catch (err) {
         console.error("Error loading organization units:", err);
@@ -340,7 +502,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       setIsLoadingPositions(true);
 
       try {
-        const res = await clientSessionFetch(
+        const res = await fetchWithAuth(
           IDENTITY_ROUTES.organizationUnitPositions(selectedUnit.id)
         );
 
@@ -364,11 +526,10 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   // Reload units from API
   const reloadUnits = async () => {
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits);
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits);
       if (res.ok) {
         const data = await res.json();
         const unitsList = Array.isArray(data) ? data : [];
-        setUnits(unitsList);
         setTreeData(buildTree(unitsList));
       }
     } catch (err) {
@@ -381,7 +542,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     if (!selectedUnit) return;
     
     try {
-      const res = await clientSessionFetch(
+      const res = await fetchWithAuth(
         IDENTITY_ROUTES.organizationUnitPositions(selectedUnit.id)
       );
       if (res.ok) {
@@ -417,7 +578,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     }
 
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnit(unitId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unitId), {
         method: "DELETE",
       });
 
@@ -449,7 +610,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     }
 
     try {
-      const res = await clientSessionFetch(IDENTITY_ROUTES.position(positionId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.position(positionId), {
         method: "DELETE",
       });
 
@@ -480,6 +641,161 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     await reloadPositions();
   };
 
+  const handleMove = async (unitId: string, newParentId: string | null) => {
+    try {
+      const payload: { parent_id: string | null } = {
+        parent_id: newParentId,
+      };
+
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unitId), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Error moving unit:", errorText);
+        alert("Erreur lors du déplacement de l'unité");
+        return;
+      }
+
+      // Reload the tree
+      await reloadUnits();
+    } catch (err) {
+      console.error("Error moving unit:", err);
+      alert("Erreur lors du déplacement de l'unité");
+    }
+  };
+
+  // ==================== EXPORT OPERATIONS ====================
+
+  const handleExport = async (type: 'json' | 'csv') => {
+    try {
+      setIsExporting(true);
+      
+      const format = type === 'json' ? 'json' : 'csv';
+      const exportUrl = new URL(BASIC_IO_ROUTES.export, globalThis.location.origin);
+      exportUrl.searchParams.set('service', 'identity');
+      exportUrl.searchParams.set('path', '/organization_units');
+      exportUrl.searchParams.set('type', format);
+      exportUrl.searchParams.set('tree', 'true');
+      exportUrl.searchParams.set('enrich', 'true');
+      
+      const res = await fetchWithAuth(exportUrl.toString());
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Export failed: ${errorText}`);
+      }
+
+      const blob = await res.blob();
+      const url = globalThis.URL.createObjectURL(blob);
+      const a = globalThis.document.createElement('a');
+      a.href = url;
+      a.download = `organization-tree_${new Date().toISOString().split('T')[0]}.${format}`;
+      globalThis.document.body.appendChild(a);
+      a.click();
+      a.remove();
+      globalThis.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      setError(dictionary.error_export);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleMermaidExport = async (diagramType: 'flowchart' | 'graph' | 'mindmap') => {
+    try {
+      const exportUrl = new URL(BASIC_IO_ROUTES.export, globalThis.location.origin);
+      exportUrl.searchParams.set('service', 'identity');
+      exportUrl.searchParams.set('path', '/organization_units');
+      exportUrl.searchParams.set('type', 'mermaid');
+      exportUrl.searchParams.set('diagram_type', diagramType);
+      
+      const res = await fetchWithAuth(exportUrl.toString());
+
+      if (res.status === 401) {
+        router.push("/login");
+        return '';
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Mermaid export failed: ${errorText}`);
+      }
+
+      return await res.text();
+    } catch (err) {
+      console.error('Mermaid export error:', err);
+      throw err;
+    }
+  };
+
+  // ==================== IMPORT OPERATIONS ====================
+
+  const handleImport = async (type: 'json' | 'csv') => {
+    const input = globalThis.document.createElement('input');
+    input.type = 'file';
+    input.accept = type === 'json' ? '.json' : '.csv';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        setIsImporting(true);
+        
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const importUrl = new URL(BASIC_IO_ROUTES.import, globalThis.location.origin);
+        importUrl.searchParams.set('service', 'identity');
+        importUrl.searchParams.set('path', '/organization_units');
+        importUrl.searchParams.set('type', type);
+
+        const res = await fetchWithAuth(importUrl.toString(), {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.status === 401) {
+          router.push("/login");
+          return;
+        }
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Import failed: ${errorText}`);
+        }
+
+        const report: ImportReport = await res.json();
+        setImportReport(report);
+        
+        // Reload tree after import
+        await reloadUnits();
+      } catch (err) {
+        console.error('Import error:', err);
+        setError(dictionary.error_import);
+      } finally {
+        setIsImporting(false);
+      }
+    };
+
+    input.click();
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -508,10 +824,53 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             <CardTitle>{dictionary.title}</CardTitle>
             <CardDescription>{dictionary.description}</CardDescription>
           </div>
-          <Button onClick={handleAddRoot} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            {dictionary.actions.add_root}
-          </Button>
+          <div className="flex gap-2">
+            {/* Import Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isImporting}>
+                  <Upload className="h-4 w-4 mr-2" />
+                  {dictionary.import_button}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleImport('json')}>
+                  {dictionary.import_json}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleImport('csv')}>
+                  {dictionary.import_csv}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Export Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={isExporting}>
+                  <Download className="h-4 w-4 mr-2" />
+                  {dictionary.export_button}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport('json')}>
+                  {dictionary.export_json}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  {dictionary.export_csv}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsMermaidModalOpen(true)}>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  {dictionary.export_mermaid}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Add Root Button */}
+            <Button onClick={handleAddRoot} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              {dictionary.actions.add_root}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -534,6 +893,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                       onAddChild={handleAddChild}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onMove={handleMove}
                     />
                   ))}
                 </div>
@@ -616,6 +976,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       {/* Modals */}
       <OrganizationUnitModal
+        key={`unit-modal-${editingUnit?.id || 'new'}-${parentUnit?.id || 'root'}-${isUnitModalOpen}`}
         isOpen={isUnitModalOpen}
         onClose={handleUnitModalClose}
         onSuccess={handleUnitModalSuccess}
@@ -627,6 +988,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       {selectedUnit && (
         <PositionModal
+          key={`position-modal-${editingPosition?.id || 'new'}-${selectedUnit.id}-${isPositionModalOpen}`}
           isOpen={isPositionModalOpen}
           onClose={handlePositionModalClose}
           onSuccess={handlePositionModalSuccess}
@@ -636,6 +998,62 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           dictionary={dictionary}
         />
       )}
+
+      {/* Mermaid Preview Modal */}
+      <MermaidPreviewModal
+        isOpen={isMermaidModalOpen}
+        onClose={() => setIsMermaidModalOpen(false)}
+        onGenerate={handleMermaidExport}
+        dictionary={dictionary}
+      />
+
+      {/* Import Report Dialog */}
+      <Dialog open={!!importReport} onOpenChange={() => setImportReport(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dictionary.import_report_title}</DialogTitle>
+            <DialogDescription>
+              {dictionary.import_report_total}: {importReport?.total_records || 0} |{' '}
+              {dictionary.import_report_success}: {importReport?.successful_imports || 0} |{' '}
+              {dictionary.import_report_failed}: {importReport?.failed_imports || 0}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 max-h-[400px] overflow-y-auto">
+            {importReport && importReport.errors.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm mb-2">{dictionary.import_report_errors}</h4>
+                <ul className="space-y-1 text-sm">
+                  {importReport.errors.map((err) => (
+                    <li key={`error-${err.record_index}`} className="text-destructive">
+                      Row {err.record_index + 1}: {err.error_message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {importReport && importReport.warnings.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-sm mb-2">{dictionary.import_report_warnings}</h4>
+                <ul className="space-y-1 text-sm">
+                  {importReport.warnings.map((warn) => (
+                    <li key={`warning-${warn.record_index}`} className="text-yellow-600">
+                      Row {warn.record_index + 1}: {warn.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={() => setImportReport(null)}>
+              {dictionary.import_report_close}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
 import { useRouter } from 'next/navigation';
@@ -10,6 +21,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
 
 // ==================== TYPES ====================
 type Locale = 'fr' | 'en';
@@ -42,11 +54,10 @@ export default function LanguageSwitcher() {
     
     try {
       // Update language preference in database via API route
-      const response = await fetch('/api/user/language', {
+      const response = await fetchWithAuth('/api/user/language', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ language: newLocale }),
-        credentials: 'include',
       });
       
       if (!response.ok) {

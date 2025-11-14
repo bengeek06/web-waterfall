@@ -88,7 +88,6 @@ The application acts as a unified frontend gateway to three backend microservice
 │   ├── site.webmanifest
 │   └── fonts/                      # Custom fonts
 ├── components.json                 # shadcn/ui config
-├── docker-compose.yml              # Service orchestration
 ├── Dockerfile                      # Production image
 ├── env.example                     # Environment template
 ├── jest.config.js                  # Jest configuration

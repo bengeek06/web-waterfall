@@ -1,4 +1,15 @@
 /**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+/**
  * Zod validation schemas for authentication forms
  * Provides type-safe validation with automatic TypeScript inference
  */
@@ -54,11 +65,6 @@ export const initAppSchema = z.object({
     .min(1, 'Nom de la compagnie requis')
     .min(2, 'Le nom de la compagnie doit contenir au moins 2 caractères')
     .max(100, 'Le nom de la compagnie ne peut pas dépasser 100 caractères'),
-  userName: z
-    .string()
-    .min(1, 'Nom de l\'utilisateur requis')
-    .min(2, 'Le nom doit contenir au moins 2 caractères')
-    .max(100, 'Le nom ne peut pas dépasser 100 caractères'),
   userEmail: z
     .string()
     .min(1, 'Email requis')

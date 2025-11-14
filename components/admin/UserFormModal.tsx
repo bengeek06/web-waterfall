@@ -1,6 +1,17 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 // UI Components
@@ -16,6 +27,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Camera, Upload, User as UserIcon } from "lucide-react";
 
 // Validation
 import { createUserSchema, updateUserSchema } from "@/lib/validation/identity.schemas";
@@ -28,7 +46,7 @@ import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 export type User = {
@@ -91,7 +109,7 @@ type UserFormProps = {
 type FormData = CreateUserFormData;
 
 // ==================== COMPONENT ====================
-export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: UserFormProps) {
+export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: Readonly<UserFormProps>) {
   const router = useRouter();
   const isEditing = !!user;
 
@@ -111,6 +129,11 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Avatar state
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   // Roles management
   const [availableRoles, setAvailableRoles] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
@@ -126,7 +149,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     const loadRoles = async () => {
       setIsLoadingRoles(true);
       try {
-        const res = await clientSessionFetch(GUARDIAN_ROUTES.roles);
+        const res = await fetchWithAuth(GUARDIAN_ROUTES.roles);
         if (res.ok) {
           const roles = await res.json();
           setAvailableRoles(Array.isArray(roles) ? roles : []);
@@ -145,7 +168,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     const loadPositions = async () => {
       setIsLoadingPositions(true);
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.positions);
+        const res = await fetchWithAuth(IDENTITY_ROUTES.positions);
         if (res.ok) {
           const positions = await res.json();
           setAvailablePositions(Array.isArray(positions) ? positions : []);
@@ -178,6 +201,13 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         setSelectedRoleIds(user.roles?.map(r => r.id.toString()) || []);
         // Set user's current position (single)
         setSelectedPositionId(user.position_id || "");
+        // Set avatar preview from endpoint
+        if (user.id) {
+          setAvatarPreview(`/api/identity/users/${user.id}/avatar?t=${Date.now()}`);
+        } else {
+          setAvatarPreview("");
+        }
+        setAvatarFile(null);
       } else {
         setFormData({
           email: "",
@@ -192,6 +222,8 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         });
         setSelectedRoleIds([]);
         setSelectedPositionId("");
+        setAvatarPreview("");
+        setAvatarFile(null);
       }
       setErrors({});
       setServerError(null);
@@ -213,6 +245,12 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       return false;
     }
 
+    // Validate position (required for creation)
+    if (!isEditing && !selectedPositionId) {
+      setErrors({ position_id: "La position est obligatoire" });
+      return false;
+    }
+
     setErrors({});
     return true;
   };
@@ -231,44 +269,72 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       const method = isEditing ? "PATCH" : "POST";
       const url = isEditing ? IDENTITY_ROUTES.user(user!.id) : IDENTITY_ROUTES.users;
 
-      // Prepare payload
-      const payload: Record<string, unknown> = { ...formData };
-      
-      // Add position_id to payload
-      if (selectedPositionId) {
-        payload.position_id = selectedPositionId;
-      } else {
-        // Explicitly set to null to remove position
-        payload.position_id = null;
-      }
-      
-      // Remove empty strings
-      Object.keys(payload).forEach((key) => {
-        if (payload[key] === "") {
-          delete payload[key];
+      let res;
+
+      // Use FormData if we have an avatar file to upload
+      if (avatarFile) {
+        const formDataPayload = new FormData();
+        formDataPayload.append("email", formData.email);
+        if (!isEditing && formData.password) {
+          formDataPayload.append("password", formData.password);
         }
-      });
-      
-      // Remove fields not accepted by the backend
-      if (isEditing) {
-        // Remove password for updates (password updates done separately)
-        delete payload.password;
-        // Remove is_active and is_verified - these might not be accepted by PATCH
-        // They should be managed through dedicated endpoints
-        delete payload.is_active;
-        delete payload.is_verified;
+        if (formData.first_name) formDataPayload.append("first_name", formData.first_name);
+        if (formData.last_name) formDataPayload.append("last_name", formData.last_name);
+        if (formData.phone_number) formDataPayload.append("phone_number", formData.phone_number);
+        formDataPayload.append("language", formData.language);
+        if (!isEditing) {
+          formDataPayload.append("is_active", formData.is_active.toString());
+        }
+        if (selectedPositionId) {
+          formDataPayload.append("position_id", selectedPositionId);
+        }
+        formDataPayload.append("avatar", avatarFile);
+
+        res = await fetchWithAuth(url, {
+          method,
+          body: formDataPayload,
+        });
       } else {
-        // Remove is_verified for creation (managed by backend)
-        delete payload.is_verified;
+        // Use JSON for simple updates without avatar
+        const payload: Record<string, unknown> = { ...formData };
+        
+        // Add position_id to payload
+        if (selectedPositionId) {
+          payload.position_id = selectedPositionId;
+        } else {
+          // Explicitly set to null to remove position
+          payload.position_id = null;
+        }
+        
+        // Remove empty strings
+        Object.keys(payload).forEach((key) => {
+          if (payload[key] === "") {
+            delete payload[key];
+          }
+        });
+        
+        // Remove fields not accepted by the backend
+        if (isEditing) {
+          // Remove password for updates (password updates done separately)
+          delete payload.password;
+          // Remove is_active and is_verified - these might not be accepted by PATCH
+          // They should be managed through dedicated endpoints
+          delete payload.is_active;
+          delete payload.is_verified;
+        } else {
+          // Remove is_verified for creation (managed by backend)
+          delete payload.is_verified;
+        }
+
+        // NEVER send avatar_url in the payload
+        delete payload.avatar_url;
+
+        res = await fetchWithAuth(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       }
-
-      console.log('Sending payload:', payload); // Debug log
-
-      const res = await clientSessionFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
 
       if (res.status === 401) {
         router.push("/login");
@@ -322,7 +388,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
   const handleRoleAssignments = async (userId: string) => {
     try {
       // Get existing user roles
-      const existingRolesRes = await clientSessionFetch(GUARDIAN_ROUTES.userRoles);
+      const existingRolesRes = await fetchWithAuth(GUARDIAN_ROUTES.userRoles);
       if (!existingRolesRes.ok) {
         console.error("Failed to fetch existing user roles");
         return;
@@ -343,7 +409,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       // Add new roles
       for (const roleId of rolesToAdd) {
-        await clientSessionFetch(GUARDIAN_ROUTES.userRoles, {
+        await fetchWithAuth(GUARDIAN_ROUTES.userRoles, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -355,7 +421,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       // Remove old roles
       for (const userRole of rolesToRemove) {
-        await clientSessionFetch(GUARDIAN_ROUTES.userRole(userRole.id), {
+        await fetchWithAuth(GUARDIAN_ROUTES.userRole(userRole.id), {
           method: "DELETE",
         });
       }
@@ -383,6 +449,18 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     }
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const file = e.target.files[0];
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
@@ -400,6 +478,69 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         </DialogDescription>
 
         <form onSubmit={onSubmit} className={SPACING.component.md}>
+          {/* Avatar */}
+          <div className={SPACING.component.xs}>
+            <Label>Avatar</Label>
+            <div className="flex flex-col items-center space-y-3 mt-2">
+              {/* Circular Avatar Preview with Camera Button */}
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+                  {avatarPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarPreview}
+                      alt="Avatar preview"
+                      className="w-full h-full object-cover"
+                      onError={() => setAvatarPreview("")}
+                    />
+                  ) : (
+                    <UserIcon size={32} className="text-gray-400" />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={triggerFileInput}
+                  className="absolute -bottom-1 -right-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 transition-colors"
+                  aria-label="Change avatar"
+                >
+                  <Camera size={14} />
+                </button>
+              </div>
+              
+              {/* Upload Button */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={triggerFileInput}
+                className="flex items-center gap-2"
+              >
+                <Upload size={16} />
+                {avatarFile ? "Changer l'avatar" : "Télécharger un avatar"}
+              </Button>
+              
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+                {...testId(ADMIN_TEST_IDS.users.avatarUrlInput)}
+                aria-invalid={!!errors.avatar_url}
+              />
+              
+              <p className="text-sm text-muted-foreground text-center">
+                Formats acceptés: JPG, PNG, GIF (max 5MB)
+              </p>
+            </div>
+            {errors.avatar_url && (
+              <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
+                {errors.avatar_url}
+              </p>
+            )}
+          </div>
+
           {/* Email */}
           <div className={SPACING.component.xs}>
             <Label htmlFor="email">{dictionary.form.email}</Label>
@@ -489,24 +630,6 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
             )}
           </div>
 
-          {/* Avatar URL */}
-          <div className={SPACING.component.xs}>
-            <Label htmlFor="avatar_url">{dictionary.form.avatar_url}</Label>
-            <Input
-              id="avatar_url"
-              type="url"
-              value={formData.avatar_url}
-              onChange={(e) => updateField("avatar_url", e.target.value)}
-              {...testId(ADMIN_TEST_IDS.users.avatarUrlInput)}
-              aria-invalid={!!errors.avatar_url}
-            />
-            {errors.avatar_url && (
-              <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
-                {errors.avatar_url}
-              </p>
-            )}
-          </div>
-
           {/* Language */}
           <div className={SPACING.component.xs}>
             <Label htmlFor="language">{dictionary.form.language}</Label>
@@ -530,31 +653,45 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           {/* Roles */}
           <div className={SPACING.component.xs}>
             <Label htmlFor="roles">{dictionary.form.roles}</Label>
-            <div className="border rounded-md p-3 max-h-40 overflow-y-auto space-y-2">
-              {isLoadingRoles ? (
-                <p className="text-sm text-muted-foreground">Chargement...</p>
-              ) : availableRoles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Aucun rôle disponible</p>
-              ) : (
-                availableRoles.map((role) => (
-                  <label key={role.id} className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  type="button"
+                >
+                  <span className="truncate">
+                    {selectedRoleIds.length === 0
+                      ? "Sélectionner des rôles"
+                      : `${selectedRoleIds.length} rôle(s) sélectionné(s)`}
+                  </span>
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="max-h-60 overflow-y-auto" style={{ width: 'var(--radix-dropdown-menu-trigger-width)' }}>
+                {isLoadingRoles ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Chargement...</div>
+                ) : availableRoles.length === 0 ? (
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">Aucun rôle disponible</div>
+                ) : (
+                  availableRoles.map((role) => (
+                    <DropdownMenuCheckboxItem
+                      key={role.id}
                       checked={selectedRoleIds.includes(role.id.toString())}
-                      onChange={(e) => {
-                        if (e.target.checked) {
+                      onCheckedChange={(checked) => {
+                        if (checked) {
                           setSelectedRoleIds(prev => [...prev, role.id.toString()]);
                         } else {
                           setSelectedRoleIds(prev => prev.filter(id => id !== role.id.toString()));
                         }
                       }}
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm">{role.name}</span>
-                  </label>
-                ))
-              )}
-            </div>
+                    >
+                      {role.name}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             {errors.roles && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
                 {errors.roles}
@@ -570,8 +707,9 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
               value={selectedPositionId}
               onChange={(e) => setSelectedPositionId(e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              required
             >
-              <option value="">Aucune position</option>
+              <option value="" disabled>Sélectionner une position</option>
               {isLoadingPositions ? (
                 <option disabled>Chargement...</option>
               ) : (

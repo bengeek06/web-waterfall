@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
@@ -42,7 +53,6 @@ const mockDictionary = {
   email: 'Adresse email',
   password: 'Mot de passe',
   submit: 'Se connecter',
-  register: 'S\'inscrire',
   invalid_email: 'Format d\'email invalide',
   login_failed: 'Échec de la connexion',
 };
@@ -70,9 +80,8 @@ describe('Login Component', () => {
       expect(screen.getByTestId('login-email-icon')).toBeInTheDocument();
       expect(screen.getByTestId('login-password-icon')).toBeInTheDocument();
       
-      // Vérifier les boutons
+      // Vérifier le bouton
       expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
-      expect(screen.getByTestId('login-register-button')).toBeInTheDocument();
     });
 
     it('should render form fields with correct types', () => {
@@ -174,7 +183,7 @@ describe('Login Component', () => {
 
       // Vérifier la redirection
       await waitFor(() => {
-        expect(mockPush).toHaveBeenCalledWith('/welcome');
+        expect(mockPush).toHaveBeenCalledWith('/home');
       });
     });
 
@@ -277,17 +286,6 @@ describe('Login Component', () => {
       });
     });
 
-    it('should handle register button click', async () => {
-      const user = userEvent.setup();
-      render(<Login dictionary={mockDictionary} />);
-
-      const registerButton = screen.getByTestId('login-register-button');
-      await user.click(registerButton);
-
-      // Note: Le composant actuel n'a pas de logique pour le bouton register
-      // Ce test vérifie juste que le bouton est cliquable
-      expect(registerButton).toBeInTheDocument();
-    });
   });
 
   describe('Accessibility', () => {
@@ -316,7 +314,6 @@ describe('Login Component', () => {
       expect(screen.getByTestId('login-password-input')).toBeInTheDocument();
       expect(screen.getByTestId('login-password-icon')).toBeInTheDocument();
       expect(screen.getByTestId('login-submit-button')).toBeInTheDocument();
-      expect(screen.getByTestId('login-register-button')).toBeInTheDocument();
     });
   });
 

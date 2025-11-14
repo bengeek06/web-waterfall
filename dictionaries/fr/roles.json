@@ -25,5 +25,20 @@
   "error_fetch": "Erreur lors de la récupération des données",
   "error_create": "Erreur lors de la création",
   "error_update": "Erreur lors de la mise à jour",
-  "error_delete": "Erreur lors de la suppression"
+  "error_delete": "Erreur lors de la suppression",
+  "import_button": "Importer",
+  "export_button": "Exporter",
+  "import_json": "Importer JSON",
+  "import_csv": "Importer CSV",
+  "export_json": "Exporter en JSON",
+  "export_csv": "Exporter en CSV",
+  "error_export": "Erreur lors de l'exportation des rôles",
+  "error_import": "Erreur lors de l'importation des rôles",
+  "import_report_title": "Rapport d'importation",
+  "import_report_close": "Fermer",
+  "import_report_total": "Total d'enregistrements",
+  "import_report_success": "Réussis",
+  "import_report_failed": "Échoués",
+  "import_report_errors": "Erreurs",
+  "import_report_warnings": "Avertissements"
 }

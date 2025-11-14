@@ -1,0 +1,28 @@
+import React from "react";
+import { getUserData } from "@/lib/user";
+import { getUserLanguage } from "@/lib/locale";
+import { getDictionary } from "@/lib/dictionaries";
+import { COLOR_CLASSES } from "@/lib/design-tokens";
+import { HomeCards } from "@/components/HomeCards";
+
+export default async function WelcomePage() {
+  const user = await getUserData();
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
+  
+  const displayName = user?.first_name || user?.email || 'Guest';
+  
+  return (
+    <div>
+      {/* Welcome message */}
+      <div className="max-w-4xl mx-auto mb-8 text-center">
+        <h1 className={`text-3xl font-bold ${COLOR_CLASSES.text.waterfallPrimaryDark}`}>
+          {dictionary.welcome_page.greeting} {displayName}!
+        </h1>
+      </div>
+      
+      {/* Cards avec gestion des permissions */}
+      <HomeCards dictionary={dictionary.welcome_page} />
+    </div>
+  );
+}

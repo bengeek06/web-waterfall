@@ -1,9 +1,11 @@
 {
   "greeting": "Hello",
-  "administration": "Administration",
+  "workspace": "Workspace",
+  "access_workspace": "Access Workspace",
+  "administration": "Users Administration",
   "access_administration": "Access Administration",
-  "company": "Company",
-  "access_company": "Access Company",
+  "company": "Company Settings",
+  "access_company": "Access Settings",
   "projects": "Projects",
   "access_projects": "Access Projects"
 }

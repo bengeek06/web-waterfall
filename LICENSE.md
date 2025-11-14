@@ -41,7 +41,7 @@ For companies and organizations seeking:
 - **Service Level Agreement (SLA)** contract
 
 📩 For any commercial license request, please contact:  
-**bengeek06@gmail.com**
+**benjamin@waterfall-project.pro**
 
 ---
 

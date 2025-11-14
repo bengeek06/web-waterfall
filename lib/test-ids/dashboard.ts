@@ -1,4 +1,15 @@
 /**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+/**
  * Test IDs for dashboard and admin components
  * Used for E2E testing with Playwright/Selenium
  */
@@ -96,6 +107,46 @@ export const DASHBOARD_TEST_IDS = {
     saveButton: 'profile-save-button',
     cancelButton: 'profile-cancel-button',
     changePasswordButton: 'profile-change-password-button',
+  },
+  customer: {
+    section: 'customer-section',
+    title: 'customer-title',
+    table: 'customer-table',
+    tableHeader: 'customer-table-header',
+    tableRow: (customerId: string) => `customer-table-row-${customerId}`,
+    createButton: 'customer-create-button',
+    importButton: 'customer-import-button',
+    exportButton: 'customer-export-button',
+    searchInput: 'customer-search-input',
+    editButton: 'customer-edit-button',
+    deleteButton: 'customer-delete-button',
+    
+    // Customer Dialog
+    dialog: 'customer-dialog',
+    dialogTitle: 'customer-dialog-title',
+    
+    // Customer Form
+    form: {
+      name: 'customer-form-name',
+      email: 'customer-form-email',
+      contactPerson: 'customer-form-contact-person',
+      phone: 'customer-form-phone',
+      address: 'customer-form-address',
+      cancelButton: 'customer-form-cancel-button',
+      submitButton: 'customer-form-submit-button',
+    },
+    
+    // Delete Confirmation
+    deleteDialog: 'customer-delete-dialog',
+    deleteDialogTitle: 'customer-delete-dialog-title',
+    deleteCancelButton: 'customer-delete-cancel-button',
+    deleteConfirmButton: 'customer-delete-confirm-button',
+    
+    // Import Report Dialog
+    importReportDialog: 'import-report-dialog',
+    
+    // Error Message
+    errorMessage: 'customer-error-message',
   },
 } as const;
 

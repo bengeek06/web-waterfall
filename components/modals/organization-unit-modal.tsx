@@ -1,6 +1,17 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 // UI Components
@@ -20,7 +31,7 @@ import { Label } from "@/components/ui/label";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
 type OrganizationUnit = {
@@ -71,29 +82,15 @@ export default function OrganizationUnitModal({
   dictionary,
 }: OrganizationUnitModalProps) {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
+  const isEditing = !!unit;
+  const isCreatingChild = !!parentUnit;
+  
+  // State - will be reset by Dialog key prop when modal reopens
+  const [name, setName] = useState(unit?.name || "");
+  const [description, setDescription] = useState(unit?.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-
-  const isEditing = !!unit;
-  const isCreatingChild = !!parentUnit;
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      if (unit) {
-        setName(unit.name);
-        setDescription(unit.description || "");
-      } else {
-        setName("");
-        setDescription("");
-      }
-      setError(null);
-      setMessage(null);
-    }
-  }, [isOpen, unit]);
 
   const getTitle = () => {
     if (isEditing) return dictionary.unit_modal.edit_title;
@@ -137,14 +134,14 @@ export default function OrganizationUnitModal({
       let res;
       if (isEditing && unit) {
         // Update
-        res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnit(unit.id), {
+        res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unit.id), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
       } else {
         // Create
-        res = await clientSessionFetch(IDENTITY_ROUTES.organizationUnits, {
+        res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

@@ -1,6 +1,18 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 import Link from "next/link";
 import Image from "next/image";
 import React from "react";
+import { User, LogOut, Info } from "lucide-react";
 
 // UI Components
 import {
@@ -8,10 +20,15 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import LogoutButton from "@/components/LogoutButton";
+import AboutModal from "@/components/AboutModal";
+import ProfileModal from "@/components/ProfileModal";
+import AvatarImage from "@/components/AvatarImage";
 
 // Utils
-import { getAvatarUrl } from "@/lib/user";
+import { getUserData } from "@/lib/user";
 import { getDictionary } from "@/lib/dictionaries";
 import { getUserLanguage } from "@/lib/locale";
 
@@ -21,9 +38,10 @@ import { ICON_SIZES, ICON_COLORS } from "@/lib/design-tokens";
 
 // ==================== COMPONENT ====================
 export default async function TopBar() {
-  const avatarUrl = await getAvatarUrl();
+  const userData = await getUserData();
   const userLanguage = await getUserLanguage();
   const dictionary = await getDictionary(userLanguage);
+  const userId = userData?.id;
 
   // ==================== RENDER ====================
   return (
@@ -35,7 +53,7 @@ export default async function TopBar() {
         {/* Logo */}
         <div className="flex-shrink-0">
           <Link 
-            href="/welcome"
+            href="/home"
             {...testId(COMMON_TEST_IDS.topBar.logoLink)}
           >
             <Image
@@ -60,36 +78,65 @@ export default async function TopBar() {
                 className={`rounded-full overflow-hidden border border-waterfall-icon bg-white ${ICON_SIZES.xl} flex items-center justify-center`}
                 {...testId(COMMON_TEST_IDS.topBar.avatarButton)}
               >
-                {avatarUrl ? (
-                  <Image
-                    src={avatarUrl}
-                    alt="Avatar"
-                    width={40}
-                    height={40}
+                {userId ? (
+                  <AvatarImage
+                    userId={userId}
+                    size={40}
                     className={`object-cover ${ICON_SIZES.xl}`}
-                    {...testId(COMMON_TEST_IDS.topBar.avatarImage)}
+                    iconSize={24}
+                    iconColor={ICON_COLORS.waterfall}
+                    testId={testId(COMMON_TEST_IDS.topBar.avatarImage)}
                   />
                 ) : (
-                  <span 
-                    className={`${ICON_COLORS.waterfall} text-4xl`}
+                  <User 
+                    size={24}
+                    className={ICON_COLORS.waterfall}
                     {...testId(COMMON_TEST_IDS.topBar.avatarIcon)}
-                  >
-                    👤
-                  </span>
+                  />
                 )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent 
               align="end"
+              className="w-48"
               {...testId(COMMON_TEST_IDS.topBar.dropdownContent)}
             >
               <DropdownMenuItem asChild>
-                <Link 
-                  href="/welcome/profile"
-                  {...testId(COMMON_TEST_IDS.topBar.profileLink)}
+                <ProfileModal
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
+                  testId={COMMON_TEST_IDS.topBar.profileLink}
+                  dictionary={dictionary}
+                  userInfo={userData ? {
+                    id: userData.id,
+                    firstName: userData.first_name,
+                    lastName: userData.last_name,
+                    email: userData.email,
+                    phoneNumber: userData.phone_number,
+                    language: userData.language
+                  } : undefined}
                 >
-                  {dictionary.profile}
-                </Link>
+                  <User size={16} className="text-gray-500" />
+                  <span>{dictionary.profile}</span>
+                </ProfileModal>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <AboutModal
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
+                  testId={COMMON_TEST_IDS.topBar.aboutLink}
+                >
+                  <Info size={16} className="text-gray-500" />
+                  <span>{dictionary.about}</span>
+                </AboutModal>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <LogoutButton
+                  className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2 text-red-600 hover:text-red-700"
+                  testId={COMMON_TEST_IDS.topBar.logoutLink}
+                >
+                  <LogOut size={16} />
+                  <span>{dictionary.logout}</span>
+                </LogoutButton>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,10 +25,10 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { clientSessionFetch } from "@/lib/sessionFetch.client";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 
 // Types
-type Company = {
+type CompanyData = {
   id: string;
   name: string;
   address?: string;
@@ -66,7 +77,7 @@ type CompanyProps = {
 // ==================== COMPONENT ====================
 export default function Company({ companyId, dictionary }: CompanyProps) {
   const router = useRouter();
-  const [company, setCompany] = useState<Company | null>(null);
+  const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -96,7 +107,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
       setError(null);
 
       try {
-        const res = await clientSessionFetch(IDENTITY_ROUTES.company(companyId));
+        const res = await fetchWithAuth(IDENTITY_ROUTES.company(companyId));
 
         if (res.status === 401) {
           router.push("/login");
@@ -205,7 +216,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
         }
       });
 
-      const res = await clientSessionFetch(IDENTITY_ROUTES.company(companyId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.company(companyId), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

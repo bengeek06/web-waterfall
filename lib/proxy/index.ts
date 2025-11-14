@@ -1,4 +1,15 @@
 /**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+/**
  * Generic proxy request handler
  * 
  * This module provides a centralized way to proxy requests to backend services.
@@ -102,11 +113,20 @@ export async function proxyRequest(
 
   const fullUrl = `${serviceUrl}${path}`;
   logger.debug(`Environment ${service}: ${serviceUrl}`);
-  logger.debug(`Request headers: ${JSON.stringify(serializeHeaders(req.headers))}`);
+  logger.debug(`Request headers received from client: ${JSON.stringify(serializeHeaders(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${fullUrl}`);
 
-  // Read request body
-  const body = await req.text();
+  // Read request body - preserve FormData for multipart requests
+  const requestContentType = req.headers.get('content-type') || '';
+  let body: string | ReadableStream<Uint8Array> | null = null;
+  
+  if (requestContentType.includes('multipart/form-data')) {
+    // For multipart/form-data, pass the stream directly without reading it
+    body = req.body;
+  } else if (req.body) {
+    // For other content types, read as text
+    body = await req.text();
+  }
 
   // Prepare headers (exclude 'host' header)
   const headers = Object.fromEntries(
@@ -114,6 +134,8 @@ export async function proxyRequest(
       ([key]) => key.toLowerCase() !== "host"
     )
   );
+  
+  logger.debug(`Headers being sent to backend: ${JSON.stringify(headers)}`);
 
   // Make upstream request
   let upstream: Response;
@@ -123,6 +145,8 @@ export async function proxyRequest(
       headers,
       body: body || undefined,
       credentials: "include",
+      // @ts-expect-error - duplex is required for streaming bodies but not in TypeScript types yet
+      duplex: requestContentType.includes('multipart/form-data') ? 'half' : undefined,
     });
   } catch (err: unknown) {
     // Handle fetch errors
@@ -153,29 +177,119 @@ export async function proxyRequest(
     );
   }
 
-  // Process response
-  const setCookieHeaders = upstream.headers.get("set-cookie");
+    // Process response
   const contentType = upstream.headers.get("content-type");
+  
+  // Prepare headers to forward (skip hop-by-hop headers and Content-Length)
+  const headersToForward = new Headers();
+  const hopByHopHeaders = ['connection', 'keep-alive', 'transfer-encoding', 'upgrade', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailer'];
+  const skipHeaders = [...hopByHopHeaders, 'content-length']; // Content-Length will be recalculated by Next.js
+  
+  // Forward headers from upstream response
+  if (upstream.headers && typeof upstream.headers.entries === 'function') {
+    // Real HTTP responses - iterate all headers
+    for (const [key, value] of upstream.headers.entries()) {
+      const lowerKey = key.toLowerCase();
+      // Skip hop-by-hop headers, content-length, and set-cookie (handled separately)
+      if (!skipHeaders.includes(lowerKey) && lowerKey !== 'set-cookie') {
+        headersToForward.set(key, value);
+      }
+    }
+    
+    // Handle Set-Cookie separately - there can be multiple Set-Cookie headers
+    // Using getSetCookie() to get all Set-Cookie headers as an array
+    if (typeof upstream.headers.getSetCookie === 'function') {
+      const setCookies = upstream.headers.getSetCookie();
+      setCookies.forEach(cookie => {
+        headersToForward.append('set-cookie', cookie);
+      });
+    } else {
+      // Fallback for environments without getSetCookie
+      const setCookie = upstream.headers.get('set-cookie');
+      if (setCookie) {
+        headersToForward.append('set-cookie', setCookie);
+      }
+    }
+  } else {
+    // Fallback for mock objects with only .get() - manually copy important headers
+    const contentTypeValue = upstream.headers.get("content-type");
+    const setCookieValue = upstream.headers.get("set-cookie");
+    const contentDispositionValue = upstream.headers.get("content-disposition");
+    const cacheControlValue = upstream.headers.get("cache-control");
+    
+    if (contentTypeValue) headersToForward.set("content-type", contentTypeValue);
+    if (setCookieValue) headersToForward.append("set-cookie", setCookieValue);
+    if (contentDispositionValue) headersToForward.set("content-disposition", contentDispositionValue);
+    if (cacheControlValue) headersToForward.set("cache-control", cacheControlValue);
+  }
   
   let nextRes: NextResponse;
   
   // Handle 204 No Content - must not have a body
   if (upstream.status === 204) {
     logger.debug("204 No Content response");
-    nextRes = new NextResponse(null, { status: 204 });
+    nextRes = new NextResponse(null, { 
+      status: 204,
+      headers: headersToForward
+    });
   } else if (contentType && contentType.includes("application/json")) {
     const data = await upstream.json();
-    logger.debug(`Response data: ${JSON.stringify(data)}`);
-    nextRes = NextResponse.json(data, { status: upstream.status });
+    
+    // Log selon le status HTTP - erreurs en rouge !
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        response: data
+      }, `HTTP ${upstream.status} Error Response`);
+    } else {
+      logger.debug(`Response data: ${JSON.stringify(data)}`);
+    }
+    
+    nextRes = NextResponse.json(data, { 
+      status: upstream.status,
+      headers: headersToForward
+    });
+  } else if (contentType && (contentType.startsWith("image/") || contentType.includes("octet-stream"))) {
+    // Handle binary content (images, files, etc.) - don't log binary data
+    const buffer = await upstream.arrayBuffer();
+    
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        contentType,
+        size: buffer.byteLength
+      }, `HTTP ${upstream.status} Error Response (binary)`);
+    } else {
+      logger.debug(`Binary response: ${contentType}, size: ${buffer.byteLength} bytes`);
+    }
+    
+    nextRes = new NextResponse(buffer, { 
+      status: upstream.status,
+      headers: headersToForward
+    });
   } else {
     const text = await upstream.text();
-    logger.debug(`Response text: ${text}`);
-    nextRes = new NextResponse(text, { status: upstream.status });
-  }
-
-  // Forward Set-Cookie headers if present
-  if (setCookieHeaders) {
-    nextRes.headers.set("set-cookie", setCookieHeaders);
+    
+    // Log selon le status HTTP - erreurs en rouge !
+    if (upstream.status >= 400 && upstream.status < 600) {
+      logger.error({
+        status: upstream.status,
+        endpoint: fullUrl,
+        method,
+        response: text
+      }, `HTTP ${upstream.status} Error Response`);
+    } else {
+      logger.debug(`Response text: ${text}`);
+    }
+    
+    nextRes = new NextResponse(text, { 
+      status: upstream.status,
+      headers: headersToForward
+    });
   }
 
   return nextRes;

@@ -77,11 +77,34 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
-  /* Waterfall custom colors */
-  --waterfall-icon: oklch(0.208 0.042 265.755); /* exemple: bleu primaire */
-  --waterfall-description: oklch(0.554 0.046 257.417); /* exemple: gris/bleu description */
-  --waterfall-accent: oklch(0.828 0.189 84.429); /* exemple: accent */
-  /* Ajoute ici d'autres couleurs personnalisées si besoin */
+  /* Waterfall institutional colors */
+  --waterfall-primary-dark: #2c3e50;    /* Bleu foncé institutionnel (header, boutons) */
+  --waterfall-primary-hover: #1a252f;   /* Bleu très foncé (hover bouton) */
+  --waterfall-primary-light: #34495e;   /* Bleu moyen */
+  --waterfall-accent-blue: #3498db;     /* Bleu accent */
+  --waterfall-text-dark: #2c3e50;       /* Texte principal */
+  --waterfall-text-medium: #34495e;     /* Texte secondaire */
+  --waterfall-text-light: #7f8c8d;      /* Texte subtil */
+  --waterfall-bg-light: #f8f9fa;        /* Fond gris très clair */
+  --waterfall-bg-medium: #ecf0f1;       /* Fond gris clair */
+  --waterfall-border-light: #bdc3c7;    /* Bordures subtiles */
+  --waterfall-success: #27ae60;         /* Vert succès */
+  
+  /* Application color scheme */
+  --waterfall-company-color: #5dade2;   /* Bleu ciel - Entreprise */
+  --waterfall-user-color: #52c89f;      /* Vert menthe - Utilisateur */
+  --waterfall-project-color: #9b59b6;   /* Violet - Projets */
+  
+  /* Gradient colors - subtle gray tones */
+  --waterfall-gradient-start: #f8f9fa;  /* Gris très clair */
+  --waterfall-gradient-middle: #e9ecef; /* Gris clair */
+  --waterfall-gradient-end: #dee2e6;    /* Gris moyen */
+  
+  /* Waterfall custom colors mapped to oklch */
+  --waterfall-icon: oklch(0.47 0.08 232);        /* #3498db - bleu accent */
+  --waterfall-description: oklch(0.48 0.02 252); /* #7f8c8d - texte subtil */
+  --waterfall-accent: oklch(0.47 0.08 232);      /* #3498db - bleu accent */
+  --waterfall-primary: oklch(0.28 0.03 246);     /* #2c3e50 - bleu foncé */
 }
 
 .dark {
@@ -117,11 +140,34 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
 
-  /* Waterfall custom colors */
-  --waterfall-icon: oklch(0.929 0.013 255.508); /* exemple: couleur adaptée dark */
-  --waterfall-description: oklch(0.704 0.04 256.788);
-  --waterfall-accent: oklch(0.627 0.265 303.9);
-  /* Ajoute ici d'autres couleurs personnalisées si besoin */
+  /* Waterfall institutional colors - dark mode adaptations */
+  --waterfall-primary-dark: #4a5f7f;    /* Bleu plus clair en dark mode */
+  --waterfall-primary-hover: #5a7599;   /* Bleu hover adapté */
+  --waterfall-primary-light: #5a7599;   /* Bleu moyen éclairci */
+  --waterfall-accent-blue: #5dade2;     /* Bleu accent plus clair */
+  --waterfall-text-dark: #e8eef3;       /* Texte clair en dark */
+  --waterfall-text-medium: #b8c5d6;     /* Texte secondaire clair */
+  --waterfall-text-light: #95a5a6;      /* Texte subtil adapté */
+  --waterfall-bg-light: #1a2332;        /* Fond sombre */
+  --waterfall-bg-medium: #253447;       /* Fond moyen */
+  --waterfall-border-light: #3d4f66;    /* Bordures adaptées */
+  --waterfall-success: #2ecc71;         /* Vert succès plus clair */
+  
+  /* Application color scheme - dark mode */
+  --waterfall-company-color: #7ec8f0;   /* Bleu ciel plus clair */
+  --waterfall-user-color: #6dd4b3;      /* Vert menthe plus clair */
+  --waterfall-project-color: #b47ede;   /* Violet plus clair */
+  
+  /* Gradient colors - dark mode */
+  --waterfall-gradient-start: #2a3544;  /* Gris sombre */
+  --waterfall-gradient-middle: #1f2937; /* Gris très sombre */
+  --waterfall-gradient-end: #161b22;    /* Gris presque noir */
+  
+  /* Waterfall custom colors mapped to oklch - dark mode */
+  --waterfall-icon: oklch(0.62 0.08 232);        /* bleu accent clair */
+  --waterfall-description: oklch(0.68 0.02 252); /* texte subtil clair */
+  --waterfall-accent: oklch(0.62 0.08 232);      /* bleu accent clair */
+  --waterfall-primary: oklch(0.48 0.03 246);     /* bleu foncé éclairci */
 }
 
 /* Utilisation dans Tailwind (dans tailwind.config.js) :

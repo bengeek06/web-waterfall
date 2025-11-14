@@ -1,4 +1,15 @@
 /**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+/**
  * Dictionaries Module - Modular Translation System
  * 
  * Structure:
@@ -43,6 +54,7 @@ import roles_fr from '../dictionaries/fr/roles.json';
 import policies_fr from '../dictionaries/fr/policies.json';
 import company_fr from '../dictionaries/fr/company.json';
 import organization_fr from '../dictionaries/fr/organization.json';
+import workspace_fr from '../dictionaries/fr/workspace.json';
 
 import common_en from '../dictionaries/en/common.json';
 import navigation_en from '../dictionaries/en/navigation.json';
@@ -56,6 +68,7 @@ import roles_en from '../dictionaries/en/roles.json';
 import policies_en from '../dictionaries/en/policies.json';
 import company_en from '../dictionaries/en/company.json';
 import organization_en from '../dictionaries/en/organization.json';
+import workspace_en from '../dictionaries/en/workspace.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -74,6 +87,7 @@ const dictionaries = {
     policies: policies_fr,
     company: company_fr,
     organization: organization_fr,
+    workspace: workspace_fr,
   },
   en: {
     ...common_en,
@@ -88,6 +102,7 @@ const dictionaries = {
     policies: policies_en,
     company: company_en,
     organization: organization_en,
+    workspace: workspace_en,
   },
 } as const;
 
