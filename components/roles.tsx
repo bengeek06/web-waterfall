@@ -34,6 +34,7 @@ import {
   ColumnFiltersState,
 } from "@tanstack/react-table";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
+import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS } from "@/lib/test-ids/dashboard";
 import { roleSchema, RoleFormData } from "@/lib/validation/guardian.schemas";
 import { useZodForm } from "@/lib/hooks/useZodForm";
@@ -427,17 +428,42 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
     try {
       setIsExporting(true);
       
-      // Export roles with their policies
-      const rolesWithPolicies = roles.map(role => ({
-        id: role.id,
-        name: role.name,
-        description: role.description,
-        policies: role.policies?.map(p => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-        })) || [],
-      }));
+      // Use basic-io to get roles (enrich=true resolves simple FK like company_id)
+      // Then enrich with policies from current state (roles_policies table not handled by basic-io)
+      const format = type === 'json' ? 'json' : 'csv';
+      const exportUrl = new URL(BASIC_IO_ROUTES.export, globalThis.location.origin);
+      exportUrl.searchParams.set('service', 'guardian');
+      exportUrl.searchParams.set('path', '/roles');
+      exportUrl.searchParams.set('type', format);
+      exportUrl.searchParams.set('enrich', 'true');
+      
+      const res = await fetchWithAuth(exportUrl.toString());
+
+      if (res.status === 401) {
+        globalThis.location.href = "/login";
+        return;
+      }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Export failed: ${errorText}`);
+      }
+
+      // Get the enriched data from basic-io
+      const enrichedData = await res.json();
+      
+      // Add policies from current state (roles_policies association table)
+      const rolesWithPolicies = Array.isArray(enrichedData) ? enrichedData.map((role: { id: string | number }) => {
+        const roleWithPolicies = roles.find(r => r.id === role.id);
+        return {
+          ...role,
+          policies: roleWithPolicies?.policies?.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+          })) || [],
+        };
+      }) : enrichedData;
 
       let content: string;
       let filename: string;
@@ -448,26 +474,32 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
         filename = `roles_export_${new Date().toISOString().split('T')[0]}.json`;
         mimeType = 'application/json';
       } else {
-        // CSV export with policies as semicolon-separated IDs
-        const headers = ['id', 'name', 'description', 'policy_ids'];
-        const rows = rolesWithPolicies.map(role => [
-          role.id,
-          role.name,
-          role.description || '',
-          role.policies.map(p => p.id).join(';'),
-        ]);
-        content = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        // Convert back to CSV with policies added
+        const headers = Object.keys(rolesWithPolicies[0] || {}).filter(k => k !== 'policies').concat(['policy_ids']);
+        const rows = rolesWithPolicies.map((role: { policies?: Array<{ id: string }>, [key: string]: unknown }) => {
+          const row = headers.map(h => {
+            if (h === 'policy_ids') {
+              return role.policies?.map(p => p.id).join(';') || '';
+            }
+            const value = role[h];
+            return value !== null && value !== undefined ? String(value) : '';
+          });
+          return row.join(',');
+        });
+        content = [headers.join(','), ...rows].join('\n');
         filename = `roles_export_${new Date().toISOString().split('T')[0]}.csv`;
         mimeType = 'text/csv';
       }
 
       const blob = new Blob([content], { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const url = globalThis.URL.createObjectURL(blob);
+      const a = globalThis.document.createElement('a');
       a.href = url;
       a.download = filename;
+      globalThis.document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      globalThis.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
       setError(dictionary.error_export);

@@ -40,6 +40,7 @@ import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus,
 // ==================== CONSTANTS ====================
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
+import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
@@ -534,63 +535,80 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
   async function handleExport(type: 'json' | 'csv') {
     setIsExporting(true);
     try {
-      // We need to fetch policies with their permissions manually
-      // because the guardian API doesn't return permissions in GET /policies
+      // Use basic-io to get policies (enrich=true resolves simple FK like company_id)
+      // Then enrich with permissions from current state (policies_permissions table not handled by basic-io)
+      const format = type === 'json' ? 'json' : 'csv';
+      const exportUrl = new URL(BASIC_IO_ROUTES.export, globalThis.location.origin);
+      exportUrl.searchParams.set('service', 'guardian');
+      exportUrl.searchParams.set('path', '/policies');
+      exportUrl.searchParams.set('type', format);
+      exportUrl.searchParams.set('enrich', 'true');
       
-      // Fetch all policies (already loaded in state with permissions)
-      const policiesWithPermissions = policies.map(policy => ({
-        id: policy.id,
-        name: policy.name,
-        description: policy.description,
-        permissions: policy.permissions.map(p => ({
-          id: p.id,
-          service: p.service,
-          resource_name: p.resource_name,
-          operation: p.operation,
-          description: p.description,
-        })),
-      }));
-      
-      if (type === 'json') {
-        // Export as JSON
-        const jsonContent = JSON.stringify(policiesWithPermissions, null, 2);
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const downloadUrl = globalThis.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = 'policies_export.json';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        globalThis.URL.revokeObjectURL(downloadUrl);
-      } else {
-        // For CSV, we need to flatten the structure
-        // Each row will be: policy_id, policy_name, policy_description, permission_ids (comma-separated)
-        const csvRows = [
-          ['policy_id', 'policy_name', 'policy_description', 'permission_ids'].join(',')
-        ];
-        
-        for (const policy of policiesWithPermissions) {
-          const permissionIds = policy.permissions.map(p => p.id).join(';');
-          csvRows.push([
-            policy.id,
-            `"${(policy.name || '').replaceAll('"', '""')}"`,
-            `"${(policy.description || '').replaceAll('"', '""')}"`,
-            `"${permissionIds}"`
-          ].join(','));
-        }
-        
-        const csvContent = csvRows.join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const downloadUrl = globalThis.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = 'policies_export.csv';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        globalThis.URL.revokeObjectURL(downloadUrl);
+      const res = await fetchWithAuth(exportUrl.toString());
+
+      if (res.status === 401) {
+        globalThis.location.href = "/login";
+        return;
       }
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Export failed: ${errorText}`);
+      }
+
+      // Get the enriched data from basic-io
+      const enrichedData = await res.json();
+      
+      // Add permissions from current state (policies_permissions association table)
+      const policiesWithPermissions = Array.isArray(enrichedData) ? enrichedData.map((policy: { id: string | number }) => {
+        const policyWithPerms = policies.find(p => p.id === policy.id);
+        return {
+          ...policy,
+          permissions: policyWithPerms?.permissions?.map(p => ({
+            id: p.id,
+            service: p.service,
+            resource_name: p.resource_name,
+            operation: p.operation,
+            description: p.description,
+          })) || [],
+        };
+      }) : enrichedData;
+
+      let content: string;
+      let filename: string;
+      let mimeType: string;
+
+      if (type === 'json') {
+        content = JSON.stringify(policiesWithPermissions, null, 2);
+        filename = `policies_export_${new Date().toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      } else {
+        // Convert back to CSV with permissions added
+        const headers = Object.keys(policiesWithPermissions[0] || {}).filter(k => k !== 'permissions').concat(['permission_ids']);
+        const rows = policiesWithPermissions.map((policy: { permissions?: Array<{ id: string }>, [key: string]: unknown }) => {
+          const row = headers.map(h => {
+            if (h === 'permission_ids') {
+              return policy.permissions?.map(p => p.id).join(';') || '';
+            }
+            const value = policy[h];
+            return value !== null && value !== undefined ? String(value) : '';
+          });
+          return row.join(',');
+        });
+        content = [headers.join(','), ...rows].join('\n');
+        filename = `policies_export_${new Date().toISOString().split('T')[0]}.csv`;
+        mimeType = 'text/csv';
+      }
+
+      const blob = new Blob([content], { type: mimeType });
+      const downloadUrl = globalThis.URL.createObjectURL(blob);
+      const a = globalThis.document.createElement('a');
+      a.href = downloadUrl;
+      a.download = filename;
+      globalThis.document.body.appendChild(a);
+      a.click();
+      a.remove();
+      globalThis.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : dictionary.error_export);
     } finally {
