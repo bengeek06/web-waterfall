@@ -388,6 +388,8 @@ export default function MermaidPreviewModal({
             className="flex-1 border rounded-md overflow-hidden bg-white min-h-0 relative"
             style={{
               cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+              touchAction: 'none', // Prevents passive event listener warning
+              overscrollBehavior: 'contain', // Prevents scroll propagation
             }}
             onMouseDown={(e) => {
               if (e.button !== 0) return; // Only left click
@@ -418,8 +420,9 @@ export default function MermaidPreviewModal({
               isDraggingRef.current = false;
               e.currentTarget.style.cursor = 'grab';
             }}
-            onWheel={(e) => {
-              e.preventDefault();
+            onWheelCapture={(e) => {
+              // Don't call preventDefault() - it causes warnings in React 19
+              // Instead, CSS overscrollBehavior prevents scroll propagation
               const container = e.currentTarget;
               const rect = container.getBoundingClientRect();
               const mouseX = e.clientX - rect.left;
