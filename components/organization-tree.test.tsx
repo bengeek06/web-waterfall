@@ -30,7 +30,37 @@ jest.mock('lucide-react', () => ({
   Plus: () => <div data-testid="plus-icon">Plus</div>,
   Edit: () => <div data-testid="edit-icon">Edit</div>,
   Trash2: () => <div data-testid="trash-icon">Trash</div>,
+  Download: () => <div data-testid="download-icon">Download</div>,
+  Upload: () => <div data-testid="upload-icon">Upload</div>,
+  Image: () => <div data-testid="image-icon">Image</div>,
 }));
+
+// Mock UI components
+jest.mock('@/components/ui/dropdown-menu', () => ({
+  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: any) => <div onClick={onClick}>{children}</div>,
+}));
+
+// Mock modals
+jest.mock('@/components/modals/organization-unit-modal', () => {
+  return function OrganizationUnitModal() {
+    return <div data-testid="org-unit-modal">Org Unit Modal</div>;
+  };
+});
+
+jest.mock('@/components/modals/position-modal', () => {
+  return function PositionModal() {
+    return <div data-testid="position-modal">Position Modal</div>;
+  };
+});
+
+jest.mock('@/components/modals/mermaid-preview-modal', () => {
+  return function MermaidPreviewModal() {
+    return <div data-testid="mermaid-modal">Mermaid Modal</div>;
+  };
+});
 
 const mockRouter = {
   push: jest.fn(),
