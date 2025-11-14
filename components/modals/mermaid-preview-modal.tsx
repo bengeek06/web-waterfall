@@ -136,7 +136,8 @@ export default function MermaidPreviewModal({
       theme: "default",
       securityLevel: "loose",
       fontFamily: "inherit",
-      maxTextSize: 1000000, // Increase to 1M characters (was 200k)
+      maxTextSize: 1000000, // 1M characters for large trees
+      maxEdges: 5000, // Increased from default 500 to 5000
     });
   }, []);
 
