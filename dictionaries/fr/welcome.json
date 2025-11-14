@@ -1,5 +1,7 @@
 {
   "greeting": "Bonjour",
+  "workspace": "Espace de travail",
+  "access_workspace": "Accéder à l'espace de travail",
   "administration": "Administration des utilisateurs",
   "access_administration": "Accéder à l'administration",
   "company": "Paramètres de l'entreprise",

@@ -13,7 +13,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Building2, FolderKanban } from "lucide-react";
+import { ShieldCheck, Building2, FolderKanban, Folder } from "lucide-react";
 import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ProtectedCard } from "@/components/ProtectedCard";
@@ -27,12 +27,29 @@ interface HomeCardsProps {
     readonly access_company: string;
     readonly projects: string;
     readonly access_projects: string;
+    readonly workspace: string;
+    readonly access_workspace: string;
   };
 }
 
 export function HomeCards({ dictionary }: HomeCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      {/* Card Workspace - Always visible */}
+      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallPrimary} shadow-sm hover:shadow-md transition-shadow`}>
+        <CardHeader className="flex flex-row items-center gap-3">
+          <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallPrimary}`} />
+          <CardTitle>{dictionary.workspace}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link href="/home/workspace" className="w-full mt-2">
+            <Button variant="outline" className="w-full">
+              Accéder
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
       {/* Card Users Administration - Protected */}
       <ProtectedCard 
         requirements={PERMISSION_REQUIREMENTS.USER_ADMINISTRATION}
