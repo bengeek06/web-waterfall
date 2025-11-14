@@ -55,8 +55,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload } from "lucide-react";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
@@ -90,6 +96,21 @@ type RolesDictionary = {
   error_create: string;
   error_update: string;
   error_delete: string;
+  import_button: string;
+  export_button: string;
+  import_json: string;
+  import_csv: string;
+  export_json: string;
+  export_csv: string;
+  error_export: string;
+  error_import: string;
+  import_report_title: string;
+  import_report_close: string;
+  import_report_total: string;
+  import_report_success: string;
+  import_report_failed: string;
+  import_report_errors: string;
+  import_report_warnings: string;
 };
 
 type Policy = {
@@ -119,7 +140,7 @@ function testId(id: string) {
 
 // ==================== MAIN COMPONENT ====================
 
-export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
+export default function Roles({ dictionary }: { readonly dictionary: RolesDictionary }) {
   // ==================== STATE MANAGEMENT ====================
   
   const [roles, setRoles] = useState<Role[]>([]);
@@ -144,6 +165,18 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   const [showPolicyDialog, setShowPolicyDialog] = useState(false);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [selectedPoliciesToAdd, setSelectedPoliciesToAdd] = useState<Set<string | number>>(new Set());
+
+  // Import/Export state
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<{
+    total_records: number;
+    successful_imports: number;
+    failed_imports: number;
+    errors: string[];
+    warnings: string[];
+  } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // ==================== DATA FETCHING ====================
 
@@ -188,7 +221,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
       if (Array.isArray(rolesData)) {
         rolesArray = rolesData;
       } else {
-        throw new Error(dictionary.error_fetch + ": " + JSON.stringify(rolesData).slice(0, 200));
+        throw new TypeError(dictionary.error_fetch + ": " + JSON.stringify(rolesData).slice(0, 200));
       }
 
       // Fetch policies for each role
@@ -255,7 +288,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         res = await fetchWithAuth(GUARDIAN_ROUTES.roles, options);
       }
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) {
@@ -272,13 +305,13 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   }
 
   async function handleDeleteRole(roleId: string | number) {
-    if (!window.confirm(dictionary.delete_confirm_message)) return;
+    if (!globalThis.confirm(dictionary.delete_confirm_message)) return;
     try {
       const res = await fetchWithAuth(GUARDIAN_ROUTES.role(roleId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
@@ -333,7 +366,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
           });
           console.log(`Response for policy ${policyId}:`, res.status);
           if (res.status === 401) {
-            window.location.href = "/login";
+            globalThis.location.href = "/login";
             return null;
           }
           if (!res.ok) throw new Error(`Failed to add policy ${policyId}`);
@@ -341,7 +374,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         })
       );
       
-      if (results.some(r => r === null)) return; // Redirected to login
+      if (results.includes(null)) return; // Redirected to login
       
       setShowPolicyDialog(false);
       setSelectedPoliciesToAdd(new Set());
@@ -359,7 +392,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         { method: "DELETE" }
       );
       if (res.status === 401) {
-        window.location.href = "/login";
+        globalThis.location.href = "/login";
         return;
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
@@ -370,7 +403,7 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
   }
 
   async function handleRemovePolicy(roleId: string | number, policyId: string | number, policyName: string) {
-    if (!window.confirm(`${dictionary.delete_policy_confirm_message} "${policyName}" de ce rôle ?`)) return;
+    if (!globalThis.confirm(`${dictionary.delete_policy_confirm_message} "${policyName}" de ce rôle ?`)) return;
     try {
       await removePolicyWithoutConfirm(roleId, policyId);
       fetchData();
@@ -386,6 +419,185 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
       (selectedRole.policies || []).map(p => p.id)
     );
     return policies.filter(p => !assignedPolicyIds.has(p.id));
+  }
+
+  // ==================== IMPORT/EXPORT OPERATIONS ====================
+
+  async function handleExport(type: 'json' | 'csv') {
+    try {
+      setIsExporting(true);
+      
+      // Export roles with their policies
+      const rolesWithPolicies = roles.map(role => ({
+        id: role.id,
+        name: role.name,
+        description: role.description,
+        policies: role.policies?.map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+        })) || [],
+      }));
+
+      let content: string;
+      let filename: string;
+      let mimeType: string;
+
+      if (type === 'json') {
+        content = JSON.stringify(rolesWithPolicies, null, 2);
+        filename = `roles_export_${new Date().toISOString().split('T')[0]}.json`;
+        mimeType = 'application/json';
+      } else {
+        // CSV export with policies as semicolon-separated IDs
+        const headers = ['id', 'name', 'description', 'policy_ids'];
+        const rows = rolesWithPolicies.map(role => [
+          role.id,
+          role.name,
+          role.description || '',
+          role.policies.map(p => p.id).join(';'),
+        ]);
+        content = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        filename = `roles_export_${new Date().toISOString().split('T')[0]}.csv`;
+        mimeType = 'text/csv';
+      }
+
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export error:', err);
+      setError(dictionary.error_export);
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleImport(type: 'json' | 'csv') {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = type === 'json' ? '.json' : '.csv';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        setIsImporting(true);
+        const fileContent = await file.text();
+        
+        let rolesToImport: Array<{
+          name: string;
+          description?: string;
+          policies: Array<{ id: string | number }> | string[];
+        }> = [];
+
+        if (type === 'json') {
+          const parsed = JSON.parse(fileContent);
+          rolesToImport = Array.isArray(parsed) ? parsed : [parsed];
+        } else {
+          // Parse CSV
+          const lines = fileContent.split('\n').filter(l => l.trim());
+          if (lines.length < 2) throw new Error('Empty CSV file');
+          
+          const headers = lines[0].split(',');
+          const nameIdx = headers.indexOf('name');
+          const descIdx = headers.indexOf('description');
+          const policyIdsIdx = headers.indexOf('policy_ids');
+          
+          if (nameIdx === -1) throw new Error('CSV must have "name" column');
+          
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const policyIdsStr = policyIdsIdx !== -1 ? values[policyIdsIdx] : '';
+            const policyIds = policyIdsStr ? policyIdsStr.split(';').filter(id => id.trim()) : [];
+            
+            rolesToImport.push({
+              name: values[nameIdx],
+              description: descIdx !== -1 ? values[descIdx] : undefined,
+              policies: policyIds.map(id => ({ id: id.trim() })),
+            });
+          }
+        }
+
+        // Import roles
+        const report = {
+          total_records: rolesToImport.length,
+          successful_imports: 0,
+          failed_imports: 0,
+          errors: [] as string[],
+          warnings: [] as string[],
+        };
+
+        for (const roleData of rolesToImport) {
+          try {
+            // Create role
+            const createRes = await fetchWithAuth(GUARDIAN_ROUTES.roles, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: roleData.name,
+                description: roleData.description,
+              }),
+            });
+
+            if (!createRes.ok) {
+              const errorText = await createRes.text();
+              report.failed_imports++;
+              report.errors.push(`Role "${roleData.name}": ${errorText}`);
+              continue;
+            }
+
+            const createdRole = await createRes.json();
+            report.successful_imports++;
+
+            // Add policies if any
+            if (roleData.policies && Array.isArray(roleData.policies) && roleData.policies.length > 0) {
+              for (const policy of roleData.policies) {
+                try {
+                  const policyId = typeof policy === 'object' ? policy.id : policy;
+                  const addPolicyRes = await fetchWithAuth(
+                    GUARDIAN_ROUTES.rolePolicies(createdRole.id.toString()),
+                    {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ policy_id: policyId }),
+                    }
+                  );
+
+                  if (!addPolicyRes.ok) {
+                    report.warnings.push(
+                      `Role "${roleData.name}": Failed to add policy ${policyId}`
+                    );
+                  }
+                } catch (error_) {
+                  report.warnings.push(
+                    `Role "${roleData.name}": Error adding policy - ${error_}`
+                  );
+                }
+              }
+            }
+          } catch (err) {
+            report.failed_imports++;
+            report.errors.push(`Role "${roleData.name}": ${err}`);
+          }
+        }
+
+        setImportReport(report);
+        setShowImportReport(true);
+        fetchData();
+      } catch (err) {
+        console.error('Import error:', err);
+        setError(dictionary.error_import + ': ' + err);
+      } finally {
+        setIsImporting(false);
+      }
+    };
+
+    input.click();
   }
 
   // ==================== TABLE CONFIGURATION ====================
@@ -540,13 +752,49 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
         <h2 className="text-xl font-bold" {...testId(DASHBOARD_TEST_IDS.roles.title)}>
           {dictionary.page_title}
         </h2>
-        <Button 
-          onClick={openCreateRoleDialog}
-          {...testId(DASHBOARD_TEST_IDS.roles.addButton)}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          {dictionary.create_button}
-        </Button>
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={isImporting}>
+                <Upload className="h-4 w-4 mr-2" />
+                {dictionary.import_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleImport('json')}>
+                {dictionary.import_json}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleImport('csv')}>
+                {dictionary.import_csv}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={isExporting || roles.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                {dictionary.export_button}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleExport('json')}>
+                {dictionary.export_json}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('csv')}>
+                {dictionary.export_csv}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button 
+            onClick={openCreateRoleDialog}
+            {...testId(DASHBOARD_TEST_IDS.roles.addButton)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {dictionary.create_button}
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -765,6 +1013,64 @@ export default function Roles({ dictionary }: { dictionary: RolesDictionary }) {
               {...testId(DASHBOARD_TEST_IDS.roles.addPolicySubmitButton)}
             >
               {dictionary.policies_add} ({selectedPoliciesToAdd.size})
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Report Dialog */}
+      <Dialog open={showImportReport} onOpenChange={setShowImportReport}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{dictionary.import_report_title}</DialogTitle>
+          </DialogHeader>
+          {importReport && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
+                <div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_total}</div>
+                  <div className="text-2xl font-bold">{importReport.total_records}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_success}</div>
+                  <div className="text-2xl font-bold text-green-600">{importReport.successful_imports}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-600">{dictionary.import_report_failed}</div>
+                  <div className="text-2xl font-bold text-red-600">{importReport.failed_imports}</div>
+                </div>
+              </div>
+
+              {importReport.errors.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-red-600 mb-2">{dictionary.import_report_errors}</h4>
+                  <div className="max-h-48 overflow-y-auto bg-red-50 border border-red-200 rounded p-3">
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {importReport.errors.map((err) => (
+                        <li key={`error-${err.slice(0, 50)}`} className="text-red-700">{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {importReport.warnings.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-yellow-600 mb-2">{dictionary.import_report_warnings}</h4>
+                  <div className="max-h-48 overflow-y-auto bg-yellow-50 border border-yellow-200 rounded p-3">
+                    <ul className="list-disc list-inside space-y-1 text-sm">
+                      {importReport.warnings.map((warn) => (
+                        <li key={`warning-${warn.slice(0, 50)}`} className="text-yellow-700">{warn}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setShowImportReport(false)}>
+              {dictionary.import_report_close}
             </Button>
           </DialogFooter>
         </DialogContent>
