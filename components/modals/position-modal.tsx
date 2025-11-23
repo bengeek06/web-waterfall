@@ -112,11 +112,9 @@ export default function PositionModal({
       const payload: {
         title: string;
         description?: string;
-        company_id: string;
         organization_unit_id: string;
       } = {
         title: title.trim(),
-        company_id: companyId,
         organization_unit_id: organizationUnit.id,
       };
 

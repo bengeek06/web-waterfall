@@ -115,11 +115,9 @@ export default function OrganizationUnitModal({
       const payload: {
         name: string;
         description?: string;
-        company_id: string;
         parent_id?: string | null;
       } = {
         name: name.trim(),
-        company_id: companyId,
       };
 
       if (description.trim()) {

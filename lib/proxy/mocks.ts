@@ -886,7 +886,7 @@ export const identityMocks = {
       {
         id: "customer-001",
         name: "Big Client Corp",
-        company_id: 1,
+        company_id: "mock-company-id",
         email: "contact@bigclient.com",
         contact_person: "Alice Johnson",
         phone_number: "9876543210",
@@ -902,7 +902,7 @@ export const identityMocks = {
     body: {
       id: "customer-new",
       name: "New Customer LLC",
-      company_id: 1,
+      company_id: "mock-company-id",
       email: "info@newcustomer.com",
       contact_person: "Bob Smith",
       phone_number: "1112223333",
@@ -917,7 +917,7 @@ export const identityMocks = {
     body: {
       id: "customer-001",
       name: "Big Client Corp",
-      company_id: 1,
+      company_id: "mock-company-id",
       email: "contact@bigclient.com",
       contact_person: "Alice Johnson",
       phone_number: "9876543210",
@@ -932,7 +932,7 @@ export const identityMocks = {
     body: {
       id: "customer-001",
       name: "Big Client Corp",
-      company_id: 1,
+      company_id: "mock-company-id",
       email: "contact@bigclient.com",
       contact_person: "Alice Johnson Updated",
       phone_number: "9876543210",
