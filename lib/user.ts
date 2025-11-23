@@ -58,13 +58,14 @@ export function getCompanyIdFromToken(token: string | undefined): string | null 
 }
 
 /**
- * Récupère l'URL de l'avatar de l'utilisateur courant (ou null)
+ * Vérifie si l'utilisateur courant a un avatar
+ * @returns true si l'utilisateur a un avatar (has_avatar), false sinon
  */
-export async function getAvatarUrl() {
+export async function hasUserAvatar(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   const userId = getUserIdFromToken(token);
-  if (!userId) return null;
+  if (!userId) return false;
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`,
@@ -73,11 +74,11 @@ export async function getAvatarUrl() {
         cache: "no-store",
       }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return false;
     const user = await res.json();
-    return user.avatar_url || null;
+    return user.has_avatar === true;
   } catch {
-    return null;
+    return false;
   }
 }
 

@@ -45,7 +45,8 @@ interface User {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
-  avatar_url?: string;
+  has_avatar?: boolean;
+  avatar_file_id?: string;
   language?: string;
 }
 
@@ -79,7 +80,9 @@ export default function Profile({ user, dictionary }: ProfileProps) {
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState(user.avatar_url || "");
+  const [avatarPreview, setAvatarPreview] = useState(
+    user.has_avatar ? `/api/identity/users/${user.id}/avatar?t=${Date.now()}` : ""
+  );
   const [language, setLanguage] = useState<Locale>((user.language as Locale) || "fr");
   
   // UI state

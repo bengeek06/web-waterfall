@@ -160,7 +160,7 @@ export const guardianMocks = {
       company_id: "mock-company-id",
       service: "guardian",
       resource_name: "role",
-      operation: "read"
+      operation: "READ"
     }
   } as MockResponse,
 
@@ -325,13 +325,13 @@ export const guardianMocks = {
         id: "perm-001",
         service: "identity",
         resource_name: "user",
-        operation: "read"
+        operation: "READ"
       },
       {
         id: "perm-002",
         service: "identity",
         resource_name: "user",
-        operation: "write"
+        operation: "UPDATE"
       }
     ]
   } as MockResponse,
@@ -355,17 +355,26 @@ export const guardianMocks = {
         id: "perm-001",
         service: "guardian",
         resource_name: "role",
+        operation: "READ",
         description: "Manage roles",
-        operations: ["list", "create", "read", "update", "delete"],
         created_at: "2025-10-01T10:00:00Z",
         updated_at: "2025-10-01T10:00:00Z"
       },
       {
         id: "perm-002",
         service: "guardian",
+        resource_name: "role",
+        operation: "LIST",
+        description: "List roles",
+        created_at: "2025-10-01T10:00:00Z",
+        updated_at: "2025-10-01T10:00:00Z"
+      },
+      {
+        id: "perm-003",
+        service: "guardian",
         resource_name: "policy",
+        operation: "READ",
         description: "Manage policies",
-        operations: ["list", "create", "read", "update", "delete"],
         created_at: "2025-10-01T10:00:00Z",
         updated_at: "2025-10-01T10:00:00Z"
       }
@@ -378,8 +387,8 @@ export const guardianMocks = {
       id: "perm-001",
       service: "guardian",
       resource_name: "role",
+      operation: "READ",
       description: "Manage roles",
-      operations: ["list", "create", "read", "update", "delete"],
       created_at: "2025-10-01T10:00:00Z",
       updated_at: "2025-10-01T10:00:00Z"
     }
@@ -612,7 +621,8 @@ export const identityMocks = {
       first_name: "Jane",
       last_name: "Smith",
       phone_number: null,
-      avatar_url: null,
+      has_avatar: false,
+      avatar_file_id: null,
       is_active: true,
       is_verified: false,
       last_login_at: null,
@@ -632,7 +642,8 @@ export const identityMocks = {
       first_name: "John",
       last_name: "Doe",
       phone_number: "+1234567890",
-      avatar_url: "https://example.com/avatar.jpg",
+      has_avatar: true,
+      avatar_file_id: "00000000-0000-0000-0000-000000000001",
       is_active: true,
       is_verified: true,
       last_login_at: "2025-10-19T10:00:00Z",
@@ -652,7 +663,8 @@ export const identityMocks = {
       first_name: "John",
       last_name: "Doe Updated",
       phone_number: "+1234567890",
-      avatar_url: "https://example.com/avatar.jpg",
+      has_avatar: true,
+      avatar_file_id: "00000000-0000-0000-0000-000000000001",
       is_active: true,
       is_verified: true,
       last_login_at: "2025-10-19T10:00:00Z",
@@ -1075,26 +1087,44 @@ export const identityMocks = {
           id: "perm-001",
           service: "identity",
           resource_name: "user",
-          description: "Manage users",
-          operations: ["create", "read", "update", "delete"],
+          operation: "LIST",
+          description: "List users",
           created_at: "2025-10-01T10:00:00Z",
           updated_at: "2025-10-01T10:00:00Z"
         },
         {
           id: "perm-002",
           service: "identity",
-          resource_name: "company",
-          description: "Manage companies",
-          operations: ["read", "update"],
+          resource_name: "user",
+          operation: "READ",
+          description: "Read users",
           created_at: "2025-10-01T10:00:00Z",
           updated_at: "2025-10-01T10:00:00Z"
         },
         {
           id: "perm-003",
+          service: "identity",
+          resource_name: "company",
+          operation: "READ",
+          description: "Manage companies",
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        },
+        {
+          id: "perm-004",
           service: "guardian",
           resource_name: "role",
-          description: "Manage roles",
-          operations: ["create", "read", "update", "delete"],
+          operation: "LIST",
+          description: "List roles",
+          created_at: "2025-10-01T10:00:00Z",
+          updated_at: "2025-10-01T10:00:00Z"
+        },
+        {
+          id: "perm-005",
+          service: "guardian",
+          resource_name: "role",
+          operation: "READ",
+          description: "Read roles",
           created_at: "2025-10-01T10:00:00Z",
           updated_at: "2025-10-01T10:00:00Z"
         }

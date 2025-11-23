@@ -48,13 +48,14 @@ jest.mock('next/navigation', () => ({
 
 // Mock user functions
 jest.mock('@/lib/user', () => ({
-  getAvatarUrl: jest.fn(() => Promise.resolve('https://example.com/avatar.jpg')),
+  hasUserAvatar: jest.fn(() => Promise.resolve(true)),
   getUserData: jest.fn(() => Promise.resolve({
     id: '123',
     email: 'test@example.com',
     first_name: 'John',
     last_name: 'Doe',
     language: 'fr',
+    has_avatar: true,
   })),
 }));
 

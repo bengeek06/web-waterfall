@@ -69,8 +69,8 @@ describe("GET /api/identity/users/[user_id]/permissions", () => {
       expect(json.permissions[0]).toHaveProperty("id");
       expect(json.permissions[0]).toHaveProperty("service");
       expect(json.permissions[0]).toHaveProperty("resource_name");
-      expect(json.permissions[0]).toHaveProperty("operations");
-      expect(Array.isArray(json.permissions[0].operations)).toBe(true);
+      expect(json.permissions[0]).toHaveProperty("operation");
+      expect(typeof json.permissions[0].operation).toBe("string");
     });
   });
 
@@ -94,22 +94,22 @@ describe("GET /api/identity/users/[user_id]/permissions", () => {
               id: "perm-001",
               service: "identity",
               resource_name: "user",
-              description: "Manage users",
-              operations: ["create", "read", "update", "delete"]
+              operation: "READ",
+              description: "Manage users"
             },
             {
               id: "perm-002",
               service: "identity",
               resource_name: "company",
-              description: "Manage companies",
-              operations: ["read", "update"]
+              operation: "READ",
+              description: "Manage companies"
             },
             {
               id: "perm-003",
               service: "guardian",
               resource_name: "role",
-              description: "Manage roles",
-              operations: ["create", "read", "update", "delete"]
+              operation: "READ",
+              description: "Manage roles"
             }
           ]
         };

@@ -100,7 +100,8 @@ type UserManagementProps = {
       first_name: string;
       last_name: string;
       phone_number: string;
-      avatar_url: string;
+      has_avatar: string;
+      avatar_file_id: string;
       language: string;
       roles: string;
       positions: string;
@@ -153,7 +154,12 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
     }
     
     if (res.ok) {
-      const usersData = await res.json();
+      const data = await res.json();
+      
+      // Le backend retourne {data: [...], pagination: {...}}
+      const usersData = Array.isArray(data) ? data : (data.data || data.users || []);
+      
+      console.log('📊 Users data:', { raw: data, normalized: usersData });
       
       // Fetch user roles and position for each user
       const usersWithRolesAndPosition = await Promise.all(
@@ -163,21 +169,35 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
             const userRolesRes = await fetchWithAuth(GUARDIAN_ROUTES.userRoles);
             let roles: Array<{ id: string; name: string }> = [];
             if (userRolesRes.ok) {
-              const allUserRoles = await userRolesRes.json();
-              const userRoles = Array.isArray(allUserRoles)
-                ? allUserRoles.filter((ur: { user_id: string }) => ur.user_id === user.id)
-                : [];
+              const allUserRolesData = await userRolesRes.json();
+              // Le backend peut retourner soit un tableau, soit {user_roles: [...]}
+              const allUserRoles = Array.isArray(allUserRolesData) 
+                ? allUserRolesData 
+                : (allUserRolesData.user_roles || []);
+              
+              const userRoles = allUserRoles.filter(
+                (ur: { user_id: string }) => ur.user_id === user.id
+              );
               
               // Fetch role details
               const rolesRes = await fetchWithAuth(GUARDIAN_ROUTES.roles);
               if (rolesRes.ok) {
-                const allRoles = await rolesRes.json();
+                const allRolesData = await rolesRes.json();
+                // Le backend peut retourner soit un tableau, soit {roles: [...]}
+                const allRoles = Array.isArray(allRolesData)
+                  ? allRolesData
+                  : (allRolesData.roles || []);
+                
+                console.log('📊 Roles data:', { raw: allRolesData, normalized: allRoles });
+                
                 roles = userRoles
                   .map((ur: { role_id: string }) => {
                     const role = allRoles.find((r: { id: string }) => r.id.toString() === ur.role_id.toString());
                     return role ? { id: role.id, name: role.name } : null;
                   })
                   .filter((r): r is { id: string; name: string } => r !== null);
+              } else if (rolesRes.status === 404) {
+                console.warn('⚠️ Guardian /roles endpoint not found (404) - roles will be empty');
               }
             }
             

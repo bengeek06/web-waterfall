@@ -42,7 +42,8 @@ export type User = {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
-  avatar_url?: string;
+  has_avatar?: boolean;
+  avatar_file_id?: string;
   language?: 'en' | 'fr';
   is_active: boolean;
   is_verified: boolean;
@@ -100,6 +101,7 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
         <div className="w-10 h-10 flex items-center justify-center">
           <AvatarImage
             userId={row.original.id}
+            hasAvatar={row.original.has_avatar || false}
             size={32}
             className="rounded-full object-cover"
             iconSize={20}

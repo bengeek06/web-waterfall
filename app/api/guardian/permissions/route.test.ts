@@ -69,7 +69,7 @@ describe("GET /api/guardian/permissions", () => {
         id: expect.any(String),
         service: expect.any(String),
         resource_name: expect.any(String),
-        operations: expect.any(Array),
+        operation: expect.any(String),
       });
     });
   });
@@ -93,13 +93,13 @@ describe("GET /api/guardian/permissions", () => {
             id: "perm-1", 
             service: "identity",
             resource_name: "user",
-            operation: "read"
+            operation: "READ"
           },
           { 
             id: "perm-2", 
             service: "identity",
             resource_name: "user",
-            operation: "write"
+            operation: "UPDATE"
           }
         ];
         const mockRes = {

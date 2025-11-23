@@ -55,7 +55,8 @@ export type User = {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
-  avatar_url?: string;
+  has_avatar?: boolean;
+  avatar_file_id?: string;
   language?: 'en' | 'fr';
   is_active: boolean;
   is_verified: boolean;
@@ -83,7 +84,6 @@ type UserFormProps = {
       first_name: string;
       last_name: string;
       phone_number: string;
-      avatar_url: string;
       language: string;
       is_active: string;
       is_verified: string;
@@ -119,7 +119,6 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     first_name: "",
     last_name: "",
     phone_number: "",
-    avatar_url: "",
     language: "fr",
     is_active: true,
     is_verified: false,
@@ -192,7 +191,6 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           first_name: user.first_name || "",
           last_name: user.last_name || "",
           phone_number: user.phone_number || "",
-          avatar_url: user.avatar_url || "",
           language: user.language || "fr",
           is_active: user.is_active ?? true,
           is_verified: user.is_verified ?? false,
@@ -201,8 +199,8 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         setSelectedRoleIds(user.roles?.map(r => r.id.toString()) || []);
         // Set user's current position (single)
         setSelectedPositionId(user.position_id || "");
-        // Set avatar preview from endpoint
-        if (user.id) {
+        // Set avatar preview from endpoint if user has avatar
+        if (user.id && user.has_avatar) {
           setAvatarPreview(`/api/identity/users/${user.id}/avatar?t=${Date.now()}`);
         } else {
           setAvatarPreview("");
@@ -215,7 +213,6 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           first_name: "",
           last_name: "",
           phone_number: "",
-          avatar_url: "",
           language: "fr",
           is_active: true,
           is_verified: false,
@@ -527,16 +524,16 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
                 onChange={handleAvatarChange}
                 className="hidden"
                 {...testId(ADMIN_TEST_IDS.users.avatarUrlInput)}
-                aria-invalid={!!errors.avatar_url}
+                aria-invalid={!!errors.avatar}
               />
               
               <p className="text-sm text-muted-foreground text-center">
                 Formats acceptés: JPG, PNG, GIF (max 5MB)
               </p>
             </div>
-            {errors.avatar_url && (
+            {errors.avatar && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
-                {errors.avatar_url}
+                {errors.avatar}
               </p>
             )}
           </div>

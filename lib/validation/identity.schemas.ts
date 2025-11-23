@@ -45,12 +45,12 @@ export const createUserSchema = z.object({
     .max(50, 'Le téléphone ne peut pas dépasser 50 caractères')
     .optional()
     .or(z.literal('')),
-  avatar_url: z
+  has_avatar: z.boolean().optional().default(false),
+  avatar_file_id: z
     .string()
-    .url('URL avatar invalide')
-    .max(255, 'L\'URL ne peut pas dépasser 255 caractères')
+    .uuid('ID de fichier avatar invalide')
     .optional()
-    .or(z.literal('')),
+    .nullable(),
   language: z
     .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
     .optional()
@@ -84,12 +84,12 @@ export const updateUserSchema = z.object({
     .max(50, 'Le téléphone ne peut pas dépasser 50 caractères')
     .optional()
     .or(z.literal('')),
-  avatar_url: z
+  has_avatar: z.boolean().optional(),
+  avatar_file_id: z
     .string()
-    .url('URL avatar invalide')
-    .max(255, 'L\'URL ne peut pas dépasser 255 caractères')
+    .uuid('ID de fichier avatar invalide')
     .optional()
-    .or(z.literal('')),
+    .nullable(),
   language: z
     .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
     .optional(),
@@ -287,11 +287,12 @@ export const profileUpdateSchema = z.object({
     .regex(/^[\d\s+()-]*$/, 'Numéro de téléphone invalide')
     .optional()
     .or(z.literal('')),
-  avatar: z
+  has_avatar: z.boolean().optional(),
+  avatar_file_id: z
     .string()
-    .url('URL avatar invalide')
+    .uuid('ID de fichier avatar invalide')
     .optional()
-    .or(z.literal('')),
+    .nullable(),
 });
 
 export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;

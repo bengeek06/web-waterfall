@@ -72,7 +72,7 @@ describe("GET /api/guardian/permissions/[permission_id]", () => {
         id: expect.any(String),
         service: expect.any(String),
         resource_name: expect.any(String),
-        operations: expect.any(Array),
+        operation: expect.any(String),
       });
     });
   });
@@ -96,7 +96,7 @@ describe("GET /api/guardian/permissions/[permission_id]", () => {
           service: "identity",
           resource_name: "user",
           description: "User management permission",
-          operations: ["create", "read", "update", "delete"],
+          operation: "READ",
           created_at: "2025-10-01T10:00:00Z",
           updated_at: "2025-10-01T10:00:00Z"
         };
