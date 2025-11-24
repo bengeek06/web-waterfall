@@ -36,9 +36,9 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
       {/* Card Workspace - Always visible */}
-      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallPrimary} shadow-sm hover:shadow-md transition-shadow`}>
+      <Card className={`border-l-4 ${COLOR_CLASSES.border.primary} shadow-sm hover:shadow-md transition-shadow`}>
         <CardHeader className="flex flex-row items-center gap-3">
-          <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallPrimary}`} />
+          <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.primary}`} />
           <CardTitle>{dictionary.workspace}</CardTitle>
         </CardHeader>
         <CardContent>

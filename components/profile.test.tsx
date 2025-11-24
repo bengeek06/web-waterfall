@@ -43,7 +43,7 @@ describe('Profile Component', () => {
     last_name: 'Doe',
     phone_number: '+1234567890',
     has_avatar: false,
-    avatar_file_id: null,
+    avatar_file_id: undefined,
     language: 'fr',
   };
 

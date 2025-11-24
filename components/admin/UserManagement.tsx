@@ -195,7 +195,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
                     const role = allRoles.find((r: { id: string }) => r.id.toString() === ur.role_id.toString());
                     return role ? { id: role.id, name: role.name } : null;
                   })
-                  .filter((r): r is { id: string; name: string } => r !== null);
+                  .filter((r: { id: string; name: string } | null): r is { id: string; name: string } => r !== null);
               } else if (rolesRes.status === 404) {
                 console.warn('⚠️ Guardian /roles endpoint not found (404) - roles will be empty');
               }

@@ -122,6 +122,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
     language: "fr",
     is_active: true,
     is_verified: false,
+    has_avatar: false,
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -194,6 +195,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           language: user.language || "fr",
           is_active: user.is_active ?? true,
           is_verified: user.is_verified ?? false,
+          has_avatar: user.has_avatar ?? false,
         });
         // Set user's current roles
         setSelectedRoleIds(user.roles?.map(r => r.id.toString()) || []);
@@ -216,6 +218,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           language: "fr",
           is_active: true,
           is_verified: false,
+          has_avatar: false,
         });
         setSelectedRoleIds([]);
         setSelectedPositionId("");
