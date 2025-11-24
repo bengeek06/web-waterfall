@@ -12,6 +12,8 @@
 "use client";
 
 import { useState } from "react";
+
+// UI Components
 import {
   ColumnDef,
   flexRender,
@@ -26,6 +28,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Download, Upload, Loader2 } from "lucide-react";
+
+// Constants
+import { TABLE_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES, SPACING } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 
@@ -115,10 +121,12 @@ export function GenericDataTable<T>({
   emptyState,
   toolbarActions,
 }: Readonly<GenericDataTableProps<T>>) {
+  // ==================== STATE ====================
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
+  // ==================== TABLE INSTANCE ====================
   const table = useReactTable({
     data,
     columns,
@@ -135,7 +143,7 @@ export function GenericDataTable<T>({
     },
   });
 
-  // Handle file import
+  // ==================== HANDLERS ====================
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && onImport) {
@@ -143,24 +151,29 @@ export function GenericDataTable<T>({
     }
   };
 
+  // ==================== RENDER ====================
   return (
-    <div className="space-y-4">
+    <div className={SPACING.component.md} {...testId(TABLE_TEST_IDS.genericTable.container)}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4" {...testId(TABLE_TEST_IDS.genericTable.toolbar)}>
+        <div className={`flex items-center ${SPACING.gap.sm}`}>
           {/* Create Button */}
           {onCreateClick && (
-            <Button onClick={onCreateClick}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button onClick={onCreateClick} {...testId(TABLE_TEST_IDS.genericTable.createButton)}>
+              <Plus className={`mr-2 ${ICON_SIZES.sm}`} />
               {dictionary.create || "Create"}
             </Button>
           )}
           
           {/* Custom Toolbar Actions */}
-          {toolbarActions}
+          {toolbarActions && (
+            <div {...testId(TABLE_TEST_IDS.genericTable.toolbarActions)}>
+              {toolbarActions}
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center ${SPACING.gap.sm}`}>
           {/* Import/Export */}
           {enableImportExport && (
             <>
@@ -168,7 +181,7 @@ export function GenericDataTable<T>({
                 <label htmlFor="file-import">
                   <Button variant="outline" size="sm" asChild>
                     <span className="cursor-pointer">
-                      <Upload className="mr-2 h-4 w-4" />
+                      <Upload className={`mr-2 ${ICON_SIZES.sm}`} />
                       {dictionary.import || "Import"}
                     </span>
                   </Button>
@@ -178,13 +191,19 @@ export function GenericDataTable<T>({
                     className="hidden"
                     accept=".csv,.xlsx,.json"
                     onChange={handleFileImport}
+                    {...testId(TABLE_TEST_IDS.genericTable.importInput)}
                   />
                 </label>
               )}
               
               {onExport && (
-                <Button variant="outline" size="sm" onClick={onExport}>
-                  <Download className="mr-2 h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onExport}
+                  {...testId(TABLE_TEST_IDS.genericTable.exportButton)}
+                >
+                  <Download className={`mr-2 ${ICON_SIZES.sm}`} />
                   {dictionary.export || "Export"}
                 </Button>
               )}
@@ -200,13 +219,14 @@ export function GenericDataTable<T>({
           value={globalFilter ?? ""}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm"
+          {...testId(TABLE_TEST_IDS.genericTable.searchInput)}
         />
       )}
 
       {/* Table */}
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
+        <Table {...testId(TABLE_TEST_IDS.genericTable.table)}>
+          <TableHeader {...testId(TABLE_TEST_IDS.genericTable.tableHeader)}>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -223,15 +243,15 @@ export function GenericDataTable<T>({
             ))}
           </TableHeader>
           
-          <TableBody>
+          <TableBody {...testId(TABLE_TEST_IDS.genericTable.tableBody)}>
             {isLoading ? (
-              <TableRow>
+              <TableRow {...testId(TABLE_TEST_IDS.genericTable.loadingRow)}>
                 <TableCell
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className={`flex items-center justify-center ${SPACING.gap.sm}`}>
+                    <Loader2 className={`${ICON_SIZES.sm} animate-spin`} />
                     <span className="text-muted-foreground">
                       {dictionary.loading || "Loading..."}
                     </span>
@@ -257,7 +277,7 @@ export function GenericDataTable<T>({
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
+                  <TableRow {...testId(TABLE_TEST_IDS.genericTable.emptyRow)}>
                     <TableCell
                       colSpan={columns.length}
                       className="h-24 text-center"
@@ -278,7 +298,10 @@ export function GenericDataTable<T>({
 
       {/* Results Count */}
       {!isLoading && table.getRowModel().rows?.length > 0 && (
-        <div className="text-xs text-muted-foreground">
+        <div 
+          className="text-xs text-muted-foreground"
+          {...testId(TABLE_TEST_IDS.genericTable.resultsCount)}
+        >
           Showing {table.getRowModel().rows.length} of {data.length} result(s)
         </div>
       )}

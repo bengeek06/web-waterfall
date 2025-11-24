@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Check, X, MoreHorizontal, Pencil, Trash2, Eye, ArrowUpDown } from "lucide-react";
+import { testId } from "@/lib/test-ids";
 
 // ==================== TYPES ====================
 
@@ -49,17 +50,20 @@ export type Locale = 'fr' | 'en';
 /**
  * Creates a standard actions column with Edit/Delete/View dropdown
  * 
+ * @param entityIdPrefix - Prefix for test IDs (e.g., 'user', 'subcontractor')
  * @example
  * ```tsx
  * createActionColumn(
  *   { onEdit: handleEdit, onDelete: handleDelete },
- *   { actions: "Actions", edit: "Edit", delete: "Delete", view: "View" }
+ *   { actions: "Actions", edit: "Edit", delete: "Delete", view: "View" },
+ *   'user' // Generates 'user-edit-{id}', 'user-delete-{id}'
  * )
  * ```
  */
-export function createActionColumn<T>(
+export function createActionColumn<T extends { id?: string | number }>(
   callbacks: ActionCallbacks<T>,
-  dictionary: ActionDictionary
+  dictionary: ActionDictionary,
+  entityIdPrefix?: string
 ): ColumnDef<T> {
   return {
     id: "actions",
@@ -68,23 +72,35 @@ export function createActionColumn<T>(
     enableColumnFilter: false,
     cell: ({ row }) => {
       const item = row.original;
+      const itemId = item.id;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8"
+              {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-actions-${itemId}`) : {})}
+            >
               <MoreHorizontal className="h-4 w-4" />
               <span className="sr-only">{dictionary.actions}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {callbacks.onView && (
-              <DropdownMenuItem onClick={() => callbacks.onView?.(item)}>
+              <DropdownMenuItem 
+                onClick={() => callbacks.onView?.(item)}
+                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-view-${itemId}`) : {})}
+              >
                 <Eye className="mr-2 h-4 w-4" />
                 {dictionary.view}
               </DropdownMenuItem>
             )}
             {callbacks.onEdit && (
-              <DropdownMenuItem onClick={() => callbacks.onEdit?.(item)}>
+              <DropdownMenuItem 
+                onClick={() => callbacks.onEdit?.(item)}
+                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-edit-${itemId}`) : {})}
+              >
                 <Pencil className="mr-2 h-4 w-4" />
                 {dictionary.edit}
               </DropdownMenuItem>
@@ -93,6 +109,7 @@ export function createActionColumn<T>(
               <DropdownMenuItem
                 onClick={() => callbacks.onDelete?.(item)}
                 className="text-destructive focus:text-destructive"
+                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-delete-${itemId}`) : {})}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 {dictionary.delete}

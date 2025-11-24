@@ -18,6 +18,7 @@ export * from './auth';
 export * from './common';
 export * from './dashboard';
 export * from './admin';
+export * from './table';
 
 // Re-export helper function
 export { testId } from './auth';

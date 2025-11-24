@@ -97,7 +97,7 @@ export interface CrudResult<T> {
  * });
  * ```
  */
-export function useTableCrud<T extends { id?: string }>(
+export function useTableCrud<T extends { id?: string | number }>(
   config: CrudConfig
 ): CrudResult<T> {
   const {
