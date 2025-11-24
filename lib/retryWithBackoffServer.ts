@@ -23,20 +23,21 @@ export interface RetryOptions {
   onRetry?: (_attempt: number, _delay: number, _error: Error | Response) => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export enum HttpErrorType {
-  NETWORK = 'NETWORK',
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  NOT_FOUND = 'NOT_FOUND',
-  SERVER_ERROR = 'SERVER_ERROR',
-  CLIENT_ERROR = 'CLIENT_ERROR',
-  UNKNOWN = 'UNKNOWN'
-}
+export const HttpErrorType = {
+  NETWORK: 'NETWORK',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  SERVER_ERROR: 'SERVER_ERROR',
+  CLIENT_ERROR: 'CLIENT_ERROR',
+  UNKNOWN: 'UNKNOWN'
+} as const;
+
+export type HttpErrorTypeValue = typeof HttpErrorType[keyof typeof HttpErrorType];
 
 export class HttpError extends Error {
   constructor(
-    public type: HttpErrorType,
+    public type: HttpErrorTypeValue,
     public status?: number,
     public _statusText?: string,
     public _response?: Response,

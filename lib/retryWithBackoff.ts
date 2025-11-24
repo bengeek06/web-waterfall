@@ -29,23 +29,24 @@ export interface RetryOptions {
 /**
  * Types d'erreurs HTTP
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export enum HttpErrorType {
-  NETWORK = 'NETWORK',           // Erreur réseau (pas de réponse)
-  UNAUTHORIZED = 'UNAUTHORIZED', // 401
-  FORBIDDEN = 'FORBIDDEN',       // 403
-  NOT_FOUND = 'NOT_FOUND',       // 404
-  SERVER_ERROR = 'SERVER_ERROR', // 5xx
-  CLIENT_ERROR = 'CLIENT_ERROR', // 4xx (autres)
-  UNKNOWN = 'UNKNOWN'            // Autre
-}
+export const HttpErrorType = {
+  NETWORK: 'NETWORK',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  SERVER_ERROR: 'SERVER_ERROR',
+  CLIENT_ERROR: 'CLIENT_ERROR',
+  UNKNOWN: 'UNKNOWN'
+} as const;
+
+export type HttpErrorTypeValue = typeof HttpErrorType[keyof typeof HttpErrorType];
 
 /**
  * Classe d'erreur HTTP enrichie avec type et détails
  */
 export class HttpError extends Error {
   constructor(
-    public type: HttpErrorType,
+    public type: HttpErrorTypeValue,
     public status?: number,
     public _statusText?: string,
     public _response?: Response,
