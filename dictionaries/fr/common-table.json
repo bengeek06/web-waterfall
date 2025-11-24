@@ -5,6 +5,7 @@
   "view": "Voir",
   "create": "Créer",
   "search": "Rechercher...",
+  "filter_placeholder": "Filtrer...",
   "no_results": "Aucun résultat trouvé",
   "loading": "Chargement...",
   "submit": "Soumettre",

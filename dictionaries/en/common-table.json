@@ -5,6 +5,7 @@
   "view": "View",
   "create": "Create",
   "search": "Search...",
+  "filter_placeholder": "Filter...",
   "no_results": "No results found",
   "loading": "Loading...",
   "submit": "Submit",
