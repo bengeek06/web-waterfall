@@ -179,7 +179,7 @@ export async function fetchWithAuth(
  * Version de fetchWithAuth qui parse automatiquement le JSON
  * Lance une erreur enrichie si la réponse n'est pas OK
  * 
- * @throws {HttpError} Erreur enrichie avec type, status et message utilisateur
+ * @throws {HttpError} Erreur enrichie avec type, status et message serveur
  */
 export async function fetchWithAuthJSON<T = unknown>(
   input: RequestInfo | URL,
@@ -197,10 +197,11 @@ export async function fetchWithAuthJSON<T = unknown>(
     try {
       const errorData = await response.json();
       const serverMessage = errorData.message || errorData.error || '';
-      httpError.message = serverMessage ? `${httpError.getUserMessage()}: ${serverMessage}` : httpError.getUserMessage();
+      if (serverMessage) {
+        httpError.message = `HTTP ${httpError.status}: ${serverMessage}`;
+      }
     } catch {
-      // Pas de JSON, utiliser le message par défaut
-      httpError.message = httpError.getUserMessage();
+      // Pas de JSON, garder le message par défaut
     }
     
     throw httpError;

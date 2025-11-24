@@ -1,0 +1,9 @@
+{
+  "network": "Network connection problem. Please check your internet connection.",
+  "unauthorized": "Session expired. Please log in again.",
+  "forbidden": "You do not have the necessary permissions for this action.",
+  "notFound": "Resource not found.",
+  "serverError": "Server error. Please try again in a few moments.",
+  "clientError": "Invalid request.",
+  "unknown": "An error occurred."
+}

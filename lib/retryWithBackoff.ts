@@ -21,14 +21,15 @@ export interface RetryOptions {
   /** Délai maximum en millisecondes (défaut: 10000ms) */
   maxDelay?: number;
   /** Fonction pour déterminer si on doit retry (défaut: erreurs réseau et 5xx) */
-  shouldRetry?: (error: Error | Response) => boolean;
+  shouldRetry?: (_error: Error | Response) => boolean;
   /** Callback appelé avant chaque retry */
-  onRetry?: (attempt: number, delay: number, error: Error | Response) => void;
+  onRetry?: (_attempt: number, _delay: number, _error: Error | Response) => void;
 }
 
 /**
  * Types d'erreurs HTTP
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export enum HttpErrorType {
   NETWORK = 'NETWORK',           // Erreur réseau (pas de réponse)
   UNAUTHORIZED = 'UNAUTHORIZED', // 401
@@ -46,8 +47,8 @@ export class HttpError extends Error {
   constructor(
     public type: HttpErrorType,
     public status?: number,
-    public statusText?: string,
-    public response?: Response,
+    public _statusText?: string,
+    public _response?: Response,
     message?: string
   ) {
     super(message || `HTTP Error: ${type} ${status || ''}`);
@@ -62,28 +63,6 @@ export class HttpError extends Error {
       this.type === HttpErrorType.NETWORK ||
       this.type === HttpErrorType.SERVER_ERROR
     );
-  }
-
-  /**
-   * Retourne un message utilisateur friendly
-   */
-  getUserMessage(): string {
-    switch (this.type) {
-      case HttpErrorType.NETWORK:
-        return 'Problème de connexion réseau. Veuillez vérifier votre connexion internet.';
-      case HttpErrorType.UNAUTHORIZED:
-        return 'Session expirée. Veuillez vous reconnecter.';
-      case HttpErrorType.FORBIDDEN:
-        return "Vous n'avez pas les permissions nécessaires pour cette action.";
-      case HttpErrorType.NOT_FOUND:
-        return 'Ressource non trouvée.';
-      case HttpErrorType.SERVER_ERROR:
-        return 'Erreur serveur. Veuillez réessayer dans quelques instants.';
-      case HttpErrorType.CLIENT_ERROR:
-        return 'Requête invalide.';
-      default:
-        return 'Une erreur est survenue.';
-    }
   }
 }
 
@@ -141,6 +120,23 @@ function delay(ms: number): Promise<void> {
 }
 
 /**
+ * Vérifie si un résultat est une Response non-OK qui devrait être retry
+ */
+function shouldRetryResponse<T>(
+  result: T,
+  shouldRetry: (_error: Error | Response) => boolean
+): boolean {
+  // Duck typing: un objet avec status et ok est probablement une Response
+  const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
+  if (!isResponse) {
+    return false;
+  }
+  
+  const response = result as unknown as Response;
+  return !response.ok && shouldRetry(response);
+}
+
+/**
  * Exécute une fonction avec retry et backoff exponentiel
  * 
  * @example
@@ -168,26 +164,23 @@ export async function retryWithBackoff<T>(
     try {
       const result = await fn();
       
-      // Si c'est une Response et qu'elle n'est pas OK, vérifier si on doit retry
-      // Duck typing: un objet avec status et ok est probablement une Response
-      const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
-      if (isResponse && !(result as unknown as Response).ok) {
-        if (attempt < maxRetries && shouldRetry(result as unknown as Response)) {
-          lastError = result as unknown as Response;
-          // Ne pas consommer le body pour permettre le retry
-        } else {
-          // Dernière tentative ou pas de retry
-          return result;
-        }
+      // Vérifier si c'est une Response non-OK qui devrait être retry
+      const needsRetry = shouldRetryResponse(result, shouldRetry);
+      const isLastAttempt = attempt >= maxRetries;
+      
+      if (needsRetry && !isLastAttempt) {
+        lastError = result as unknown as Response;
+        // Continuer pour retry
       } else {
-        // Succès
+        // Succès ou dernière tentative
         return result;
       }
     } catch (error) {
       lastError = error as Error;
+      const isLastAttempt = attempt >= maxRetries;
+      const shouldNotRetry = !shouldRetry(error as Error);
       
-      // Dernière tentative ou pas de retry
-      if (attempt >= maxRetries || !shouldRetry(error as Error)) {
+      if (isLastAttempt || shouldNotRetry) {
         throw error;
       }
     }

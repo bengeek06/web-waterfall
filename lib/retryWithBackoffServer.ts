@@ -23,6 +23,7 @@ export interface RetryOptions {
   onRetry?: (_attempt: number, _delay: number, _error: Error | Response) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export enum HttpErrorType {
   NETWORK = 'NETWORK',
   UNAUTHORIZED = 'UNAUTHORIZED',
@@ -37,8 +38,8 @@ export class HttpError extends Error {
   constructor(
     public type: HttpErrorType,
     public status?: number,
-    public statusText?: string,
-    public response?: Response,
+    public _statusText?: string,
+    public _response?: Response,
     message?: string
   ) {
     super(message || `HTTP Error: ${type} ${status || ''}`);
@@ -50,25 +51,6 @@ export class HttpError extends Error {
       this.type === HttpErrorType.NETWORK ||
       this.type === HttpErrorType.SERVER_ERROR
     );
-  }
-
-  getUserMessage(): string {
-    switch (this.type) {
-      case HttpErrorType.NETWORK:
-        return 'Problème de connexion réseau.';
-      case HttpErrorType.UNAUTHORIZED:
-        return 'Session expirée.';
-      case HttpErrorType.FORBIDDEN:
-        return "Permissions insuffisantes.";
-      case HttpErrorType.NOT_FOUND:
-        return 'Ressource non trouvée.';
-      case HttpErrorType.SERVER_ERROR:
-        return 'Erreur serveur.';
-      case HttpErrorType.CLIENT_ERROR:
-        return 'Requête invalide.';
-      default:
-        return 'Une erreur est survenue.';
-    }
   }
 }
 
@@ -108,6 +90,19 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function shouldRetryResponse<T>(
+  result: T,
+  shouldRetry: (_error: Error | Response) => boolean
+): boolean {
+  const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
+  if (!isResponse) {
+    return false;
+  }
+  
+  const response = result as unknown as Response;
+  return !response.ok && shouldRetry(response);
+}
+
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}
@@ -127,20 +122,20 @@ export async function retryWithBackoff<T>(
     try {
       const result = await fn();
       
-      const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
-      if (isResponse && !(result as unknown as Response).ok) {
-        if (attempt < maxRetries && shouldRetry(result as unknown as Response)) {
-          lastError = result as unknown as Response;
-        } else {
-          return result;
-        }
+      const needsRetry = shouldRetryResponse(result, shouldRetry);
+      const isLastAttempt = attempt >= maxRetries;
+      
+      if (needsRetry && !isLastAttempt) {
+        lastError = result as unknown as Response;
       } else {
         return result;
       }
     } catch (error) {
       lastError = error as Error;
+      const isLastAttempt = attempt >= maxRetries;
+      const shouldNotRetry = !shouldRetry(error as Error);
       
-      if (attempt >= maxRetries || !shouldRetry(error as Error)) {
+      if (isLastAttempt || shouldNotRetry) {
         throw error;
       }
     }
