@@ -134,7 +134,16 @@ export function useTableCrud<T extends { id?: string | number }>(
       throw error;
     }
     
-    return response.json();
+    const json = await response.json();
+    
+    // Handle both formats: direct array or {data: [...], pagination: {...}}
+    if (Array.isArray(json)) {
+      return json;
+    } else if (json.data && Array.isArray(json.data)) {
+      return json.data;
+    }
+    
+    return [];
   };
 
   // Fetch data with SWR
