@@ -55,6 +55,7 @@ import policies_fr from '../dictionaries/fr/policies.json';
 import company_fr from '../dictionaries/fr/company.json';
 import organization_fr from '../dictionaries/fr/organization.json';
 import workspace_fr from '../dictionaries/fr/workspace.json';
+import errors_fr from '../dictionaries/fr/errors.json';
 
 import common_en from '../dictionaries/en/common.json';
 import navigation_en from '../dictionaries/en/navigation.json';
@@ -69,6 +70,7 @@ import policies_en from '../dictionaries/en/policies.json';
 import company_en from '../dictionaries/en/company.json';
 import organization_en from '../dictionaries/en/organization.json';
 import workspace_en from '../dictionaries/en/workspace.json';
+import errors_en from '../dictionaries/en/errors.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -88,6 +90,7 @@ const dictionaries = {
     company: company_fr,
     organization: organization_fr,
     workspace: workspace_fr,
+    errors: errors_fr,
   },
   en: {
     ...common_en,
@@ -103,6 +106,7 @@ const dictionaries = {
     company: company_en,
     organization: organization_en,
     workspace: workspace_en,
+    errors: errors_en,
   },
 } as const;
 

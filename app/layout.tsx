@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased" style={{ fontFamily: 'Geist Sans, sans-serif' }}>
         {children}
+        <Toaster />
       </body>
     </html>
   );
