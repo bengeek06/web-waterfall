@@ -52,9 +52,8 @@ type PositionModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  companyId: string;
   organizationUnit: OrganizationUnit;
-  position?: Position | null; // For editing
+  position?: Position | null;
   dictionary: {
     position_modal: {
       create_title: string;
@@ -80,7 +79,6 @@ export default function PositionModal({
   isOpen,
   onClose,
   onSuccess,
-  companyId,
   organizationUnit,
   position,
   dictionary,

@@ -984,7 +984,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         isOpen={isUnitModalOpen}
         onClose={handleUnitModalClose}
         onSuccess={handleUnitModalSuccess}
-        companyId={companyId}
         unit={editingUnit}
         parentUnit={parentUnit}
         dictionary={dictionary}
@@ -996,7 +995,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           isOpen={isPositionModalOpen}
           onClose={handlePositionModalClose}
           onSuccess={handlePositionModalSuccess}
-          companyId={companyId}
           organizationUnit={selectedUnit}
           position={editingPosition}
           dictionary={dictionary}
