@@ -681,6 +681,7 @@ import { useRouter } from "next/navigation";
 
 // UI Components
 import { Card, Input, Button } from "@/components/ui";
+import { Save, X } from "lucide-react"; // Icons
 
 // Constants & Utilities
 import { AUTH_ROUTES } from "@/lib/api-routes";
@@ -733,7 +734,13 @@ export function MyComponent({ dictionary }: MyComponentProps) {
         {errors.name && <span className={COLOR_CLASSES.text.destructive}>{errors.name.message}</span>}
         
         <Button type="submit" {...testId(AUTH_TEST_IDS.myComponent.submitButton)}>
+          <Save className={ICON_SIZES.sm} />
           {dictionary.my_feature.submit}
+        </Button>
+        
+        <Button type="button" variant="outline" onClick={() => router.back()}>
+          <X className={ICON_SIZES.sm} />
+          {dictionary.common.cancel}
         </Button>
       </form>
     </Card>
@@ -779,6 +786,7 @@ components/
 - Handle errors with `useErrorHandler`
 - Add `data-testid` to all interactive elements
 - Use design tokens for colors, spacing, icons
+- Use Lucide icons for all icon needs
 - Validate forms with Zod schemas
 - Check permissions with `usePermissions`
 
@@ -786,6 +794,7 @@ components/
 - Hardcode API URLs (use `api-routes`)
 - Hardcode test selectors (use `test-ids`)
 - Use `fetch` directly (use `fetchWithAuth`)
+- Mix icon libraries (use Lucide only)
 - Ignore error handling
 - Mix concerns (keep logic separate from UI)
 - Duplicate validation logic (use shared schemas)
@@ -919,6 +928,44 @@ import { Button, Input, Card, Dialog, Select } from '@/components/ui';
 <Input placeholder="Enter name" />
 <Card className="p-4">Content</Card>
 ```
+
+#### Using Lucide Icons
+
+The project uses **Lucide React** for icons. Browse available icons at [lucide.dev](https://lucide.dev/).
+
+```typescript
+import { User, Mail, Lock, Trash2, Edit, Check, X, ChevronDown } from 'lucide-react';
+import { ICON_SIZES, ICON_COLORS } from '@/lib/design-tokens';
+
+// Basic usage
+<User className="w-5 h-5" />
+
+// With design tokens (recommended)
+<User className={`${ICON_SIZES.md} ${ICON_COLORS.primary}`} />
+<Mail className={`${ICON_SIZES.sm} ${ICON_COLORS.waterfall}`} />
+<Trash2 className={`${ICON_SIZES.md} ${ICON_COLORS.destructive}`} />
+
+// In buttons
+<Button>
+  <Check className={ICON_SIZES.sm} />
+  Save
+</Button>
+
+// Common icons
+<Edit className="w-4 h-4" />      // Edit action
+<Trash2 className="w-4 h-4" />    // Delete action
+<Plus className="w-4 h-4" />      // Add/Create
+<Search className="w-4 h-4" />    // Search
+<Settings className="w-4 h-4" />  // Settings
+<ChevronDown className="w-4 h-4" /> // Dropdown
+```
+
+**Best Practices:**
+- ✅ Use semantic icon names (e.g., `Trash2` not `Delete`)
+- ✅ Always set size with design tokens or explicit classes
+- ✅ Use consistent sizes across similar actions (all edit buttons = same size)
+- ✅ Pair icons with text for clarity (except obvious actions)
+- ❌ Don't mix icon libraries (stick to Lucide)
 
 #### Custom Styling
 
