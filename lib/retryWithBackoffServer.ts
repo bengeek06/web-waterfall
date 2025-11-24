@@ -73,7 +73,7 @@ export class HttpError extends Error {
 }
 
 export function classifyError(error: Error | Response): HttpError {
-  if (error instanceof Error && !(error instanceof Response)) {
+  if (error instanceof Error && !('status' in error)) {
     return new HttpError(HttpErrorType.NETWORK, undefined, undefined, undefined, error.message);
   }
 
@@ -127,9 +127,10 @@ export async function retryWithBackoff<T>(
     try {
       const result = await fn();
       
-      if (result instanceof Response && !result.ok) {
-        if (attempt < maxRetries && shouldRetry(result)) {
-          lastError = result;
+      const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
+      if (isResponse && !(result as unknown as Response).ok) {
+        if (attempt < maxRetries && shouldRetry(result as unknown as Response)) {
+          lastError = result as unknown as Response;
         } else {
           return result;
         }

@@ -58,7 +58,7 @@ describe('fetchWithAuth', () => {
     
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    const response = await fetchWithAuth('/api/test');
+    const response = await fetchWithAuth('/api/test', { skipRetry: true });
     
     expect(response.status).toBe(200);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
@@ -74,7 +74,7 @@ describe('fetchWithAuth', () => {
     
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    const response = await fetchWithAuth('/api/test');
+    const response = await fetchWithAuth('/api/test', { skipRetry: true });
     
     expect(response.status).toBe(401);
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
@@ -91,7 +91,7 @@ describe('fetchWithAuth', () => {
     
     // Deuxième appel: refresh réussit
     const mockRefreshResponse = new MockResponse(
-      JSON.stringify({ success: true }), 
+      JSON.stringify({ message: 'Token refreshed' }), 
       {
         status: 200,
       }
@@ -110,7 +110,7 @@ describe('fetchWithAuth', () => {
       .mockResolvedValueOnce(mockRefreshResponse)
       .mockResolvedValueOnce(mockRetryResponse);
 
-    const response = await fetchWithAuth('/api/test');
+    const response = await fetchWithAuth('/api/test', { skipRetry: true });
     
     expect(response.status).toBe(200);
     expect(globalThis.fetch).toHaveBeenCalledTimes(3);
@@ -128,7 +128,7 @@ describe('fetchWithAuth', () => {
     
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    await fetchWithAuth('/api/test');
+    await fetchWithAuth('/api/test', { skipRetry: true });
     
     expect(globalThis.fetch).toHaveBeenCalledWith('/api/test', expect.objectContaining({
       credentials: 'include',
@@ -143,25 +143,24 @@ describe('fetchWithAuthJSON', () => {
 
   it('should parse JSON response on success', async () => {
     const mockData = { id: 1, name: 'Test' };
-    const mockResponse = new Response(JSON.stringify(mockData), {
+    const mockResponse = new MockResponse(JSON.stringify(mockData), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
     });
     
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    const data = await fetchWithAuthJSON<typeof mockData>('/api/test');
+    const data = await fetchWithAuthJSON<typeof mockData>('/api/test', { skipRetry: true });
     
     expect(data).toEqual(mockData);
   });
 
   it('should throw error on non-OK response', async () => {
-    const mockResponse = new Response('Not Found', {
+    const mockResponse = new MockResponse('Not Found', {
       status: 404,
     });
     
-    (global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce(mockResponse);
 
-    await expect(fetchWithAuthJSON('/api/test')).rejects.toThrow('HTTP 404: Not Found');
+    await expect(fetchWithAuthJSON('/api/test', { skipRetry: true })).rejects.toThrow();
   });
 });

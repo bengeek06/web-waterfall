@@ -92,7 +92,8 @@ export class HttpError extends Error {
  */
 export function classifyError(error: Error | Response): HttpError {
   // Erreur réseau (pas de Response)
-  if (error instanceof Error && !(error instanceof Response)) {
+  // Duck typing: si l'objet a une propriété status, c'est probablement une Response
+  if (error instanceof Error && !('status' in error)) {
     return new HttpError(HttpErrorType.NETWORK, undefined, undefined, undefined, error.message);
   }
 
@@ -168,9 +169,11 @@ export async function retryWithBackoff<T>(
       const result = await fn();
       
       // Si c'est une Response et qu'elle n'est pas OK, vérifier si on doit retry
-      if (result instanceof Response && !result.ok) {
-        if (attempt < maxRetries && shouldRetry(result)) {
-          lastError = result;
+      // Duck typing: un objet avec status et ok est probablement une Response
+      const isResponse = result && typeof result === 'object' && 'status' in result && 'ok' in result;
+      if (isResponse && !(result as unknown as Response).ok) {
+        if (attempt < maxRetries && shouldRetry(result as unknown as Response)) {
+          lastError = result as unknown as Response;
           // Ne pas consommer le body pour permettre le retry
         } else {
           // Dernière tentative ou pas de retry
