@@ -46,7 +46,7 @@ import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 
 // Types
 export type User = {

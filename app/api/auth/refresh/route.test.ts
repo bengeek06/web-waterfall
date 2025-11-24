@@ -14,7 +14,7 @@
 
 import { NextRequest } from "next/server";
 
-jest.mock("@/lib/logger", () => ({
+jest.mock("@/lib/utils/logger", () => ({
     info: jest.fn(),
     debug: jest.fn(),
     warn: jest.fn(),

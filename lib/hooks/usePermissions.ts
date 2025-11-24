@@ -16,8 +16,8 @@ import {
   Permission, 
   PermissionRequirements, 
   checkPermissions 
-} from '@/lib/permissions';
-import { fetchWithAuth } from '@/lib/fetchWithAuth';
+} from '@/lib/utils/permissions';
+import { fetchWithAuth } from '@/lib/auth/fetchWithAuth';
 
 interface UsePermissionsReturn {
   permissions: Permission[];

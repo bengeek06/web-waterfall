@@ -10,8 +10,8 @@
  */
 
 import Image from "next/image";
-import { getDictionary } from "@/lib/dictionaries";
-import Login from "@/components/login";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import Login from "@/components/pages/Login";
 
 function getLocaleFromHeaders(headers: Headers): "fr" | "en" {
   const acceptLang = headers.get("accept-language");

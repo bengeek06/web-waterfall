@@ -17,7 +17,7 @@
  * @module api/guardian/init-app/route
  */
 import { NextResponse, NextRequest } from "next/server";
-import logger from "@/lib/logger";
+import logger from "@/lib/utils/logger";
 
 const GUARDIAN_SERVICE_URL = process.env.GUARDIAN_SERVICE_URL;
 export const dynamic = "force-dynamic";

@@ -31,7 +31,7 @@ import { Label } from "@/components/ui/label";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 
 // Utils
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 
 // Types
 type Position = {

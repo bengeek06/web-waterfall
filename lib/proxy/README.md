@@ -79,7 +79,7 @@ export const authMocks = {
 - Erreurs de connexion (`ECONNREFUSED`) → 503
 - Erreurs réseau génériques → 502
 - Variable d'environnement manquante → 500
-- Logging détaillé via `@/lib/logger`
+- Logging détaillé via `@/lib/utils/logger`
 
 ### ✅ Support du body
 - Transmission automatique du body de la requête

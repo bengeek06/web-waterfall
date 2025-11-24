@@ -16,9 +16,9 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Customers from "@/components/customers";
-import { getDictionary } from "@/lib/dictionaries";
-import { getLocale } from "@/lib/locale";
+import Customers from "@/components/pages/Customers";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getLocale } from "@/lib/utils/locale";
 
 export default async function CustomersPage() {
   const locale = await getLocale();

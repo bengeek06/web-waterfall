@@ -28,7 +28,7 @@ Gestionnaire d'erreurs global pour l'application avec support i18n et notificati
 
 import { fetchWithAuthJSON } from '@/lib/fetchWithAuth';
 import { useErrorHandler } from '@/lib/hooks/useErrorHandler';
-import { getDictionary } from '@/lib/dictionaries';
+import { getDictionary } from '@/lib/utils/dictionaries';
 
 export function MyComponent({ dictionary }) {
   const { handleError } = useErrorHandler({ 

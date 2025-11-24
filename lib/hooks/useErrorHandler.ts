@@ -12,7 +12,7 @@
 "use client";
 
 import { toast } from 'sonner';
-import { HttpError, HttpErrorType } from '../retryWithBackoff';
+import { HttpError, HttpErrorType } from '@/lib/client/retryWithBackoff';
 
 export interface ErrorMessages {
   network: string;

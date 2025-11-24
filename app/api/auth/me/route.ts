@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getUserIdFromToken, getCompanyIdFromToken } from "@/lib/user";
+import { getUserIdFromToken, getCompanyIdFromToken } from "@/lib/server/user";
 
 /**
  * GET /api/auth/me

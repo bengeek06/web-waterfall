@@ -1,5 +1,5 @@
-import Roles from "@/components/roles";
-import Policies from "@/components/policies";
+import Roles from "@/components/pages/Roles";
+import Policies from "@/components/pages/Policies";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -7,8 +7,8 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getDictionary } from "@/lib/dictionaries";
-import { getUserLanguage } from "@/lib/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
 
 export default async function RolesAdminPage() {
   const userLanguage = await getUserLanguage();

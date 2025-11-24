@@ -3,10 +3,10 @@
  */
 import { NextRequest } from 'next/server';
 import { PATCH } from './route';
-import { updateUserLanguage } from '@/lib/locale';
+import { updateUserLanguage } from '@/lib/utils/locale';
 
 // Mock the locale module
-jest.mock('@/lib/locale', () => ({
+jest.mock('@/lib/utils/locale', () => ({
   updateUserLanguage: jest.fn(),
 }));
 

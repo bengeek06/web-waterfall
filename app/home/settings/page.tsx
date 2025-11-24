@@ -16,7 +16,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import SettingsCards from "@/components/SettingsCards";
+import SettingsCards from "@/components/cards/SettingsCards";
 
 export default async function SettingsPage() {
   return (

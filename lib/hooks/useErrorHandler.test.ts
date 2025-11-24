@@ -12,7 +12,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { toast } from 'sonner';
 import { useErrorHandler, ErrorMessages } from './useErrorHandler';
-import { HttpError, HttpErrorType } from '../retryWithBackoff';
+import { HttpError, HttpErrorType } from '@/lib/client/retryWithBackoff';
 
 // Mock sonner
 jest.mock('sonner', () => ({

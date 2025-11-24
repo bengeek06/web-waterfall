@@ -4,7 +4,7 @@
 import { NextRequest } from 'next/server';
 import { GET, DELETE } from './route';
 
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/utils/logger', () => ({
   info: jest.fn(),
   debug: jest.fn(),
   warn: jest.fn(),

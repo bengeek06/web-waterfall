@@ -43,7 +43,7 @@ import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES } from "@/lib/design-tokens";
 
 // Utils
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 
 // ==================== TYPES ====================
 type UserManagementProps = {

@@ -112,9 +112,51 @@ middleware.ts               # Server-side auth middleware
   - ❌ `app/userProfile/page.tsx`, `app/user_profile/page.tsx`
 
 **3. Libraries (`lib/`):**
-- **Utility files**: `kebab-case.ts` or `camelCase.ts`
-  - ✅ `fetchWithAuth.ts`, `error-handler.ts`, `permissions.ts`
-  - ❌ `FetchWithAuth.ts`, `ErrorHandler.ts`
+
+Organize `lib/` by **execution context and functionality** to maintain clear separation of concerns:
+
+```
+lib/
+├── auth/                        # Authentication utilities
+│   ├── fetchWithAuth.ts        # Client-side authenticated fetch
+│   ├── fetchWithAuth.test.ts
+│   ├── fetchWithAuthServer.ts  # Server-side authenticated fetch
+│   ├── tokenRefreshScheduler.ts
+│   ├── tokenRefreshScheduler.test.ts
+│   ├── tokenUtils.ts
+│   └── tokenUtils.test.ts
+├── client/                      # Client-side only utilities
+│   ├── retryWithBackoff.ts
+│   └── retryWithBackoff.test.ts
+├── server/                      # Server-side only utilities
+│   ├── retryWithBackoffServer.ts
+│   └── user.ts
+├── utils/                       # Shared utilities (client + server)
+│   ├── dictionaries.ts
+│   ├── locale.ts
+│   ├── locale.test.ts
+│   ├── logger.ts
+│   ├── permissions.ts
+│   ├── permissions.test.ts
+│   └── utils.ts
+├── api-routes/                  # Centralized API endpoints
+├── design-tokens/               # Design system tokens
+├── hooks/                       # React hooks (client-side)
+├── proxy/                       # API proxy utilities
+├── test-ids/                    # E2E test identifiers
+└── validation/                  # Zod schemas
+```
+
+**Naming conventions:**
+- **Directories**: `kebab-case/` (e.g., `api-routes/`, `design-tokens/`)
+- **Files**: `camelCase.ts` (e.g., `fetchWithAuth.ts`, `permissions.ts`)
+- **Test files**: Match source name + `.test.ts` (e.g., `fetchWithAuth.test.ts`)
+
+**Organization principles:**
+- **Separation by context**: Distinguish client-side, server-side, and shared code
+- **Avoid suffixes**: Use directories instead of `*Server.ts` suffixes (exception: existing dual implementations during migration)
+- **Colocation**: Keep tests adjacent to source files
+- **Logical grouping**: Group related utilities (auth, validation, hooks, etc.)
 
 **4. Dictionaries (`dictionaries/`):**
 - **Language folders**: `lowercase/` (ISO 639-1 codes)
@@ -277,8 +319,8 @@ dictionaries/
 #### Usage in Server Components
 
 ```typescript
-import { getDictionary } from '@/lib/dictionaries';
-import { getUserLanguage } from '@/lib/locale';
+import { getDictionary } from '@/lib/utils/dictionaries';
+import { getUserLanguage } from '@/lib/utils/locale';
 
 export default async function MyPage() {
   const userLanguage = await getUserLanguage();
@@ -300,7 +342,7 @@ Pass dictionary as prop from parent Server Component:
 ```typescript
 "use client";
 
-import { Dictionary } from '@/lib/dictionaries';
+import { Dictionary } from '@/lib/utils/dictionaries';
 
 interface Props {
   dictionary: Dictionary; // Type-safe!
@@ -1241,7 +1283,7 @@ The `forwardRequest` function handles:
 #### Dictionary Types
 
 ```typescript
-import { Dictionary } from '@/lib/dictionaries';
+import { Dictionary } from '@/lib/utils/dictionaries';
 
 interface Props {
   dictionary: Dictionary; // Auto-inferred from dictionaries
