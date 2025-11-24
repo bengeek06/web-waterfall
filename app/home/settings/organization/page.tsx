@@ -16,7 +16,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import OrganizationTree from "@/components/organization-tree";
+import OrganizationTree from "@/components/pages/OrganizationTree";
 import { getDictionary } from "@/lib/dictionaries";
 import { getLocale } from "@/lib/locale";
 import { cookies } from "next/headers";

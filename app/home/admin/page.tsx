@@ -8,7 +8,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { AdminCards } from "@/components/AdminCards";
+import { AdminCards } from "@/components/cards/AdminCards";
 
 
 export default async function AdminPage() {

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Building2, Network, Users, Briefcase } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ProtectedCard } from "@/components/ProtectedCard";
+import { ProtectedCard } from "@/components/shared/ProtectedCard";
 import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 

@@ -9,7 +9,7 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-import { FileExplorer } from "@/components/FileExplorer";
+import { FileExplorer } from "@/components/shared/FileExplorer";
 import { getDictionary } from "@/lib/dictionaries";
 
 export default async function WorkspacePage() {

@@ -12,7 +12,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
-import Login from './login';
+import Login from './Login';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({

@@ -22,10 +22,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import LogoutButton from "@/components/LogoutButton";
-import AboutModal from "@/components/AboutModal";
-import ProfileModal from "@/components/ProfileModal";
-import AvatarImage from "@/components/AvatarImage";
+import LogoutButton from "@/components/shared/LogoutButton";
+import AboutModal from "@/components/modals/about-modal";
+import ProfileModal from "@/components/modals/profile-modal";
+import AvatarImage from "@/components/shared/AvatarImage";
 
 // Utils
 import { getUserData } from "@/lib/user";

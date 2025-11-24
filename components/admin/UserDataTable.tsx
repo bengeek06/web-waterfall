@@ -29,7 +29,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
-import AvatarImage from "@/components/AvatarImage";
+import AvatarImage from "@/components/shared/AvatarImage";
 
 // Constants
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";

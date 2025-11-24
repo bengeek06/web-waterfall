@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Building2, FolderKanban, Folder } from "lucide-react";
 import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
-import { ProtectedCard } from "@/components/ProtectedCard";
+import { ProtectedCard } from "@/components/shared/ProtectedCard";
 import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
 
 interface HomeCardsProps {

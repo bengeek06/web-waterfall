@@ -16,7 +16,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Company from "@/components/company";
+import Company from "@/components/pages/Company";
 import { getDictionary } from "@/lib/dictionaries";
 import { getLocale } from "@/lib/locale";
 import { cookies } from "next/headers";

@@ -16,7 +16,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Customers from "@/components/customers";
+import Customers from "@/components/pages/Customers";
 import { getDictionary } from "@/lib/dictionaries";
 import { getLocale } from "@/lib/locale";
 

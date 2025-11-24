@@ -12,7 +12,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Customers from './customers';
+import Customers from './Customers';
 import { IDENTITY_ROUTES, BASIC_IO_ROUTES } from '@/lib/api-routes';
 
 // Mock fetch globally

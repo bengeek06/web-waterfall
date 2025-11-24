@@ -12,7 +12,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Policies from './policies';
+import Policies from './Policies';
 import { DASHBOARD_TEST_IDS } from '@/lib/test-ids';
 import { GUARDIAN_ROUTES } from '@/lib/api-routes';
 

@@ -16,7 +16,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import Subcontractors from "@/components/subcontractors";
+import Subcontractors from "@/components/pages/Subcontractors";
 import { getDictionary } from "@/lib/dictionaries";
 import { getLocale } from "@/lib/locale";
 
