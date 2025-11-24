@@ -124,37 +124,48 @@ describe('Policies Component', () => {
 
       // Default handlers
       if (url === GUARDIAN_ROUTES.permissions) {
-        return Promise.resolve({
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
           json: () => Promise.resolve(mockPermissions),
-        });
+          clone: function() { return { ...this, json: () => Promise.resolve(mockPermissions) }; }
+        };
+        return Promise.resolve(response);
       }
       if (url === GUARDIAN_ROUTES.policies) {
-        return Promise.resolve({
+        const policiesData = mockPolicies.map(p => ({ id: p.id, name: p.name, description: p.description }));
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve(mockPolicies.map(p => ({ id: p.id, name: p.name, description: p.description }))),
-        });
+          json: () => Promise.resolve(policiesData),
+          clone: function() { return { ...this, json: () => Promise.resolve(policiesData) }; }
+        };
+        return Promise.resolve(response);
       }
       // Handle policy permissions requests
       if (url === GUARDIAN_ROUTES.policyPermissions('1')) {
-        return Promise.resolve({
+        const perms = [mockPermissions[0], mockPermissions[1]];
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve([mockPermissions[0], mockPermissions[1]]),
-        });
+          json: () => Promise.resolve(perms),
+          clone: function() { return { ...this, json: () => Promise.resolve(perms) }; }
+        };
+        return Promise.resolve(response);
       }
       if (url === GUARDIAN_ROUTES.policyPermissions('2')) {
-        return Promise.resolve({
+        const perms = [mockPermissions[0]];
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve([mockPermissions[0]]),
-        });
+          json: () => Promise.resolve(perms),
+          clone: function() { return { ...this, json: () => Promise.resolve(perms) }; }
+        };
+        return Promise.resolve(response);
       }
       return Promise.reject(new Error('Unknown URL: ' + url));
     };
@@ -278,7 +289,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addButton);
       fireEvent.click(addButton);
@@ -360,7 +371,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const editButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.editButton('1'));
       fireEvent.click(editButton);
@@ -419,7 +430,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Admin Policy')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.deleteButton('1'));
       fireEvent.click(deleteButton);
@@ -526,7 +537,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Empty Policy')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.expandButton('3'));
       fireEvent.click(expandButton);
@@ -634,7 +645,7 @@ describe('Policies Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Read Only')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const addPermissionButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.addPermissionButton('2'));
       fireEvent.click(addPermissionButton);

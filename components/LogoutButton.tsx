@@ -13,6 +13,7 @@
 
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useRouter } from "next/navigation";
+import { cancelTokenRefresh } from "@/lib/tokenRefreshScheduler";
 
 interface LogoutButtonProps {
   children: React.ReactNode;
@@ -20,11 +21,14 @@ interface LogoutButtonProps {
   testId?: string;
 }
 
-export default function LogoutButton({ children, className, testId }: LogoutButtonProps) {
+export default function LogoutButton({ children, className, testId }: Readonly<LogoutButtonProps>) {
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
+      // Annuler le refresh automatique du token
+      cancelTokenRefresh();
+      
       await fetchWithAuth('/api/auth/logout', {
         method: 'POST',
       });

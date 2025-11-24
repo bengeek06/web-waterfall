@@ -29,6 +29,9 @@ import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 import { useZodForm } from "@/lib/hooks";
 import { loginSchema, LoginFormData } from "@/lib/validation";
 
+// Token refresh scheduler
+import { initTokenRefresh } from "@/lib/tokenRefreshScheduler";
+
 // ==================== TYPES ====================
 interface LoginProps {
 	dictionary: {
@@ -81,6 +84,9 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 			});
 
 			if (!res.ok) throw new Error(dictionary.login_failed);
+
+			// Initialiser le refresh automatique du token après connexion réussie
+			await initTokenRefresh();
 
 			router.push("/home");
 		} catch (err) {

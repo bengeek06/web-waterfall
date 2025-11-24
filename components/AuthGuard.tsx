@@ -11,8 +11,9 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuthVerification } from "@/lib/hooks";
+import { initTokenRefresh, cancelTokenRefresh } from "@/lib/tokenRefreshScheduler";
 
 interface AuthGuardProps {
   readonly children: React.ReactNode;
@@ -21,9 +22,22 @@ interface AuthGuardProps {
 /**
  * Composant qui vérifie l'authentification avant d'afficher le contenu
  * Gère automatiquement le refresh du token et la redirection vers /login si nécessaire
+ * Initialise le refresh proactif du token quand l'utilisateur est authentifié
  */
 export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
   const { isVerifying, isAuthenticated } = useAuthVerification();
+
+  // Initialiser le refresh proactif du token quand authentifié
+  useEffect(() => {
+    if (isAuthenticated) {
+      initTokenRefresh();
+    }
+
+    // Cleanup : annuler le scheduler au démontage
+    return () => {
+      cancelTokenRefresh();
+    };
+  }, [isAuthenticated]);
 
   // Afficher un loader pendant la vérification
   if (isVerifying) {
