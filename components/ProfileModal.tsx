@@ -173,8 +173,6 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           language: formData.language
         };
 
-        // NEVER send avatar_url in the payload
-
         const response = await fetchWithAuth(IDENTITY_ROUTES.user(userInfo.id), {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

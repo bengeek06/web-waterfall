@@ -326,9 +326,6 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           delete payload.is_verified;
         }
 
-        // NEVER send avatar_url in the payload
-        delete payload.avatar_url;
-
         res = await fetchWithAuth(url, {
           method,
           headers: { "Content-Type": "application/json" },
