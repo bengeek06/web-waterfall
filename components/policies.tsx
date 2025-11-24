@@ -134,9 +134,8 @@ function getOperationIcon(operation: string, dictionary: PoliciesDictionary) {
     return { icon: null, label: "Unknown" };
   }
   
-  const cleanOperation = operation.replace(/^OperationEnum\./, "");
   const OPERATION_ICONS = getOperationIcons(dictionary);
-  const iconConfig = OPERATION_ICONS[cleanOperation as keyof typeof OPERATION_ICONS];
+  const iconConfig = OPERATION_ICONS[operation as keyof typeof OPERATION_ICONS];
   
   if (iconConfig) {
     const Icon = iconConfig.icon;
@@ -176,10 +175,8 @@ function groupPermissions(permissions: Permission[]) {
   // Trie les permissions dans chaque groupe
   Object.values(groups).forEach(group => {
     group.perms.sort((a, b) => {
-      const opA = a.operation.replace(/^OperationEnum\./, '');
-      const opB = b.operation.replace(/^OperationEnum\./, '');
-      const orderA = operationOrder[opA] || 999;
-      const orderB = operationOrder[opB] || 999;
+      const orderA = operationOrder[a.operation] || 999;
+      const orderB = operationOrder[b.operation] || 999;
       return orderA - orderB;
     });
   });
@@ -211,10 +208,8 @@ function groupAvailablePermissions(perms: Permission[]) {
   // Trie les permissions dans chaque groupe
   Object.values(groups).forEach(group => {
     group.perms.sort((a, b) => {
-      const opA = a.operation.replace(/^OperationEnum\./, '');
-      const opB = b.operation.replace(/^OperationEnum\./, '');
-      const orderA = operationOrder[opA] || 999;
-      const orderB = operationOrder[opB] || 999;
+      const orderA = operationOrder[a.operation] || 999;
+      const orderB = operationOrder[b.operation] || 999;
       return orderA - orderB;
     });
   });

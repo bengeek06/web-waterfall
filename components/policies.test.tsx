@@ -75,7 +75,7 @@ describe('Policies Component', () => {
       service: 'auth',
       resource_name: 'users',
       description: 'Read users',
-      operation: 'OperationEnum.READ',
+      operation: 'READ',
       created_at: '2025-01-01T00:00:00Z',
       updated_at: '2025-01-01T00:00:00Z',
     },
@@ -84,14 +84,14 @@ describe('Policies Component', () => {
       service: 'auth',
       resource_name: 'users',
       description: 'Create users',
-      operation: 'OperationEnum.CREATE',
+      operation: 'CREATE',
     },
     {
       id: 3,
       service: 'guardian',
       resource_name: 'roles',
       description: 'List roles',
-      operation: 'OperationEnum.LIST',
+      operation: 'LIST',
     },
   ];
 

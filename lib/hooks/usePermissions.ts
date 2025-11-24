@@ -68,12 +68,8 @@ export function usePermissions(): UsePermissionsReturn {
           const service = perm.service || '';
           const resource = perm.resource_name || perm.resource || '';
           
-          // Fonction helper pour nettoyer les opérations (enlever "OperationEnum." si présent)
           // Les opérations Guardian sont en MAJUSCULES (READ, CREATE, UPDATE, DELETE, LIST)
-          const cleanOperation = (op: string): string => {
-            const cleaned = op.includes('.') ? op.split('.').pop() || op : op;
-            return cleaned.toUpperCase();
-          };
+          const normalizeOperation = (op: string): string => op.toUpperCase();
           
           // Si operations est un tableau, créer une permission par opération
           if (Array.isArray(perm.operations)) {
@@ -81,7 +77,7 @@ export function usePermissions(): UsePermissionsReturn {
               normalizedPerms.push({
                 service,
                 resource,
-                action: cleanOperation(operation),
+                action: normalizeOperation(operation),
               });
             }
           } else if (perm.operation) {
@@ -89,14 +85,14 @@ export function usePermissions(): UsePermissionsReturn {
             normalizedPerms.push({
               service,
               resource,
-              action: cleanOperation(perm.operation),
+              action: normalizeOperation(perm.operation),
             });
           } else if (perm.action) {
             // Ou action si présent
             normalizedPerms.push({
               service,
               resource,
-              action: cleanOperation(perm.action),
+              action: normalizeOperation(perm.action),
             });
           }
         }
