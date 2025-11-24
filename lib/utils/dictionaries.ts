@@ -42,35 +42,35 @@
 
 import 'server-only'
 
-import common_fr from '../dictionaries/fr/common.json';
-import navigation_fr from '../dictionaries/fr/navigation.json';
-import login_fr from '../dictionaries/fr/login.json';
-import initApp_fr from '../dictionaries/fr/init-app.json';
-import adminUsers_fr from '../dictionaries/fr/admin-users.json';
-import admin_fr from '../dictionaries/fr/admin.json';
-import welcome_fr from '../dictionaries/fr/welcome.json';
-import profile_fr from '../dictionaries/fr/profile.json';
-import roles_fr from '../dictionaries/fr/roles.json';
-import policies_fr from '../dictionaries/fr/policies.json';
-import company_fr from '../dictionaries/fr/company.json';
-import organization_fr from '../dictionaries/fr/organization.json';
-import workspace_fr from '../dictionaries/fr/workspace.json';
-import errors_fr from '../dictionaries/fr/errors.json';
+import common_fr from '../../dictionaries/fr/common.json';
+import navigation_fr from '../../dictionaries/fr/navigation.json';
+import login_fr from '../../dictionaries/fr/login.json';
+import initApp_fr from '../../dictionaries/fr/init-app.json';
+import adminUsers_fr from '../../dictionaries/fr/admin-users.json';
+import admin_fr from '../../dictionaries/fr/admin.json';
+import welcome_fr from '../../dictionaries/fr/welcome.json';
+import profile_fr from '../../dictionaries/fr/profile.json';
+import roles_fr from '../../dictionaries/fr/roles.json';
+import policies_fr from '../../dictionaries/fr/policies.json';
+import company_fr from '../../dictionaries/fr/company.json';
+import organization_fr from '../../dictionaries/fr/organization.json';
+import workspace_fr from '../../dictionaries/fr/workspace.json';
+import errors_fr from '../../dictionaries/fr/errors.json';
 
-import common_en from '../dictionaries/en/common.json';
-import navigation_en from '../dictionaries/en/navigation.json';
-import login_en from '../dictionaries/en/login.json';
-import initApp_en from '../dictionaries/en/init-app.json';
-import adminUsers_en from '../dictionaries/en/admin-users.json';
-import admin_en from '../dictionaries/en/admin.json';
-import welcome_en from '../dictionaries/en/welcome.json';
-import profile_en from '../dictionaries/en/profile.json';
-import roles_en from '../dictionaries/en/roles.json';
-import policies_en from '../dictionaries/en/policies.json';
-import company_en from '../dictionaries/en/company.json';
-import organization_en from '../dictionaries/en/organization.json';
-import workspace_en from '../dictionaries/en/workspace.json';
-import errors_en from '../dictionaries/en/errors.json';
+import common_en from '../../dictionaries/en/common.json';
+import navigation_en from '../../dictionaries/en/navigation.json';
+import login_en from '../../dictionaries/en/login.json';
+import initApp_en from '../../dictionaries/en/init-app.json';
+import adminUsers_en from '../../dictionaries/en/admin-users.json';
+import admin_en from '../../dictionaries/en/admin.json';
+import welcome_en from '../../dictionaries/en/welcome.json';
+import profile_en from '../../dictionaries/en/profile.json';
+import roles_en from '../../dictionaries/en/roles.json';
+import policies_en from '../../dictionaries/en/policies.json';
+import company_en from '../../dictionaries/en/company.json';
+import organization_en from '../../dictionaries/en/organization.json';
+import workspace_en from '../../dictionaries/en/workspace.json';
+import errors_en from '../../dictionaries/en/errors.json';
 
 export type Locale = 'fr' | 'en';
 

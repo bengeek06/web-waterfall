@@ -11,7 +11,7 @@
 
 "use client";
 
-import { retryWithBackoff, classifyError, HttpErrorType } from './retryWithBackoff';
+import { retryWithBackoff, classifyError, HttpErrorType } from '@/lib/client/retryWithBackoff';
 
 // État partagé pour éviter les refreshs multiples simultanés
 let isRefreshing = false;

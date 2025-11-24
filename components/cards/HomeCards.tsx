@@ -17,7 +17,7 @@ import { ShieldCheck, Building2, FolderKanban, Folder } from "lucide-react";
 import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ProtectedCard } from "@/components/shared/ProtectedCard";
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 interface HomeCardsProps {
   readonly dictionary: {

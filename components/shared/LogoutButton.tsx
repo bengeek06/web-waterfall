@@ -11,9 +11,9 @@
 
 'use client';
 
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { useRouter } from "next/navigation";
-import { cancelTokenRefresh } from "@/lib/tokenRefreshScheduler";
+import { cancelTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
 
 interface LogoutButtonProps {
   children: React.ReactNode;

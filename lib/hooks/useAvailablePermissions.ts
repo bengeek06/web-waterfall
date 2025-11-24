@@ -12,7 +12,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Permission } from "@/lib/permissions";
+import type { Permission } from "@/lib/utils/permissions";
 
 interface UseAvailablePermissionsResult {
   availablePermissions: Permission[];

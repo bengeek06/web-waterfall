@@ -1,7 +1,7 @@
 import React from "react";
-import { getUserData } from "@/lib/user";
-import { getUserLanguage } from "@/lib/locale";
-import { getDictionary } from "@/lib/dictionaries";
+import { getUserData } from "@/lib/server/user";
+import { getUserLanguage } from "@/lib/utils/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
 import { HomeCards } from "@/components/cards/HomeCards";
 

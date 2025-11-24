@@ -47,7 +47,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock user functions
-jest.mock('@/lib/user', () => ({
+jest.mock('@/lib/server/user', () => ({
   hasUserAvatar: jest.fn(() => Promise.resolve(true)),
   getUserData: jest.fn(() => Promise.resolve({
     id: '123',
@@ -60,12 +60,12 @@ jest.mock('@/lib/user', () => ({
 }));
 
 // Mock getUserLanguage
-jest.mock('@/lib/locale', () => ({
+jest.mock('@/lib/utils/locale', () => ({
   getUserLanguage: jest.fn(() => Promise.resolve('fr')),
 }));
 
 // Mock getDictionary
-jest.mock('@/lib/dictionaries', () => ({
+jest.mock('@/lib/utils/dictionaries', () => ({
   getDictionary: jest.fn(() => Promise.resolve({
     profile: 'Profil',
     settings: 'Paramètres',

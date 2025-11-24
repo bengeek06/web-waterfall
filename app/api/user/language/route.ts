@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateUserLanguage } from '@/lib/locale';
+import { updateUserLanguage } from '@/lib/utils/locale';
 
 /**
  * PATCH /api/user/language

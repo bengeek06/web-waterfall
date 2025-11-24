@@ -10,7 +10,7 @@
  */
 
 import Image from "next/image";
-import { getDictionary } from "@/lib/dictionaries";
+import { getDictionary } from "@/lib/utils/dictionaries";
 import Login from "@/components/pages/Login";
 
 function getLocaleFromHeaders(headers: Headers): "fr" | "en" {

@@ -18,7 +18,7 @@
  * @module api/identity/init-app/route
  */
 import { NextResponse, NextRequest } from "next/server";
-import logger from "@/lib/logger";
+import logger from "@/lib/utils/logger";
 
 const IDENTITY_SERVICE_URL = process.env.IDENTITY_SERVICE_URL;
 export const dynamic = "force-dynamic";

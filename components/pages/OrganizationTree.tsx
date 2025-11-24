@@ -43,7 +43,7 @@ import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
 
 // Utils
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 
 // Types
 type OrganizationUnit = {

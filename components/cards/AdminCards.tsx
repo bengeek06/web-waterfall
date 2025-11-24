@@ -17,7 +17,7 @@ import { KeyRound, Users } from "lucide-react";
 import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ProtectedCard } from "@/components/shared/ProtectedCard";
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/lib/utils/permissions";
 
 interface AdminCardsProps {
   readonly dictionary: {

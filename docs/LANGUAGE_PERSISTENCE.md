@@ -196,7 +196,7 @@ Page re-renders in new language
 ### Server Component (Authenticated Page)
 ```typescript
 // app/[locale]/welcome/page.tsx
-import { getUserLanguage } from '@/lib/locale';
+import { getUserLanguage } from '@/lib/utils/locale';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
@@ -237,7 +237,7 @@ export default function WelcomeLayout({ children }: { children: React.ReactNode 
 
 ### Programmatic Language Update
 ```typescript
-import { updateUserLanguage } from '@/lib/locale';
+import { updateUserLanguage } from '@/lib/utils/locale';
 
 // Server-side only
 async function changeLanguage(newLang: 'en' | 'fr') {

@@ -49,8 +49,8 @@ dictionaries/
 ### Server Components (Recommended)
 
 ```typescript
-import { getDictionary } from '@/lib/dictionaries';
-import { getUserLanguage } from '@/lib/locale';
+import { getDictionary } from '@/lib/utils/dictionaries';
+import { getUserLanguage } from '@/lib/utils/locale';
 
 export default async function MyPage() {
   const userLanguage = await getUserLanguage();
@@ -79,7 +79,7 @@ export default async function MyPage() {
 ```typescript
 "use client";
 
-import { Dictionary } from '@/lib/dictionaries';
+import { Dictionary } from '@/lib/utils/dictionaries';
 
 interface Props {
   dictionary: Dictionary; // Type-safe!

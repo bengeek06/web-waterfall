@@ -12,7 +12,7 @@
 "use client";
 
 import { ReactNode } from 'react';
-import { PermissionRequirements } from '@/lib/permissions';
+import { PermissionRequirements } from '@/lib/utils/permissions';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 
 interface ProtectedCardProps {

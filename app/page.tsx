@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import logger from "@/lib/logger";
+import logger from "@/lib/utils/logger";
 
 export default async function InitRedirectPage() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

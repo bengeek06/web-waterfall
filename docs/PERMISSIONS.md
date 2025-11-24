@@ -60,7 +60,7 @@ Les permissions sont gérées par le service Guardian et peuvent être chargées
 
 ```tsx
 import { useAvailablePermissions } from "@/lib/hooks";
-import { createPermissionConstants } from "@/lib/permissions";
+import { createPermissionConstants } from "@/lib/utils/permissions";
 
 function MyComponent() {
   const { availablePermissions, loading, error } = useAvailablePermissions();
@@ -77,7 +77,7 @@ function MyComponent() {
 Des permissions courantes sont disponibles dans `PERMISSIONS` pour le typage et les tests :
 
 ```typescript
-import { PERMISSIONS } from "@/lib/permissions";
+import { PERMISSIONS } from "@/lib/utils/permissions";
 
 // Exemples de permissions
 PERMISSIONS.IDENTITY_USERS_LIST        // { service: "identity", resource: "users", action: "list" }
@@ -93,7 +93,7 @@ PERMISSIONS.IDENTITY_COMPANIES_UPDATE  // { service: "identity", resource: "comp
 Des combinaisons courantes sont prédéfinies dans `PERMISSION_REQUIREMENTS` :
 
 ```typescript
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 // USER_ADMINISTRATION : Nécessite users:list ET roles:list
 PERMISSION_REQUIREMENTS.USER_ADMINISTRATION
@@ -108,7 +108,7 @@ Le composant `ProtectedCard` enveloppe du contenu et le rend visible uniquement 
 
 ```tsx
 import { ProtectedCard } from "@/components/ProtectedCard";
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 export function MyComponent() {
   return (
@@ -172,7 +172,7 @@ Pour des besoins plus avancés, utilisez directement le hook :
 
 ```tsx
 import { usePermissions } from "@/lib/hooks/usePermissions";
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 export function MyComponent() {
   const { permissions, loading, error, hasPermission } = usePermissions();
@@ -342,7 +342,7 @@ Récupère **les permissions d'un utilisateur spécifique** (pour l'administrati
 ### Tester les utilitaires de permissions
 
 ```typescript
-import { checkPermissions, PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { checkPermissions, PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 const userPermissions = [
   { service: "identity", resource: "users", action: "list" },
@@ -483,7 +483,7 @@ export default async function HomePage() {
 "use client";
 
 import { ProtectedCard } from "@/components/ProtectedCard";
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 export function HomeCards() {
   return (
@@ -563,7 +563,7 @@ export function HomeCards() {
 ### getPermissionKey()
 Génère une clé unique pour une permission :
 ```typescript
-import { getPermissionKey } from "@/lib/permissions";
+import { getPermissionKey } from "@/lib/utils/permissions";
 
 const perm = { service: "identity", resource: "users", action: "list" };
 const key = getPermissionKey(perm); // "identity.users.list"
@@ -572,7 +572,7 @@ const key = getPermissionKey(perm); // "identity.users.list"
 ### findPermission()
 Recherche une permission spécifique dans une liste :
 ```typescript
-import { findPermission } from "@/lib/permissions";
+import { findPermission } from "@/lib/utils/permissions";
 
 const { availablePermissions } = useAvailablePermissions();
 const userListPerm = findPermission(availablePermissions, "identity", "users", "list");
@@ -581,7 +581,7 @@ const userListPerm = findPermission(availablePermissions, "identity", "users", "
 ### createPermissionConstants()
 Crée des constantes depuis une liste dynamique :
 ```typescript
-import { createPermissionConstants } from "@/lib/permissions";
+import { createPermissionConstants } from "@/lib/utils/permissions";
 
 const { availablePermissions } = useAvailablePermissions();
 const PERMS = createPermissionConstants(availablePermissions);

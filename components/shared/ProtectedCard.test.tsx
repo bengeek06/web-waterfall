@@ -13,7 +13,7 @@ import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { ProtectedCard } from "./ProtectedCard";
 import { usePermissions } from "@/lib/hooks/usePermissions";
-import { PERMISSION_REQUIREMENTS } from "@/lib/permissions";
+import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 
 // Mock du hook usePermissions
 jest.mock("@/lib/hooks/usePermissions");

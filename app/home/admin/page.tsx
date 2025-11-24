@@ -1,6 +1,6 @@
 import React from "react";
-import { getDictionary } from "@/lib/dictionaries";
-import { getUserLanguage } from "@/lib/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
 import {
   Breadcrumb,
   BreadcrumbList,

@@ -38,7 +38,7 @@ import {
 import { Eye, PlusSquare, List, Pencil, Trash2, ChevronDown, ChevronRight, Plus, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, FileJson, FileText } from "lucide-react";
 
 // ==================== CONSTANTS ====================
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";

@@ -17,8 +17,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Subcontractors from "@/components/pages/Subcontractors";
-import { getDictionary } from "@/lib/dictionaries";
-import { getLocale } from "@/lib/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getLocale } from "@/lib/utils/locale";
 
 export default async function SubcontractorsPage() {
   const locale = await getLocale();

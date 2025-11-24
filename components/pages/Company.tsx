@@ -25,7 +25,7 @@ import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Utils
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 
 // Types
 type CompanyData = {

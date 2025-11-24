@@ -28,9 +28,9 @@ import ProfileModal from "@/components/modals/profile-modal";
 import AvatarImage from "@/components/shared/AvatarImage";
 
 // Utils
-import { getUserData } from "@/lib/user";
-import { getDictionary } from "@/lib/dictionaries";
-import { getUserLanguage } from "@/lib/locale";
+import { getUserData } from "@/lib/server/user";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
 
 // Constants
 import { COMMON_TEST_IDS, testId } from "@/lib/test-ids";

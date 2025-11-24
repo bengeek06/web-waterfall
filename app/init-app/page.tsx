@@ -11,7 +11,7 @@
 
 import Image from "next/image";
 import InitApp from "@/components/pages/InitApp";
-import { getDictionary } from "@/lib/dictionaries";
+import { getDictionary } from "@/lib/utils/dictionaries";
 
 function getLocaleFromHeaders(headers: Headers): "fr" | "en" {
   const acceptLang = headers.get("accept-language");

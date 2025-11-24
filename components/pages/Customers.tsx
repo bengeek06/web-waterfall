@@ -62,7 +62,7 @@ import {
 } from "@/components/ui/table";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload, FileJson, FileText } from "lucide-react";
-import { fetchWithAuth } from "@/lib/fetchWithAuth";
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
 // ==================== TYPE DEFINITIONS ====================

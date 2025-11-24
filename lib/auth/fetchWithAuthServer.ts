@@ -11,7 +11,7 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { retryWithBackoff, classifyError, HttpErrorType } from './retryWithBackoffServer';
+import { retryWithBackoff, classifyError, HttpErrorType } from '@/lib/server/retryWithBackoffServer';
 
 /**
  * Version server-side de fetchWithAuth pour Server Components

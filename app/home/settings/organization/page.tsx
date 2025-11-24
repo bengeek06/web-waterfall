@@ -17,10 +17,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import OrganizationTree from "@/components/pages/OrganizationTree";
-import { getDictionary } from "@/lib/dictionaries";
-import { getLocale } from "@/lib/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getLocale } from "@/lib/utils/locale";
 import { cookies } from "next/headers";
-import { getCompanyIdFromToken } from "@/lib/user";
+import { getCompanyIdFromToken } from "@/lib/server/user";
 import { redirect } from "next/navigation";
 
 export default async function OrganizationPage() {

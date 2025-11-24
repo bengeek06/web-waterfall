@@ -10,7 +10,7 @@
  */
 
 import { cookies } from "next/headers";
-import { fetchWithAuthServer } from "./fetchWithAuthServer";
+import { fetchWithAuthServer } from "@/lib/auth/fetchWithAuthServer";
 
 /**
  * Décode un JWT et extrait le user_id (champ sub)

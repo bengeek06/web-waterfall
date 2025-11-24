@@ -6,8 +6,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { UserManagement } from "@/components/admin/UserManagement";
-import { getDictionary } from "@/lib/dictionaries";
-import { getUserLanguage } from "@/lib/locale";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
 
 export default async function AdminUsersPage() {
   const userLanguage = await getUserLanguage();

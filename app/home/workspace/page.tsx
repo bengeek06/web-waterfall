@@ -10,7 +10,7 @@
  */
 
 import { FileExplorer } from "@/components/shared/FileExplorer";
-import { getDictionary } from "@/lib/dictionaries";
+import { getDictionary } from "@/lib/utils/dictionaries";
 
 export default async function WorkspacePage() {
   const dict = await getDictionary("fr");

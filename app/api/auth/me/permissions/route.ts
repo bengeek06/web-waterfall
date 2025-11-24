@@ -11,7 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getUserIdFromToken } from "@/lib/user";
+import { getUserIdFromToken } from "@/lib/server/user";
 
 /**
  * GET /api/auth/me/permissions

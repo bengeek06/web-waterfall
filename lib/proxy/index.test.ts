@@ -16,7 +16,7 @@ import { proxyRequest } from './index';
 import { NextRequest } from 'next/server';
 
 // Mock logger to avoid noise in tests
-jest.mock('@/lib/logger', () => ({
+jest.mock('@/lib/utils/logger', () => ({
   __esModule: true,
   default: {
     info: jest.fn(),

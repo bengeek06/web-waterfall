@@ -30,7 +30,7 @@ import { useZodForm } from "@/lib/hooks";
 import { loginSchema, LoginFormData } from "@/lib/validation";
 
 // Token refresh scheduler
-import { initTokenRefresh } from "@/lib/tokenRefreshScheduler";
+import { initTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
 
 // ==================== TYPES ====================
 interface LoginProps {

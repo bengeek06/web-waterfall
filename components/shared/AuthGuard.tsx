@@ -13,7 +13,7 @@
 
 import React, { useEffect } from "react";
 import { useAuthVerification } from "@/lib/hooks";
-import { initTokenRefresh, cancelTokenRefresh } from "@/lib/tokenRefreshScheduler";
+import { initTokenRefresh, cancelTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
 
 interface AuthGuardProps {
   readonly children: React.ReactNode;

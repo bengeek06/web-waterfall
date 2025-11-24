@@ -28,7 +28,7 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock fetchWithAuth
-jest.mock('@/lib/fetchWithAuth', () => ({
+jest.mock('@/lib/auth/fetchWithAuth', () => ({
   fetchWithAuth: jest.fn(),
 }));
 
@@ -108,7 +108,7 @@ const mockDictionary = {
 };
 
 describe('OrganizationTree Component', () => {
-  const { fetchWithAuth } = require('@/lib/fetchWithAuth');
+  const { fetchWithAuth } = require('@/lib/auth/fetchWithAuth');
 
   beforeEach(() => {
     jest.clearAllMocks();
