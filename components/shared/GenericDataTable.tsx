@@ -157,7 +157,7 @@ export function GenericDataTable<T>({
           {/* Create Button */}
           {onCreateClick && (
             <Button onClick={onCreateClick} {...testId(TABLE_TEST_IDS.genericTable.createButton)}>
-              <Plus className={`mr-2 ${ICON_SIZES.sm}`} />
+              <Plus className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
               {dictionary.create || "Create"}
             </Button>
           )}
@@ -175,12 +175,15 @@ export function GenericDataTable<T>({
           {enableImportExport && (
             <>
               {onImport && (
-                <label htmlFor="file-import">
-                  <Button variant="outline" size="sm" asChild>
-                    <span className="cursor-pointer">
-                      <Upload className={`mr-2 ${ICON_SIZES.sm}`} />
-                      {dictionary.import || "Import"}
-                    </span>
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => document.getElementById('file-import')?.click()}
+                    {...testId(TABLE_TEST_IDS.genericTable.importButton)}
+                  >
+                    <Upload className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    {dictionary.import || "Import"}
                   </Button>
                   <input
                     id="file-import"
@@ -190,7 +193,7 @@ export function GenericDataTable<T>({
                     onChange={handleFileImport}
                     {...testId(TABLE_TEST_IDS.genericTable.importInput)}
                   />
-                </label>
+                </>
               )}
               
               {onExport && (
@@ -200,7 +203,7 @@ export function GenericDataTable<T>({
                   onClick={onExport}
                   {...testId(TABLE_TEST_IDS.genericTable.exportButton)}
                 >
-                  <Download className={`mr-2 ${ICON_SIZES.sm}`} />
+                  <Download className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                   {dictionary.export || "Export"}
                 </Button>
               )}
@@ -240,6 +243,7 @@ export function GenericDataTable<T>({
                             onChange={(e) => header.column.setFilterValue(e.target.value)}
                             placeholder={filterPlaceholder || dictionary.filter_placeholder || "Filtrer..."}
                             className="h-8 text-sm"
+                            {...testId(`${TABLE_TEST_IDS.genericTable.table}-filter-${header.id}`)}
                           />
                         ) : null}
                       </TableHead>
