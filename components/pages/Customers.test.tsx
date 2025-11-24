@@ -54,6 +54,15 @@ const mockCustomersDictionary = {
   error_create: "Erreur lors de la création du client",
   error_update: "Erreur lors de la mise à jour du client",
   error_delete: "Erreur lors de la suppression du client",
+  error_export: "Erreur lors de l'export des clients",
+  error_import: "Erreur lors de l'import des clients",
+  import_report_title: "Rapport d'import",
+  import_report_close: "Fermer",
+  import_report_total: "Total",
+  import_report_success: "Succès",
+  import_report_failed: "Échecs",
+  import_report_errors: "Erreurs",
+  import_report_warnings: "Avertissements",
 };
 
 describe('Customers Component', () => {

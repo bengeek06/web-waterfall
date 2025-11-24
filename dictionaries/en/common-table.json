@@ -1,0 +1,22 @@
+{
+  "actions": "Actions",
+  "edit": "Edit",
+  "delete": "Delete",
+  "view": "View",
+  "create": "Create",
+  "search": "Search...",
+  "no_results": "No results found",
+  "loading": "Loading...",
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "save": "Save",
+  "created": "Created",
+  "updated": "Updated",
+  "export": "Export",
+  "import": "Import",
+  "showing_results": "Showing {{count}} results",
+  "confirm_delete": "Are you sure you want to delete this item?",
+  "confirm_delete_title": "Confirm Deletion",
+  "yes": "Yes",
+  "no": "No"
+}
