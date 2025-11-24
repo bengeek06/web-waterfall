@@ -11,7 +11,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 // UI Components
 import {
@@ -48,7 +48,7 @@ export interface GenericDataTableProps<T> {
   /** Dictionary for UI strings */
   dictionary: {
     create?: string;
-    search?: string;
+    filter_placeholder?: string;
     no_results?: string;
     loading?: string;
     export?: string;
@@ -67,11 +67,11 @@ export interface GenericDataTableProps<T> {
   /** Callback for import action */
   onImport?: (_file: File) => void;
   
-  /** Key to use for global search filter */
-  searchKey?: string;
+  /** Enable per-column filtering (default: true) */
+  enableColumnFilters?: boolean;
   
-  /** Placeholder for search input */
-  searchPlaceholder?: string;
+  /** Placeholder for filter inputs */
+  filterPlaceholder?: string;
   
   /** Custom empty state component */
   emptyState?: React.ReactNode;
@@ -84,8 +84,8 @@ export interface GenericDataTableProps<T> {
 
 /**
  * Generic data table component with built-in features:
- * - Sorting
- * - Global search
+ * - Sorting per column
+ * - Per-column filtering (optional)
  * - Create button
  * - Import/Export buttons
  * - Loading state
@@ -99,11 +99,11 @@ export interface GenericDataTableProps<T> {
  *   isLoading={isLoading}
  *   dictionary={{
  *     create: 'Create User',
- *     search: 'Search users...',
+ *     filter_placeholder: 'Filter...',
  *     no_results: 'No users found'
  *   }}
  *   onCreateClick={() => setShowModal(true)}
- *   searchKey="email"
+ *   enableColumnFilters={true}
  * />
  * ```
  */
@@ -116,15 +116,14 @@ export function GenericDataTable<T>({
   enableImportExport = false,
   onExport,
   onImport,
-  searchKey,
-  searchPlaceholder,
+  enableColumnFilters = true,
+  filterPlaceholder,
   emptyState,
   toolbarActions,
 }: Readonly<GenericDataTableProps<T>>) {
   // ==================== STATE ====================
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
 
   // ==================== TABLE INSTANCE ====================
   const table = useReactTable({
@@ -135,11 +134,9 @@ export function GenericDataTable<T>({
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
-      globalFilter,
     },
   });
 
@@ -212,34 +209,44 @@ export function GenericDataTable<T>({
         </div>
       </div>
 
-      {/* Search */}
-      {searchKey && (
-        <Input
-          placeholder={searchPlaceholder || dictionary.search || "Search..."}
-          value={globalFilter ?? ""}
-          onChange={(event) => setGlobalFilter(event.target.value)}
-          className="max-w-sm"
-          {...testId(TABLE_TEST_IDS.genericTable.searchInput)}
-        />
-      )}
-
       {/* Table */}
       <div className="rounded-md border">
         <Table {...testId(TABLE_TEST_IDS.genericTable.table)}>
           <TableHeader {...testId(TABLE_TEST_IDS.genericTable.tableHeader)}>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
+              <Fragment key={headerGroup.id}>
+                {/* Header Row 1: Column Labels with Sorting */}
+                <TableRow>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+                
+                {/* Header Row 2: Column Filters */}
+                {enableColumnFilters && (
+                  <TableRow>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={`filter-${header.id}`}>
+                        {header.column.getCanFilter() ? (
+                          <Input
+                            value={(header.column.getFilterValue() as string) ?? ""}
+                            onChange={(e) => header.column.setFilterValue(e.target.value)}
+                            placeholder={filterPlaceholder || dictionary.filter_placeholder || "Filtrer..."}
+                            className="h-8 text-sm"
+                          />
+                        ) : null}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                )}
+              </Fragment>
             ))}
           </TableHeader>
           
