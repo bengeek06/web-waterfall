@@ -98,37 +98,48 @@ describe('Roles Component', () => {
 
       // Default handlers
       if (url === GUARDIAN_ROUTES.policies) {
-        return Promise.resolve({
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
           json: () => Promise.resolve(mockPolicies),
-        });
+          clone: function() { return { ...this, json: () => Promise.resolve(mockPolicies) }; }
+        };
+        return Promise.resolve(response);
       }
       if (url === GUARDIAN_ROUTES.roles) {
-        return Promise.resolve({
+        const rolesData = mockRoles.map(r => ({ id: r.id, name: r.name, description: r.description }));
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve(mockRoles.map(r => ({ id: r.id, name: r.name, description: r.description }))),
-        });
+          json: () => Promise.resolve(rolesData),
+          clone: function() { return { ...this, json: () => Promise.resolve(rolesData) }; }
+        };
+        return Promise.resolve(response);
       }
       // Handle role policies requests
       if (url === GUARDIAN_ROUTES.rolePolicies('1')) {
-        return Promise.resolve({
+        const policies = [mockPolicies[0], mockPolicies[1]];
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve([mockPolicies[0], mockPolicies[1]]),
-        });
+          json: () => Promise.resolve(policies),
+          clone: function() { return { ...this, json: () => Promise.resolve(policies) }; }
+        };
+        return Promise.resolve(response);
       }
       if (url === GUARDIAN_ROUTES.rolePolicies('2')) {
-        return Promise.resolve({
+        const policies = [mockPolicies[1]];
+        const response = {
           ok: true,
           status: 200,
           headers: { get: () => 'application/json' },
-          json: () => Promise.resolve([mockPolicies[1]]),
-        });
+          json: () => Promise.resolve(policies),
+          clone: function() { return { ...this, json: () => Promise.resolve(policies) }; }
+        };
+        return Promise.resolve(response);
       }
       return Promise.reject(new Error('Unknown URL: ' + url));
     };
@@ -181,7 +192,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId(DASHBOARD_TEST_IDS.roles.errorMessage)).toBeInTheDocument();
-      });
+      }, { timeout: 5000 }); // Need extra time for retry logic (1000ms + 2000ms delays)
     });
 
     it('should handle non-JSON responses', async () => {
@@ -253,7 +264,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const addButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addButton);
       fireEvent.click(addButton);
@@ -335,7 +346,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const editButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.editButton('1'));
       fireEvent.click(editButton);
@@ -394,7 +405,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.deleteButton('1'));
       fireEvent.click(deleteButton);
@@ -512,6 +523,7 @@ describe('Roles Component', () => {
             status: 200,
             headers: { get: () => 'application/json' },
             json: () => Promise.resolve(mockPolicies),
+            clone: function() { return { ...this, json: () => Promise.resolve(mockPolicies) }; }
           });
         }
         if (url === GUARDIAN_ROUTES.roles) {
@@ -520,6 +532,7 @@ describe('Roles Component', () => {
             status: 200,
             headers: { get: () => 'application/json' },
             json: () => Promise.resolve([emptyRole]),
+            clone: function() { return { ...this, json: () => Promise.resolve([emptyRole]) }; }
           });
         }
         if (url === GUARDIAN_ROUTES.rolePolicies('3')) {
@@ -528,6 +541,7 @@ describe('Roles Component', () => {
             status: 200,
             headers: { get: () => 'application/json' },
             json: () => Promise.resolve([]),
+            clone: function() { return { ...this, json: () => Promise.resolve([]) }; }
           });
         }
         return Promise.reject(new Error('Unknown URL'));
@@ -537,7 +551,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Empty Role')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.expandButton('3'));
       fireEvent.click(expandButton);
@@ -608,7 +622,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Viewer')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const addPolicyButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.addPolicyButton('2'));
       fireEvent.click(addPolicyButton);
@@ -736,7 +750,7 @@ describe('Roles Component', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Administrator')).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const expandButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.expandButton('1'));
       fireEvent.click(expandButton);
