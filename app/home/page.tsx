@@ -10,7 +10,12 @@ export default async function WelcomePage() {
   const userLanguage = await getUserLanguage();
   const dictionary = await getDictionary(userLanguage);
   
-  const displayName = user?.first_name || user?.email || 'Guest';
+  // Middleware ensures user is authenticated - if user is null, redirect happens
+  if (!user) {
+    return null; // Should never happen due to middleware, but TypeScript safety
+  }
+  
+  const displayName = user.first_name || user.email;
   
   return (
     <div>
