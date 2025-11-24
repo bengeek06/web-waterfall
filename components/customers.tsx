@@ -340,9 +340,12 @@ export default function Customers({ dictionary }: { readonly dictionary: Custome
       }
 
       const data = await res.json();
+      // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
       let customersArray: Customer[] = [];
       if (Array.isArray(data)) {
         customersArray = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        customersArray = data.data;
       } else {
         throw new TypeError(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
       }

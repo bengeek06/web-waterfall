@@ -42,7 +42,8 @@ describe('Profile Component', () => {
     first_name: 'John',
     last_name: 'Doe',
     phone_number: '+1234567890',
-    avatar_url: '',
+    has_avatar: false,
+    avatar_file_id: undefined,
     language: 'fr',
   };
 

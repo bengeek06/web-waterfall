@@ -19,12 +19,12 @@ export function getUserIdFromToken(token: string | undefined): string | null {
   try {
     const base64Url = token.split(".")[1];
     if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = base64Url.replaceAll("-", "+").replaceAll("_", "/");
     const jsonPayload = decodeURIComponent(
       Buffer.from(base64, "base64")
         .toString("binary")
         .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .map((c) => "%" + ("00" + (c.codePointAt(0) || 0).toString(16)).slice(-2))
         .join("")
     );
     const payload = JSON.parse(jsonPayload);
@@ -42,12 +42,12 @@ export function getCompanyIdFromToken(token: string | undefined): string | null 
   try {
     const base64Url = token.split(".")[1];
     if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const base64 = base64Url.replaceAll("-", "+").replaceAll("_", "/");
     const jsonPayload = decodeURIComponent(
       Buffer.from(base64, "base64")
         .toString("binary")
         .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .map((c) => "%" + ("00" + (c.codePointAt(0) || 0).toString(16)).slice(-2))
         .join("")
     );
     const payload = JSON.parse(jsonPayload);
@@ -58,13 +58,14 @@ export function getCompanyIdFromToken(token: string | undefined): string | null 
 }
 
 /**
- * Récupère l'URL de l'avatar de l'utilisateur courant (ou null)
+ * Vérifie si l'utilisateur courant a un avatar
+ * @returns true si l'utilisateur a un avatar (has_avatar), false sinon
  */
-export async function getAvatarUrl() {
+export async function hasUserAvatar(): Promise<boolean> {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   const userId = getUserIdFromToken(token);
-  if (!userId) return null;
+  if (!userId) return false;
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/identity/users/${userId}`,
@@ -73,11 +74,11 @@ export async function getAvatarUrl() {
         cache: "no-store",
       }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return false;
     const user = await res.json();
-    return user.avatar_url || null;
+    return user.has_avatar === true;
   } catch {
-    return null;
+    return false;
   }
 }
 
@@ -89,14 +90,14 @@ export async function getFirstnameFromCookie() {
   if (!token) return null;
   const base64Url = token.value.split(".")[1];
   if (!base64Url) return null;
-  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const base64 = base64Url.replaceAll("-", "+").replaceAll("_", "/");
   let jsonPayload;
   try {
     jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
         .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+          return "%" + ("00" + (c.codePointAt(0) || 0).toString(16)).slice(-2);
         })
         .join("")
     );

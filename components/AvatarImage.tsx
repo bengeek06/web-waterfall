@@ -17,6 +17,7 @@ import { User } from 'lucide-react';
 
 interface AvatarImageProps {
   userId: string;
+  hasAvatar?: boolean; // Utiliser has_avatar du modèle User
   size?: number;
   className?: string;
   iconSize?: number;
@@ -26,6 +27,7 @@ interface AvatarImageProps {
 
 export default function AvatarImage({ 
   userId, 
+  hasAvatar = false,
   size = 40, 
   className = '',
   iconSize = 24,
@@ -34,7 +36,8 @@ export default function AvatarImage({
 }: AvatarImageProps) {
   const [hasError, setHasError] = useState(false);
 
-  if (hasError) {
+  // Si pas d'avatar ou erreur de chargement, afficher l'icône
+  if (!hasAvatar || hasError) {
     return (
       <User 
         size={iconSize}

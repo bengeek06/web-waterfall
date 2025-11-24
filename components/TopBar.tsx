@@ -81,6 +81,7 @@ export default async function TopBar() {
                 {userId ? (
                   <AvatarImage
                     userId={userId}
+                    hasAvatar={userData?.has_avatar || false}
                     size={40}
                     className={`object-cover ${ICON_SIZES.xl}`}
                     iconSize={24}

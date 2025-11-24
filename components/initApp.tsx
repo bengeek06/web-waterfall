@@ -102,16 +102,15 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
       if (!identityRes.ok) throw new Error(API_ERROR_MESSAGES.IDENTITY_ERROR);
       
       const identityData = await identityRes.json();
-      const company_id = identityData.company.id;
-      const user_id = identityData.user.id;
       
       // 2. Appel à l'init du service guardian
-      const guardianRes = await fetch(GUARDIAN_ROUTES.initApp, {
+      // Note: Guardian init-db POST accepte company_id et user_id extraits de la réponse Identity
+      const guardianRes = await fetch(GUARDIAN_ROUTES.initDb, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          company: { name: data.companyName, company_id },
-          user: { email: data.userEmail, password: data.password, user_id },
+          company_id: identityData.company.id,
+          user_id: identityData.user.id,
         }),
       });
       

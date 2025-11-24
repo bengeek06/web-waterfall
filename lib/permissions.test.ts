@@ -198,7 +198,7 @@ describe("permissions utilities", () => {
       expect(PERMISSIONS.IDENTITY_USER_LIST).toEqual({
         service: "identity",
         resource: "user",
-        action: "list",
+        action: "LIST",
       });
     });
 
@@ -206,7 +206,7 @@ describe("permissions utilities", () => {
       expect(PERMISSIONS.GUARDIAN_ROLE_LIST).toEqual({
         service: "guardian",
         resource: "role",
-        action: "list",
+        action: "LIST",
       });
     });
 
@@ -214,7 +214,7 @@ describe("permissions utilities", () => {
       expect(PERMISSIONS.IDENTITY_COMPANY_READ).toEqual({
         service: "identity",
         resource: "company",
-        action: "read",
+        action: "READ",
       });
     });
   });

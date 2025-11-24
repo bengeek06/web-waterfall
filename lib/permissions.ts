@@ -143,58 +143,58 @@ export function createPermissionConstants(
  */
 export const PERMISSIONS = {
   // Identity - Users
-  IDENTITY_USER_LIST: { service: 'identity', resource: 'user', action: 'list' },
-  IDENTITY_USER_READ: { service: 'identity', resource: 'user', action: 'read' },
-  IDENTITY_USER_CREATE: { service: 'identity', resource: 'user', action: 'create' },
-  IDENTITY_USER_UPDATE: { service: 'identity', resource: 'user', action: 'update' },
-  IDENTITY_USER_DELETE: { service: 'identity', resource: 'user', action: 'delete' },
+  IDENTITY_USER_LIST: { service: 'identity', resource: 'user', action: 'LIST' },
+  IDENTITY_USER_READ: { service: 'identity', resource: 'user', action: 'READ' },
+  IDENTITY_USER_CREATE: { service: 'identity', resource: 'user', action: 'CREATE' },
+  IDENTITY_USER_UPDATE: { service: 'identity', resource: 'user', action: 'UPDATE' },
+  IDENTITY_USER_DELETE: { service: 'identity', resource: 'user', action: 'DELETE' },
 
   // Identity - Companies
-  IDENTITY_COMPANY_LIST: { service: 'identity', resource: 'company', action: 'list' },
-  IDENTITY_COMPANY_READ: { service: 'identity', resource: 'company', action: 'read' },
-  IDENTITY_COMPANY_UPDATE: { service: 'identity', resource: 'company', action: 'update' },
+  IDENTITY_COMPANY_LIST: { service: 'identity', resource: 'company', action: 'LIST' },
+  IDENTITY_COMPANY_READ: { service: 'identity', resource: 'company', action: 'READ' },
+  IDENTITY_COMPANY_UPDATE: { service: 'identity', resource: 'company', action: 'UPDATE' },
 
   // Identity - Organization Units
-  IDENTITY_ORGANIZATION_UNIT_LIST: { service: 'identity', resource: 'organization_unit', action: 'list' },
-  IDENTITY_ORGANIZATION_UNIT_READ: { service: 'identity', resource: 'organization_unit', action: 'read' },
-  IDENTITY_ORGANIZATION_UNIT_CREATE: { service: 'identity', resource: 'organization_unit', action: 'create' },
-  IDENTITY_ORGANIZATION_UNIT_UPDATE: { service: 'identity', resource: 'organization_unit', action: 'update' },
-  IDENTITY_ORGANIZATION_UNIT_DELETE: { service: 'identity', resource: 'organization_unit', action: 'delete' },
+  IDENTITY_ORGANIZATION_UNIT_LIST: { service: 'identity', resource: 'organization_unit', action: 'LIST' },
+  IDENTITY_ORGANIZATION_UNIT_READ: { service: 'identity', resource: 'organization_unit', action: 'READ' },
+  IDENTITY_ORGANIZATION_UNIT_CREATE: { service: 'identity', resource: 'organization_unit', action: 'CREATE' },
+  IDENTITY_ORGANIZATION_UNIT_UPDATE: { service: 'identity', resource: 'organization_unit', action: 'UPDATE' },
+  IDENTITY_ORGANIZATION_UNIT_DELETE: { service: 'identity', resource: 'organization_unit', action: 'DELETE' },
 
   // Identity - Positions
-  IDENTITY_POSITION_LIST: { service: 'identity', resource: 'position', action: 'list' },
-  IDENTITY_POSITION_READ: { service: 'identity', resource: 'position', action: 'read' },
-  IDENTITY_POSITION_CREATE: { service: 'identity', resource: 'position', action: 'create' },
-  IDENTITY_POSITION_UPDATE: { service: 'identity', resource: 'position', action: 'update' },
-  IDENTITY_POSITION_DELETE: { service: 'identity', resource: 'position', action: 'delete' },
+  IDENTITY_POSITION_LIST: { service: 'identity', resource: 'position', action: 'LIST' },
+  IDENTITY_POSITION_READ: { service: 'identity', resource: 'position', action: 'READ' },
+  IDENTITY_POSITION_CREATE: { service: 'identity', resource: 'position', action: 'CREATE' },
+  IDENTITY_POSITION_UPDATE: { service: 'identity', resource: 'position', action: 'UPDATE' },
+  IDENTITY_POSITION_DELETE: { service: 'identity', resource: 'position', action: 'DELETE' },
 
   // Identity - Customers
-  IDENTITY_CUSTOMER_LIST: { service: 'identity', resource: 'customer', action: 'list' },
-  IDENTITY_CUSTOMER_READ: { service: 'identity', resource: 'customer', action: 'read' },
-  IDENTITY_CUSTOMER_CREATE: { service: 'identity', resource: 'customer', action: 'create' },
-  IDENTITY_CUSTOMER_UPDATE: { service: 'identity', resource: 'customer', action: 'update' },
-  IDENTITY_CUSTOMER_DELETE: { service: 'identity', resource: 'customer', action: 'delete' },
+  IDENTITY_CUSTOMER_LIST: { service: 'identity', resource: 'customer', action: 'LIST' },
+  IDENTITY_CUSTOMER_READ: { service: 'identity', resource: 'customer', action: 'READ' },
+  IDENTITY_CUSTOMER_CREATE: { service: 'identity', resource: 'customer', action: 'CREATE' },
+  IDENTITY_CUSTOMER_UPDATE: { service: 'identity', resource: 'customer', action: 'UPDATE' },
+  IDENTITY_CUSTOMER_DELETE: { service: 'identity', resource: 'customer', action: 'DELETE' },
 
   // Identity - Subcontractors
-  IDENTITY_SUBCONTRACTOR_LIST: { service: 'identity', resource: 'subcontractor', action: 'list' },
-  IDENTITY_SUBCONTRACTOR_READ: { service: 'identity', resource: 'subcontractor', action: 'read' },
-  IDENTITY_SUBCONTRACTOR_CREATE: { service: 'identity', resource: 'subcontractor', action: 'create' },
-  IDENTITY_SUBCONTRACTOR_UPDATE: { service: 'identity', resource: 'subcontractor', action: 'update' },
-  IDENTITY_SUBCONTRACTOR_DELETE: { service: 'identity', resource: 'subcontractor', action: 'delete' },
+  IDENTITY_SUBCONTRACTOR_LIST: { service: 'identity', resource: 'subcontractor', action: 'LIST' },
+  IDENTITY_SUBCONTRACTOR_READ: { service: 'identity', resource: 'subcontractor', action: 'READ' },
+  IDENTITY_SUBCONTRACTOR_CREATE: { service: 'identity', resource: 'subcontractor', action: 'CREATE' },
+  IDENTITY_SUBCONTRACTOR_UPDATE: { service: 'identity', resource: 'subcontractor', action: 'UPDATE' },
+  IDENTITY_SUBCONTRACTOR_DELETE: { service: 'identity', resource: 'subcontractor', action: 'DELETE' },
 
   // Guardian - Roles
-  GUARDIAN_ROLE_LIST: { service: 'guardian', resource: 'role', action: 'list' },
-  GUARDIAN_ROLE_READ: { service: 'guardian', resource: 'role', action: 'read' },
-  GUARDIAN_ROLE_CREATE: { service: 'guardian', resource: 'role', action: 'create' },
-  GUARDIAN_ROLE_UPDATE: { service: 'guardian', resource: 'role', action: 'update' },
-  GUARDIAN_ROLE_DELETE: { service: 'guardian', resource: 'role', action: 'delete' },
+  GUARDIAN_ROLE_LIST: { service: 'guardian', resource: 'role', action: 'LIST' },
+  GUARDIAN_ROLE_READ: { service: 'guardian', resource: 'role', action: 'READ' },
+  GUARDIAN_ROLE_CREATE: { service: 'guardian', resource: 'role', action: 'CREATE' },
+  GUARDIAN_ROLE_UPDATE: { service: 'guardian', resource: 'role', action: 'UPDATE' },
+  GUARDIAN_ROLE_DELETE: { service: 'guardian', resource: 'role', action: 'DELETE' },
 
   // Guardian - Policies
-  GUARDIAN_POLICY_LIST: { service: 'guardian', resource: 'policy', action: 'list' },
-  GUARDIAN_POLICY_READ: { service: 'guardian', resource: 'policy', action: 'read' },
-  GUARDIAN_POLICY_CREATE: { service: 'guardian', resource: 'policy', action: 'create' },
-  GUARDIAN_POLICY_UPDATE: { service: 'guardian', resource: 'policy', action: 'update' },
-  GUARDIAN_POLICY_DELETE: { service: 'guardian', resource: 'policy', action: 'delete' },
+  GUARDIAN_POLICY_LIST: { service: 'guardian', resource: 'policy', action: 'LIST' },
+  GUARDIAN_POLICY_READ: { service: 'guardian', resource: 'policy', action: 'READ' },
+  GUARDIAN_POLICY_CREATE: { service: 'guardian', resource: 'policy', action: 'CREATE' },
+  GUARDIAN_POLICY_UPDATE: { service: 'guardian', resource: 'policy', action: 'UPDATE' },
+  GUARDIAN_POLICY_DELETE: { service: 'guardian', resource: 'policy', action: 'DELETE' },
 } as const;
 
 /**

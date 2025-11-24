@@ -45,7 +45,8 @@ interface User {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
-  avatar_url?: string;
+  has_avatar?: boolean;
+  avatar_file_id?: string;
   language?: string;
 }
 
@@ -79,7 +80,9 @@ export default function Profile({ user, dictionary }: ProfileProps) {
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState(user.avatar_url || "");
+  const [avatarPreview, setAvatarPreview] = useState(
+    user.has_avatar ? `/api/identity/users/${user.id}/avatar?t=${Date.now()}` : ""
+  );
   const [language, setLanguage] = useState<Locale>((user.language as Locale) || "fr");
   
   // UI state
@@ -89,7 +92,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
 
   // ==================== HANDLERS ====================
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const file = e.target.files[0];
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
@@ -98,7 +101,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       const file = e.dataTransfer.files[0];
       setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
@@ -110,7 +113,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
   }
 
   function handleCancel() {
-    window.history.back();
+    globalThis.history.back();
   }
 
   async function handleLanguageChange(newLanguage: Locale) {
@@ -250,7 +253,7 @@ export default function Profile({ user, dictionary }: ProfileProps) {
 
       // Go back after short delay
       setTimeout(() => {
-        window.history.back();
+        globalThis.history.back();
       }, 1500);
     } catch (err: unknown) {
       if (err instanceof Error) {

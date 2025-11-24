@@ -362,9 +362,12 @@ export default function Subcontractors({ dictionary }: { readonly dictionary: Su
       }
 
       const data = await res.json();
+      // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
       let subcontractorsArray: Subcontractor[] = [];
       if (Array.isArray(data)) {
         subcontractorsArray = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        subcontractorsArray = data.data;
       } else {
         throw new TypeError(dictionary.error_fetch + ": " + JSON.stringify(data).slice(0, 200));
       }

@@ -478,7 +478,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         }
 
         const data = await res.json();
-        const unitsList = Array.isArray(data) ? data : [];
+        // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
+        const unitsList = Array.isArray(data) ? data : (data.data || []);
         setTreeData(buildTree(unitsList));
       } catch (err) {
         console.error("Error loading organization units:", err);
@@ -508,7 +509,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
         if (res.ok) {
           const data = await res.json();
-          setPositions(Array.isArray(data) ? data : []);
+          // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
+          setPositions(Array.isArray(data) ? data : (data.data || []));
         } else {
           setPositions([]);
         }
@@ -529,7 +531,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnits);
       if (res.ok) {
         const data = await res.json();
-        const unitsList = Array.isArray(data) ? data : [];
+        // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
+        const unitsList = Array.isArray(data) ? data : (data.data || []);
         setTreeData(buildTree(unitsList));
       }
     } catch (err) {
@@ -547,7 +550,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       );
       if (res.ok) {
         const data = await res.json();
-        setPositions(Array.isArray(data) ? data : []);
+        // Le backend retourne {data: [...], pagination: {...}} ou un tableau direct
+        setPositions(Array.isArray(data) ? data : (data.data || []));
       }
     } catch (err) {
       console.error("Error reloading positions:", err);
@@ -980,7 +984,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         isOpen={isUnitModalOpen}
         onClose={handleUnitModalClose}
         onSuccess={handleUnitModalSuccess}
-        companyId={companyId}
         unit={editingUnit}
         parentUnit={parentUnit}
         dictionary={dictionary}
@@ -992,7 +995,6 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           isOpen={isPositionModalOpen}
           onClose={handlePositionModalClose}
           onSuccess={handlePositionModalSuccess}
-          companyId={companyId}
           organizationUnit={selectedUnit}
           position={editingPosition}
           dictionary={dictionary}

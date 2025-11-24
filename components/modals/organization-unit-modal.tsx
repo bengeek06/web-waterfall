@@ -48,7 +48,6 @@ type OrganizationUnitModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  companyId: string;
   unit?: OrganizationUnit | null; // For editing
   parentUnit?: OrganizationUnit | null; // For creating child
   dictionary: {
@@ -76,7 +75,6 @@ export default function OrganizationUnitModal({
   isOpen,
   onClose,
   onSuccess,
-  companyId,
   unit,
   parentUnit,
   dictionary,
@@ -115,11 +113,9 @@ export default function OrganizationUnitModal({
       const payload: {
         name: string;
         description?: string;
-        company_id: string;
         parent_id?: string | null;
       } = {
         name: name.trim(),
-        company_id: companyId,
       };
 
       if (description.trim()) {

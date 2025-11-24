@@ -69,9 +69,10 @@ export function usePermissions(): UsePermissionsReturn {
           const resource = perm.resource_name || perm.resource || '';
           
           // Fonction helper pour nettoyer les opérations (enlever "OperationEnum." si présent)
+          // Les opérations Guardian sont en MAJUSCULES (READ, CREATE, UPDATE, DELETE, LIST)
           const cleanOperation = (op: string): string => {
             const cleaned = op.includes('.') ? op.split('.').pop() || op : op;
-            return cleaned.toLowerCase();
+            return cleaned.toUpperCase();
           };
           
           // Si operations est un tableau, créer une permission par opération
@@ -101,6 +102,10 @@ export function usePermissions(): UsePermissionsReturn {
         }
         
         setPermissions(normalizedPerms);
+        
+        // Debug: log guardian role permissions
+        const guardianRolePerms = normalizedPerms.filter(p => p.service === 'guardian' && p.resource === 'role');
+        console.log('🔐 Guardian role permissions:', guardianRolePerms);
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
         // En cas d'erreur, on ne bloque pas l'UI mais on log
