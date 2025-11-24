@@ -87,6 +87,95 @@ dictionaries/               # Translation files
 middleware.ts               # Server-side auth middleware
 ```
 
+---
+
+## 📁 File and Directory Naming Conventions
+
+**Consistent naming and organization are critical for maintainability.**
+
+### Naming Rules
+
+**1. Components (`components/`):**
+- **UI primitives (`components/ui/`)**: `kebab-case.tsx` (shadcn/ui convention)
+  - ✅ `button.tsx`, `card.tsx`, `dialog.tsx`
+  - ❌ `Button.tsx`, `Card.tsx`
+- **Business components**: `PascalCase.tsx` (React convention)
+  - ✅ `UserManagement.tsx`, `CustomerList.tsx`
+  - ❌ `user-management.tsx`, `customer-list.tsx`
+- **Test files**: Match component name + `.test.tsx`
+  - ✅ `UserManagement.test.tsx` for `UserManagement.tsx`
+  - ✅ `button.test.tsx` for `button.tsx`
+
+**2. Pages (`app/`):**
+- **Route segments**: `kebab-case/` (Next.js convention)
+  - ✅ `app/user-profile/page.tsx`
+  - ❌ `app/userProfile/page.tsx`, `app/user_profile/page.tsx`
+
+**3. Libraries (`lib/`):**
+- **Utility files**: `kebab-case.ts` or `camelCase.ts`
+  - ✅ `fetchWithAuth.ts`, `error-handler.ts`, `permissions.ts`
+  - ❌ `FetchWithAuth.ts`, `ErrorHandler.ts`
+
+**4. Dictionaries (`dictionaries/`):**
+- **Language folders**: `lowercase/` (ISO 639-1 codes)
+  - ✅ `en/`, `fr/`, `de/`
+- **Dictionary files**: `kebab-case.json`
+  - ✅ `common.json`, `user-management.json`
+
+### Directory Organization
+
+**Recommended structure for `components/`:**
+
+```
+components/
+├── ui/                          # shadcn/ui primitives (kebab-case)
+│   ├── button.tsx
+│   ├── card.tsx
+│   ├── dialog.tsx
+│   └── ...
+├── modals/                      # All modal dialogs (kebab-case)
+│   ├── user-form-modal.tsx
+│   ├── confirm-delete-modal.tsx
+│   └── organization-unit-modal.tsx
+├── admin/                       # Admin-specific features (PascalCase)
+│   ├── UserManagement.tsx
+│   ├── UserDataTable.tsx
+│   └── index.ts
+├── pages/                       # Page-level components (PascalCase)
+│   ├── Customers.tsx
+│   ├── Roles.tsx
+│   └── Policies.tsx
+├── layout/                      # Layout components (PascalCase)
+│   ├── TopBar.tsx
+│   ├── Sidebar.tsx
+│   └── Footer.tsx
+└── shared/                      # Shared utilities (PascalCase)
+    ├── AuthGuard.tsx
+    ├── LanguageSwitcher.tsx
+    └── ProtectedCard.tsx
+```
+
+### Rules Summary
+
+| Type | Location | Naming | Example |
+|------|----------|--------|---------|
+| UI Primitive | `components/ui/` | kebab-case | `button.tsx` |
+| Modal | `components/modals/` | kebab-case | `user-form-modal.tsx` |
+| Business Component | `components/admin/` | PascalCase | `UserManagement.tsx` |
+| Page Component | `components/pages/` | PascalCase | `Customers.tsx` |
+| Layout Component | `components/layout/` | PascalCase | `TopBar.tsx` |
+| Shared Component | `components/shared/` | PascalCase | `AuthGuard.tsx` |
+| Utility Function | `lib/` | camelCase/kebab-case | `fetchWithAuth.ts` |
+| Test File | Same as component | Match + `.test.tsx` | `UserManagement.test.tsx` |
+| Route Segment | `app/` | kebab-case | `user-profile/` |
+| Dictionary File | `dictionaries/[lang]/` | kebab-case | `admin-users.json` |
+
+**Migration Note:** Existing components not following these conventions should be gradually refactored. Create an issue to track the migration plan.
+
+---
+
+## 🏗️ Architecture Patterns
+
 ### Centralized Constants
 
 #### API Routes (`lib/api-routes/`)
