@@ -48,16 +48,14 @@ export function decodeJWT(token: string): JWTPayload | null {
 
 /**
  * Récupère l'expiration d'un token en secondes depuis maintenant
- * @returns Nombre de secondes avant expiration, ou null si invalide
+ * @returns Nombre de secondes avant expiration (négatif si expiré), ou null si invalide
  */
 export function getTokenExpiresIn(token: string): number | null {
   const payload = decodeJWT(token);
   if (!payload?.exp) return null;
 
   const now = Math.floor(Date.now() / 1000);
-  const expiresIn = payload.exp - now;
-
-  return Math.max(0, expiresIn);
+  return payload.exp - now;
 }
 
 /**
@@ -71,9 +69,9 @@ export function isTokenExpired(token: string): boolean {
 /**
  * Vérifie si un token va expirer bientôt
  * @param token - JWT token
- * @param thresholdSeconds - Seuil en secondes (défaut: 60s)
+ * @param thresholdSeconds - Seuil en secondes (défaut: 300s)
  */
-export function isTokenExpiringSoon(token: string, thresholdSeconds = 60): boolean {
+export function isTokenExpiringSoon(token: string, thresholdSeconds = 300): boolean {
   const expiresIn = getTokenExpiresIn(token);
   if (expiresIn === null) return true;
   return expiresIn <= thresholdSeconds;

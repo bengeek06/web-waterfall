@@ -62,7 +62,7 @@ export async function GET() {
 
     return NextResponse.json({
       expiresAt: payload.exp,        // Timestamp d'expiration (seconds)
-      expiresIn: Math.max(0, expiresIn), // Secondes restantes
+      expiresIn,                     // Secondes restantes (négatif si expiré)
       issuedAt: payload.iat,         // Quand le token a été émis
       userId: payload.sub,           // User ID
     });

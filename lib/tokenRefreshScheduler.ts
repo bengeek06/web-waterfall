@@ -19,24 +19,35 @@ let refreshTimer: NodeJS.Timeout | null = null;
  */
 async function refreshToken(): Promise<boolean> {
   try {
+    console.log('Attempting token refresh...');
     const response = await fetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include',
     });
 
     if (!response.ok) {
-      console.error('Token refresh failed:', response.status);
+      console.error('Token refresh failed:', response.status, response.statusText);
+      try {
+        const errorData = await response.json();
+        console.error('Refresh error details:', errorData);
+      } catch {
+        // Response might not be JSON
+      }
       return false;
     }
 
     const data = await response.json();
+    console.log('Token refresh response:', data);
     
-    if (data.success) {
+    // Le refresh est réussi si on a un message ou access_token
+    if (data.message || data.access_token) {
+      console.log('Token refreshed successfully');
       // Après un refresh réussi, re-scheduler avec le nouveau token
       await scheduleTokenRefresh();
       return true;
     }
     
+    console.error('Token refresh returned unexpected response:', data);
     return false;
   } catch (error) {
     console.error('Error refreshing token:', error);
