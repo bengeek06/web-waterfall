@@ -11,115 +11,175 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { retryWithBackoff, classifyError, HttpErrorType } from './retryWithBackoffServer';
 
 /**
  * Version server-side de fetchWithAuth pour Server Components
  * Gère l'authentification et le refresh token côté serveur
+ * Avec retry automatique sur erreurs réseau et 5xx
  * 
  * @param url - URL à appeler
- * @param options - Options fetch
+ * @param options - Options fetch (+ retryOptions optionnel)
  * @returns Response
  * 
  * @example
  * // Dans un Server Component
  * const response = await fetchWithAuthServer('/api/identity/users/123');
  * const user = await response.json();
+ * 
+ * @example
+ * // Avec retry personnalisé
+ * const response = await fetchWithAuthServer('/api/data', {
+ *   method: 'POST',
+ *   body: JSON.stringify(data),
+ *   retryOptions: { maxRetries: 5 }
+ * });
  */
 export async function fetchWithAuthServer(
   url: string,
-  options?: RequestInit
+  options?: RequestInit & { 
+    retryOptions?: { maxRetries?: number; initialDelay?: number };
+    skipRetry?: boolean;
+  }
 ): Promise<Response> {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('access_token')?.value;
-  const refreshToken = cookieStore.get('refresh_token')?.value;
+  const { retryOptions, skipRetry, ...fetchOptions } = options ?? {};
   
-  // Si pas de token du tout, rediriger vers login
-  if (!accessToken && !refreshToken) {
-    redirect('/login');
-  }
-  
-  // Première tentative avec le token actuel
-  let response = await fetch(url, {
-    ...options,
-    headers: {
-      ...options?.headers,
-      Cookie: `access_token=${accessToken}`,
-    },
-    cache: 'no-store', // Important pour Server Components
-  });
-  
-  // Si pas de 401, retourner la réponse
-  if (response.status !== 401) {
-    return response;
-  }
-  
-  // 401 détecté - vérifier si c'est une erreur JWT
-  try {
-    const clonedResponse = response.clone();
-    const data = await clonedResponse.json();
+  const doFetch = async (): Promise<Response> => {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get('access_token')?.value;
+    const refreshToken = cookieStore.get('refresh_token')?.value;
     
-    // Si ce n'est pas une erreur de JWT, retourner la réponse originale
-    if (!data.message?.includes('JWT token')) {
+    // Si pas de token du tout, rediriger vers login
+    if (!accessToken && !refreshToken) {
+      redirect('/login');
+    }
+    
+    // Première tentative avec le token actuel
+    let response = await fetch(url, {
+      ...fetchOptions,
+      headers: {
+        ...fetchOptions?.headers,
+        Cookie: `access_token=${accessToken}`,
+      },
+      cache: 'no-store',
+    });
+    
+    // Si pas de 401, retourner la réponse
+    if (response.status !== 401) {
       return response;
     }
-  } catch {
-    // Si on ne peut pas parser le JSON, retourner la réponse
-    return response;
-  }
-  
-  // Tentative de refresh du token
-  if (refreshToken) {
-    const refreshResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/auth/refresh`,
-      {
-        method: 'POST',
-        headers: {
-          Cookie: `refresh_token=${refreshToken}`,
-        },
-        credentials: 'include',
-      }
-    );
     
-    if (refreshResponse.ok) {
-      // Récupérer le nouveau token des cookies de la réponse
-      const newAccessToken = refreshResponse.headers.get('set-cookie')
-        ?.split(';')
-        .find(c => c.trim().startsWith('access_token='))
-        ?.split('=')[1];
+    // 401 détecté - vérifier si c'est une erreur JWT
+    try {
+      const clonedResponse = response.clone();
+      const data = await clonedResponse.json();
       
-      if (newAccessToken) {
-        // Rejouer la requête avec le nouveau token
-        response = await fetch(url, {
-          ...options,
-          headers: {
-            ...options?.headers,
-            Cookie: `access_token=${newAccessToken}`,
-          },
-          cache: 'no-store',
-        });
-        
+      // Si ce n'est pas une erreur de JWT, retourner la réponse originale
+      if (!data.message?.includes('JWT token')) {
         return response;
       }
+    } catch {
+      return response;
     }
+    
+    // Tentative de refresh du token
+    if (refreshToken) {
+      const refreshResponse = await retryWithBackoff(
+        () => fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/auth/refresh`,
+          {
+            method: 'POST',
+            headers: {
+              Cookie: `refresh_token=${refreshToken}`,
+            },
+            credentials: 'include',
+          }
+        ),
+        {
+          maxRetries: 2,
+          initialDelay: 500,
+          onRetry: (attempt, delay) => {
+            console.log(`[Server] Token refresh retry attempt ${attempt} in ${delay}ms`);
+          }
+        }
+      );
+      
+      if (refreshResponse.ok) {
+        const newAccessToken = refreshResponse.headers.get('set-cookie')
+          ?.split(';')
+          .find(c => c.trim().startsWith('access_token='))
+          ?.split('=')[1];
+        
+        if (newAccessToken) {
+          response = await fetch(url, {
+            ...fetchOptions,
+            headers: {
+              ...fetchOptions?.headers,
+              Cookie: `access_token=${newAccessToken}`,
+            },
+            cache: 'no-store',
+          });
+          
+          return response;
+        }
+      } else {
+        const error = classifyError(refreshResponse);
+        console.error('[Server] Token refresh failed:', error.type, error.status);
+      }
+    }
+    
+    // Si le refresh a échoué, rediriger vers login
+    redirect('/login');
+  };
+
+  // Avec ou sans retry selon l'option
+  if (skipRetry) {
+    return doFetch();
   }
-  
-  // Si le refresh a échoué, rediriger vers login
-  redirect('/login');
+
+  return retryWithBackoff(doFetch, {
+    maxRetries: retryOptions?.maxRetries ?? 2,
+    initialDelay: retryOptions?.initialDelay ?? 1000,
+    shouldRetry: (error) => {
+      const httpError = classifyError(error);
+      return httpError.type === HttpErrorType.NETWORK || httpError.type === HttpErrorType.SERVER_ERROR;
+    },
+    onRetry: (attempt, delay, error) => {
+      const httpError = classifyError(error);
+      console.warn(`[Server] Request retry attempt ${attempt} in ${delay}ms (${httpError.type})`);
+    }
+  });
 }
 
 /**
  * Version de fetchWithAuthServer qui parse automatiquement le JSON
- * Lance une erreur si la réponse n'est pas OK
+ * Lance une erreur enrichie si la réponse n'est pas OK
+ * 
+ * @throws {HttpError} Erreur enrichie avec type, status et message utilisateur
  */
 export async function fetchWithAuthServerJSON<T = unknown>(
   url: string,
-  options?: RequestInit
+  options?: RequestInit & { 
+    retryOptions?: { maxRetries?: number; initialDelay?: number };
+    skipRetry?: boolean;
+  }
 ): Promise<T> {
   const response = await fetchWithAuthServer(url, options);
   
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`HTTP ${response.status}: ${error}`);
+    const httpError = classifyError(response);
+    
+    // Tenter de récupérer un message d'erreur du serveur
+    try {
+      const errorData = await response.json();
+      const serverMessage = errorData.message || errorData.error || '';
+      httpError.message = serverMessage ? `${httpError.getUserMessage()}: ${serverMessage}` : httpError.getUserMessage();
+    } catch {
+      httpError.message = httpError.getUserMessage();
+    }
+    
+    console.error('[Server] HTTP Error:', httpError.type, httpError.status, httpError.message);
+    throw httpError;
   }
 
   return response.json();
