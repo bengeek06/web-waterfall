@@ -34,6 +34,9 @@ import { subcontractorSchema, SubcontractorFormData } from "@/lib/validation/ide
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// Test IDs
+import { testId } from "@/lib/test-ids";
+
 // ==================== TYPE DEFINITIONS ====================
 
 type Subcontractor = {
@@ -219,7 +222,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="name">{dict.form_name}</Label>
             <Input
-              id="name"
+              {...testId("subcontractor-name-input")}
               {...form.register("name")}
               placeholder={dict.form_name}
               aria-invalid={!!form.formState.errors.name}
@@ -235,7 +238,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="email">{dict.form_email}</Label>
             <Input
-              id="email"
+              {...testId("subcontractor-email-input")}
               type="email"
               {...form.register("email")}
               placeholder={dict.form_email}
@@ -246,7 +249,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="contact_person">{dict.form_contact}</Label>
             <Input
-              id="contact_person"
+              {...testId("subcontractor-contact-input")}
               {...form.register("contact_person")}
               placeholder={dict.form_contact}
             />
@@ -256,7 +259,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="phone_number">{dict.form_phone}</Label>
             <Input
-              id="phone_number"
+              {...testId("subcontractor-phone-input")}
               {...form.register("phone_number")}
               placeholder={dict.form_phone}
             />
@@ -266,7 +269,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="address">{dict.form_address}</Label>
             <Input
-              id="address"
+              {...testId("subcontractor-address-input")}
               {...form.register("address")}
               placeholder={dict.form_address}
             />
@@ -276,7 +279,7 @@ export default function Subcontractors({
           <div className="space-y-2">
             <Label htmlFor="description">{dict.form_description}</Label>
             <Input
-              id="description"
+              {...testId("subcontractor-description-input")}
               {...form.register("description")}
               placeholder={dict.form_description}
             />

@@ -11,6 +11,38 @@
 
 "use client";
 
+/**
+ * GenericDataTable - Advanced data table component with full feature set
+ * 
+ * A comprehensive table component built on TanStack Table v8 with:
+ * - **Sorting & Filtering**: Column-level sorting and filtering
+ * - **Row Selection**: Checkbox-based selection (individual + select all)
+ * - **Pagination**: Full pagination with customizable page sizes (10/25/50/100)
+ * - **Bulk Operations**: Bulk delete with Dialog confirmation
+ * - **Import/Export**: DropdownMenu-based import/export with JSON/CSV format selection
+ * - **Loading States**: Spinner for loading, Empty component for no data
+ * - **Internationalization**: Full i18n support via dictionary prop
+ * - **Responsive Design**: Mobile-friendly with adaptive layouts
+ * 
+ * @example
+ * ```tsx
+ * <GenericDataTable
+ *   columns={userColumns}
+ *   data={users}
+ *   isLoading={isLoading}
+ *   dictionary={dict.common_table}
+ *   onCreateClick={() => setShowCreateModal(true)}
+ *   enableRowSelection={true}
+ *   enableImportExport={true}
+ *   onExport={(data, format) => exportToFile(data, format)}
+ *   onImport={(format) => handleImport(format)}
+ *   onBulkDelete={(ids) => deleteMultiple(ids)}
+ * />
+ * ```
+ * 
+ * @typeParam T - The type of data items in the table
+ */
+
 import { useState, Fragment } from "react";
 
 // UI Components
@@ -478,7 +510,7 @@ export function GenericDataTable<T>({
         <div className="flex items-center justify-between px-2">
           {/* Results info */}
           <div className="text-xs text-muted-foreground">
-            {dictionary.showing_results && dictionary.showing_results.trim()
+            {dictionary.showing_results?.trim()
               ? dictionary.showing_results
                   .replace('{from}', String(table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1))
                   .replace('{to}', String(Math.min(
@@ -564,12 +596,17 @@ export function GenericDataTable<T>({
                     pages.push(pageCount - 1);
                   }
 
-                  return pages.map((page, idx) =>
-                    page === 'ellipsis' ? (
-                      <PaginationItem key={`ellipsis-${idx}`}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    ) : (
+                  let ellipsisCount = 0;
+                  return pages.map((page) => {
+                    if (page === 'ellipsis') {
+                      ellipsisCount++;
+                      return (
+                        <PaginationItem key={`ellipsis-${ellipsisCount}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    return (
                       <PaginationItem key={page}>
                         <PaginationLink
                           href="#"
@@ -583,8 +620,8 @@ export function GenericDataTable<T>({
                           {page + 1}
                         </PaginationLink>
                       </PaginationItem>
-                    )
-                  );
+                    );
+                  });
                 })()}
 
                 <PaginationItem>
