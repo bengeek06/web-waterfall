@@ -2,6 +2,7 @@
   "page_title": "Subcontractor Management",
   "create_button": "Create Subcontractor",
   "table_logo": "Logo",
+  "logo_create_info": "💡 Create the subcontractor first, then you can add a logo by editing it.",
   "table_name": "Name",
   "table_email": "Email",
   "table_contact": "Contact",

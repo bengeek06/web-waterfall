@@ -2,6 +2,7 @@
   "page_title": "Customer Management",
   "create_button": "Create Customer",
   "table_logo": "Logo",
+  "logo_create_info": "💡 Create the customer first, then you can add a logo by editing it.",
   "table_name": "Name",
   "table_email": "Email",
   "table_contact": "Contact",

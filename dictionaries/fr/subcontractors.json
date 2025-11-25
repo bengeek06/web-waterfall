@@ -2,6 +2,7 @@
   "page_title": "Gestion des Sous-traitants",
   "create_button": "Créer un Sous-traitant",
   "table_logo": "Logo",
+  "logo_create_info": "💡 Créez d'abord le sous-traitant, puis vous pourrez ajouter un logo en l'éditant.",
   "table_name": "Nom",
   "table_email": "Email",
   "table_contact": "Contact",

@@ -236,7 +236,7 @@ export default function Customers({
       renderFormFields={(form, dict, editingItem, refresh) => (
         <>
           {/* Logo Upload - Only in edit mode */}
-          {editingItem?.id && (
+          {editingItem?.id ? (
             <LogoUpload
               currentLogoUrl={
                 editingItem.has_logo
@@ -277,6 +277,12 @@ export default function Customers({
               }}
               entityName="customer logo"
             />
+          ) : (
+            <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {dict.logo_create_info}
+              </p>
+            </div>
           )}
 
           {/* Name - Required */}

@@ -59,6 +59,7 @@ type SubcontractorsDictionary = {
   page_title: string;
   create_button: string;
   table_logo: string;
+  logo_create_info: string;
   table_name: string;
   table_email: string;
   table_contact: string;
@@ -247,7 +248,7 @@ export default function Subcontractors({
       renderFormFields={(form, dict, editingItem, refresh) => (
         <>
           {/* Logo Upload - Only in edit mode */}
-          {editingItem?.id && (
+          {editingItem?.id ? (
             <LogoUpload
               currentLogoUrl={
                 editingItem.has_logo
@@ -288,6 +289,12 @@ export default function Subcontractors({
               }}
               entityName="subcontractor logo"
             />
+          ) : (
+            <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {dict.logo_create_info}
+              </p>
+            </div>
           )}
 
           {/* Name - Required */}
