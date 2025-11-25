@@ -48,6 +48,21 @@ const mockRolesDictionary = {
   error_create: "Erreur lors de l'enregistrement du rôle",
   error_update: "Erreur lors de la mise à jour du rôle",
   error_delete: "Erreur lors de la suppression du rôle",
+  import_button: "Importer",
+  export_button: "Exporter",
+  import_json: "JSON",
+  import_csv: "CSV",
+  export_json: "JSON",
+  export_csv: "CSV",
+  error_export: "Erreur lors de l'export des rôles",
+  error_import: "Erreur lors de l'import des rôles",
+  import_report_title: "Rapport d'import",
+  import_report_close: "Fermer",
+  import_report_total: "Total",
+  import_report_success: "Succès",
+  import_report_failed: "Échecs",
+  import_report_errors: "Erreurs",
+  import_report_warnings: "Avertissements",
 };
 
 describe('Roles Component', () => {

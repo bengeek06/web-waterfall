@@ -50,6 +50,12 @@ export const SPACING = {
     lg: 'gap-4',
     xl: 'gap-6',
   },
+  
+  // Icon margins (for icons inside buttons/labels)
+  iconMargin: {
+    left: 'ml-2',
+    right: 'mr-2',
+  },
 } as const;
 
 // Type exports

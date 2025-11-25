@@ -89,17 +89,17 @@
   --waterfall-bg-medium: #ecf0f1;       /* Fond gris clair */
   --waterfall-border-light: #bdc3c7;    /* Bordures subtiles */
   --waterfall-success: #27ae60;         /* Vert succès */
-  
+
   /* Application color scheme */
   --waterfall-company-color: #5dade2;   /* Bleu ciel - Entreprise */
   --waterfall-user-color: #52c89f;      /* Vert menthe - Utilisateur */
   --waterfall-project-color: #9b59b6;   /* Violet - Projets */
-  
+
   /* Gradient colors - subtle gray tones */
   --waterfall-gradient-start: #f8f9fa;  /* Gris très clair */
   --waterfall-gradient-middle: #e9ecef; /* Gris clair */
   --waterfall-gradient-end: #dee2e6;    /* Gris moyen */
-  
+
   /* Waterfall custom colors mapped to oklch */
   --waterfall-icon: oklch(0.47 0.08 232);        /* #3498db - bleu accent */
   --waterfall-description: oklch(0.48 0.02 252); /* #7f8c8d - texte subtil */
@@ -152,17 +152,17 @@
   --waterfall-bg-medium: #253447;       /* Fond moyen */
   --waterfall-border-light: #3d4f66;    /* Bordures adaptées */
   --waterfall-success: #2ecc71;         /* Vert succès plus clair */
-  
+
   /* Application color scheme - dark mode */
   --waterfall-company-color: #7ec8f0;   /* Bleu ciel plus clair */
   --waterfall-user-color: #6dd4b3;      /* Vert menthe plus clair */
   --waterfall-project-color: #b47ede;   /* Violet plus clair */
-  
+
   /* Gradient colors - dark mode */
   --waterfall-gradient-start: #2a3544;  /* Gris sombre */
   --waterfall-gradient-middle: #1f2937; /* Gris très sombre */
   --waterfall-gradient-end: #161b22;    /* Gris presque noir */
-  
+
   /* Waterfall custom colors mapped to oklch - dark mode */
   --waterfall-icon: oklch(0.62 0.08 232);        /* bleu accent clair */
   --waterfall-description: oklch(0.68 0.02 252); /* texte subtil clair */

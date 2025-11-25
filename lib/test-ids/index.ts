@@ -18,6 +18,25 @@ export * from './auth';
 export * from './common';
 export * from './dashboard';
 export * from './admin';
+export * from './table';
+export * from './pages';
 
 // Re-export helper function
 export { testId } from './auth';
+
+// Consolidated TEST_IDS object
+import { AUTH_TEST_IDS } from './auth';
+import { COMMON_TEST_IDS } from './common';
+import { DASHBOARD_TEST_IDS } from './dashboard';
+import { ADMIN_TEST_IDS } from './admin';
+import { TABLE_TEST_IDS } from './table';
+import { PAGES_TEST_IDS } from './pages';
+
+export const TEST_IDS = {
+  auth: AUTH_TEST_IDS,
+  common: COMMON_TEST_IDS,
+  dashboard: DASHBOARD_TEST_IDS,
+  admin: ADMIN_TEST_IDS,
+  table: TABLE_TEST_IDS,
+  pages: PAGES_TEST_IDS,
+} as const;

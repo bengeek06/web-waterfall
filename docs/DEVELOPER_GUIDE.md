@@ -405,6 +405,74 @@ console.log(dictionary.my_feature.title); // Type-safe autocomplete!
 - **Authenticated pages**: User's stored language preference from database
 - **Switching**: `LanguageSwitcher` component calls `/api/identity/users/{id}` to update preference
 
+#### Dictionary Structure for Tables
+
+When creating data tables (using `GenericDataTable`), follow this pattern:
+
+**1. Use `common-table.json` for shared table UI:**
+```typescript
+// Already available in dictionaries/en/common-table.json and dictionaries/fr/common-table.json
+{
+  "actions": "Actions",
+  "edit": "Edit",
+  "delete": "Delete", 
+  "view": "View",
+  "create": "Create",
+  "filter_placeholder": "Filter...",
+  "no_results": "No results found",
+  "loading": "Loading...",
+  "export": "Export",
+  "import": "Import"
+}
+```
+
+**2. Create entity-specific dictionary for table-specific content:**
+```json
+// dictionaries/en/users.json
+{
+  "page_title": "User Management",
+  "create_button": "Create User",
+  "table_name": "Name",
+  "table_email": "Email",
+  "table_role": "Role",
+  "table_status": "Status",
+  "modal_create_title": "Create New User",
+  "modal_edit_title": "Edit User",
+  "form_name": "Name",
+  "form_email": "Email",
+  "delete_confirm": "Delete this user?"
+}
+```
+
+**3. Use in table component:**
+```typescript
+import { getDictionary } from '@/lib/utils/dictionaries';
+
+const dict = await getDictionary(lang);
+const commonTable = dict.common_table;  // Shared table strings
+const usersDict = dict.users;           // Entity-specific strings
+
+<GenericDataTable
+  columns={columns}
+  data={users}
+  dictionary={{
+    create: usersDict.create_button,
+    filter_placeholder: commonTable.filter_placeholder,
+    no_results: commonTable.no_results,
+    loading: commonTable.loading,
+    export: commonTable.export,
+    import: commonTable.import,
+  }}
+  onCreateClick={handleCreate}
+/>
+```
+
+**Benefits:**
+- ✅ No duplication of common table strings (actions, filter, loading)
+- ✅ Entity-specific content stays in entity dictionary
+- ✅ Easy to maintain across multiple tables
+- ✅ Consistent UX across all tables
+
 ---
 
 ## 🔐 Authentication & API Calls
