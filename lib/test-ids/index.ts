@@ -20,6 +20,7 @@ export * from './dashboard';
 export * from './admin';
 export * from './table';
 export * from './pages';
+export * from './shared';
 
 // Re-export helper function
 export { testId } from './auth';
@@ -31,6 +32,7 @@ import { DASHBOARD_TEST_IDS } from './dashboard';
 import { ADMIN_TEST_IDS } from './admin';
 import { TABLE_TEST_IDS } from './table';
 import { PAGES_TEST_IDS } from './pages';
+import { SHARED_TEST_IDS } from './shared';
 
 export const TEST_IDS = {
   auth: AUTH_TEST_IDS,
@@ -39,4 +41,5 @@ export const TEST_IDS = {
   admin: ADMIN_TEST_IDS,
   table: TABLE_TEST_IDS,
   pages: PAGES_TEST_IDS,
+  shared: SHARED_TEST_IDS,
 } as const;

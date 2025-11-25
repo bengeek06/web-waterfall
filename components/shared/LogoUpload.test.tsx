@@ -14,6 +14,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { LogoUpload } from "./LogoUpload";
 import { toast } from "sonner";
+import { SHARED_TEST_IDS } from "@/lib/test-ids";
 
 // Mock sonner
 jest.mock("sonner", () => ({
@@ -100,7 +101,7 @@ describe("LogoUpload", () => {
     it("should handle file selection via click", async () => {
       render(<LogoUpload {...defaultProps} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       expect(input).toBeInTheDocument();
       
       const file = new File(["test"], "test.png", { type: "image/png" });
@@ -149,7 +150,7 @@ describe("LogoUpload", () => {
     it("should reject files larger than maxSize", async () => {
       render(<LogoUpload {...defaultProps} maxSize={2 * 1024 * 1024} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const largeFile = new File(["test"], "large.png", { type: "image/png" });
       Object.defineProperty(largeFile, "size", { value: 3 * 1024 * 1024 }); // 3MB
       
@@ -169,7 +170,7 @@ describe("LogoUpload", () => {
         />
       );
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const invalidFile = new File(["test"], "test.gif", { type: "image/gif" });
       Object.defineProperty(invalidFile, "size", { value: 1024 * 1024 });
       
@@ -184,7 +185,7 @@ describe("LogoUpload", () => {
     it("should accept valid PNG file", async () => {
       render(<LogoUpload {...defaultProps} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const validFile = new File(["test"], "valid.png", { type: "image/png" });
       Object.defineProperty(validFile, "size", { value: 1024 * 1024 });
       
@@ -199,7 +200,7 @@ describe("LogoUpload", () => {
     it("should accept valid JPG file", async () => {
       render(<LogoUpload {...defaultProps} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const validFile = new File(["test"], "valid.jpg", { type: "image/jpeg" });
       Object.defineProperty(validFile, "size", { value: 1024 * 1024 });
       
@@ -214,7 +215,7 @@ describe("LogoUpload", () => {
     it("should accept valid SVG file", async () => {
       render(<LogoUpload {...defaultProps} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const validFile = new File(["test"], "valid.svg", { type: "image/svg+xml" });
       Object.defineProperty(validFile, "size", { value: 1024 * 1024 });
       
@@ -233,7 +234,7 @@ describe("LogoUpload", () => {
       
       render(<LogoUpload {...defaultProps} onUpload={failingUpload} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const file = new File(["test"], "test.png", { type: "image/png" });
       Object.defineProperty(file, "size", { value: 1024 * 1024 });
       
@@ -303,7 +304,7 @@ describe("LogoUpload", () => {
     it("should have accessible file input", () => {
       render(<LogoUpload {...defaultProps} />);
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       expect(input).toHaveAttribute("accept");
     });
 
@@ -324,7 +325,7 @@ describe("LogoUpload", () => {
     it("should respect custom maxSize", async () => {
       render(<LogoUpload {...defaultProps} maxSize={1024 * 1024} />); // 1MB
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       const largeFile = new File(["test"], "large.png", { type: "image/png" });
       Object.defineProperty(largeFile, "size", { value: 1.5 * 1024 * 1024 }); // 1.5MB
       
@@ -344,7 +345,7 @@ describe("LogoUpload", () => {
         />
       );
       
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = screen.getByTestId(SHARED_TEST_IDS.logoUpload.fileInput) as HTMLInputElement;
       expect(input).toHaveAttribute("accept", "image/png");
     });
   });

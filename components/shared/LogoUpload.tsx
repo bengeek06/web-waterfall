@@ -14,8 +14,33 @@
 /**
  * LogoUpload Component
  * 
- * Reusable component for uploading, previewing, and removing logos.
- * Supports drag & drop, file validation, and upload progress.
+ * Reusable component for uploading, previewing, and removing entity logos.
+ * Supports drag & drop, file validation (size and format), and preview display.
+ * 
+ * Features:
+ * - Drag & drop support with visual feedback
+ * - File validation (default: 2MB max, PNG/JPG/SVG formats)
+ * - Image preview with FileReader
+ * - Upload progress indicator
+ * - Remove logo functionality
+ * - Toast notifications for success/errors
+ * - Accessibility compliant (native button, keyboard support)
+ * 
+ * @example
+ * ```tsx
+ * <LogoUpload
+ *   currentLogoUrl="/api/customers/123/logo"
+ *   onUpload={async (file) => {
+ *     const formData = new FormData();
+ *     formData.append('logo', file);
+ *     await fetch('/api/customers/123/logo', { method: 'POST', body: formData });
+ *   }}
+ *   onRemove={async () => {
+ *     await fetch('/api/customers/123/logo', { method: 'DELETE' });
+ *   }}
+ *   entityName="customer"
+ * />
+ * ```
  */
 
 // ==================== IMPORTS ====================
@@ -25,23 +50,28 @@ import { Upload, X, Building2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
 import { toast } from "sonner";
+import { ICON_SIZES, ICON_COLORS } from "@/lib/design-tokens";
+import { SHARED_TEST_IDS, testId } from "@/lib/test-ids";
 
 // ==================== TYPE DEFINITIONS ====================
 
+/**
+ * Props for LogoUpload component
+ */
 interface LogoUploadProps {
-  /** Current logo URL (if exists) */
+  /** Current logo URL (if exists) - displayed in preview mode */
   currentLogoUrl?: string;
-  /** Callback when a file is selected for upload */
+  /** Callback when a file is selected for upload - receives the File object */
   onUpload: (_file: File) => Promise<void>;
-  /** Callback when logo removal is requested */
+  /** Callback when logo removal is requested - called when remove button is clicked */
   onRemove: () => Promise<void>;
-  /** Maximum file size in bytes (default: 2MB) */
+  /** Maximum file size in bytes (default: 2MB = 2 * 1024 * 1024) */
   maxSize?: number;
-  /** Accepted MIME types */
+  /** Accepted MIME types (default: PNG, JPG, SVG) */
   acceptedFormats?: string[];
-  /** Entity name for error messages */
+  /** Entity name for error messages and alt text (e.g., "customer", "user") */
   entityName?: string;
-  /** Dictionary for i18n */
+  /** Dictionary for i18n (optional - uses defaults if not provided) */
   dictionary?: {
     upload_button?: string;
     remove_button?: string;
@@ -201,8 +231,8 @@ export function LogoUpload({
   const renderContent = () => {
     if (isUploading) {
       return (
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex flex-col items-center gap-2" {...testId(SHARED_TEST_IDS.logoUpload.loadingSpinner)}>
+          <Loader2 className={`${ICON_SIZES.xl} animate-spin ${ICON_COLORS.muted}`} />
           <span className="text-xs text-muted-foreground">
             {dictionary?.uploading || "Uploading..."}
           </span>
@@ -217,13 +247,14 @@ export function LogoUpload({
           src={preview}
           alt="Logo preview"
           className="h-full w-full rounded-lg object-contain p-2"
+          {...testId(SHARED_TEST_IDS.logoUpload.previewImage)}
         />
       );
     }
 
     return (
       <div className="flex flex-col items-center gap-2 p-4 text-center">
-        <Building2 className="h-8 w-8 text-muted-foreground" />
+        <Building2 className={`${ICON_SIZES.xl} ${ICON_COLORS.muted}`} />
         <p className="text-xs text-muted-foreground">
           {dictionary?.drag_drop || "Drag & drop or click to upload"}
         </p>
@@ -234,7 +265,7 @@ export function LogoUpload({
   // ==================== RENDER ====================
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" {...testId(SHARED_TEST_IDS.logoUpload.container)}>
       {/* Preview or Drop Zone */}
       <div className="relative">
         {!preview && !isUploading ? (
@@ -251,12 +282,14 @@ export function LogoUpload({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={handleButtonClick}
+            {...testId(SHARED_TEST_IDS.logoUpload.dropZone)}
           >
             {renderContent()}
           </button>
         ) : (
           // Preview/uploading mode - non-interactive div (drag & drop only)
           <div
+            aria-label="Logo preview and upload area"
             className={cn(
               "flex h-32 w-32 items-center justify-center rounded-lg border-2 border-dashed transition-colors",
               isDragging && "border-primary bg-primary/5",
@@ -266,6 +299,7 @@ export function LogoUpload({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            {...testId(SHARED_TEST_IDS.logoUpload.preview)}
           >
             {renderContent()}
           </div>
@@ -280,8 +314,9 @@ export function LogoUpload({
             className="absolute -right-2 -top-2"
             onClick={handleRemove}
             disabled={isUploading}
+            {...testId(SHARED_TEST_IDS.logoUpload.removeButton)}
           >
-            <X className="h-4 w-4" />
+            <X className={ICON_SIZES.sm} />
           </Button>
         )}
       </div>
@@ -294,6 +329,7 @@ export function LogoUpload({
         onChange={handleInputChange}
         className="hidden"
         disabled={isUploading}
+        {...testId(SHARED_TEST_IDS.logoUpload.fileInput)}
       />
 
       {/* Upload button (only if no preview) */}
@@ -305,14 +341,15 @@ export function LogoUpload({
           onClick={handleButtonClick}
           disabled={isUploading}
           className="w-full"
+          {...testId(SHARED_TEST_IDS.logoUpload.uploadButton)}
         >
-          <Upload className="h-4 w-4" />
+          <Upload className={ICON_SIZES.sm} />
           {dictionary?.upload_button || "Upload logo"}
         </Button>
       )}
 
       {/* File requirements */}
-      <div className="space-y-1 text-xs text-muted-foreground">
+      <div className="space-y-1 text-xs text-muted-foreground" {...testId(SHARED_TEST_IDS.logoUpload.infoText)}>
         <p>
           {dictionary?.max_size || `Max size: ${formatFileSize(maxSize)}`}
         </p>
