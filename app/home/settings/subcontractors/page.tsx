@@ -44,7 +44,11 @@ export default async function SubcontractorsPage() {
         </Breadcrumb>
       </div>
       <div className="max-w-6xl mx-auto">
-        <Subcontractors dictionary={dict.subcontractors} commonTable={dict.common_table} />
+        <Subcontractors 
+          dictionary={dict.subcontractors} 
+          commonTable={dict.common_table}
+          logoUpload={dict.logo_upload}
+        />
       </div>
     </main>
   );

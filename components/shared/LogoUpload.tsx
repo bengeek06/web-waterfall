@@ -69,18 +69,22 @@ interface LogoUploadProps {
   maxSize?: number;
   /** Accepted MIME types (default: PNG, JPG, SVG) */
   acceptedFormats?: string[];
-  /** Entity name for error messages and alt text (e.g., "customer", "user") */
+  /** Entity name for error messages (e.g., "customer logo", "user avatar") */
   entityName?: string;
-  /** Dictionary for i18n (optional - uses defaults if not provided) */
-  dictionary?: {
-    upload_button?: string;
-    remove_button?: string;
-    drag_drop?: string;
-    max_size?: string;
-    formats?: string;
-    uploading?: string;
-    error_size?: string;
-    error_format?: string;
+  /** Dictionary for i18n - should come from dictionaries logo-upload.json */
+  dictionary: {
+    upload_button: string;
+    remove_button: string;
+    drag_drop: string;
+    uploading: string;
+    max_size: string;
+    formats: string;
+    error_size: string;
+    error_format: string;
+    success_upload: string;
+    success_remove: string;
+    error_upload: string;
+    error_remove: string;
   };
 }
 
@@ -104,19 +108,20 @@ function formatFileSize(bytes: number): string {
 function validateFile(
   file: File,
   maxSize: number,
-  acceptedFormats: string[]
+  acceptedFormats: string[],
+  dict: LogoUploadProps['dictionary']
 ): { valid: boolean; error?: string } {
   if (file.size > maxSize) {
     return {
       valid: false,
-      error: `File too large (${formatFileSize(file.size)}). Maximum size: ${formatFileSize(maxSize)}`,
+      error: dict.error_size.replace('{size}', formatFileSize(maxSize)),
     };
   }
 
   if (!acceptedFormats.includes(file.type)) {
     return {
       valid: false,
-      error: `Invalid format (${file.type}). Accepted: ${acceptedFormats.join(", ")}`,
+      error: dict.error_format,
     };
   }
 
@@ -146,9 +151,9 @@ export function LogoUpload({
   const handleFileSelect = useCallback(
     async (file: File) => {
       // Validate file
-      const validation = validateFile(file, maxSize, acceptedFormats);
+      const validation = validateFile(file, maxSize, acceptedFormats, dictionary);
       if (!validation.valid) {
-        toast.error(validation.error || dictionary?.error_format || "Invalid file");
+        toast.error(validation.error || dictionary.error_format);
         return;
       }
 
@@ -163,10 +168,10 @@ export function LogoUpload({
       setIsUploading(true);
       try {
         await onUpload(file);
-        toast.success(`${entityName} uploaded successfully`);
+        toast.success(dictionary.success_upload.replace('{entity}', entityName));
       } catch (error) {
         console.error("Upload error:", error);
-        toast.error(`Failed to upload ${entityName}`);
+        toast.error(dictionary.error_upload.replace('{entity}', entityName));
         setPreview(currentLogoUrl); // Restore previous preview
       } finally {
         setIsUploading(false);
@@ -213,14 +218,14 @@ export function LogoUpload({
     try {
       await onRemove();
       setPreview(undefined);
-      toast.success(`${entityName} removed successfully`);
+      toast.success(dictionary.success_remove.replace('{entity}', entityName));
     } catch (error) {
       console.error("Remove error:", error);
-      toast.error(`Failed to remove ${entityName}`);
+      toast.error(dictionary.error_remove.replace('{entity}', entityName));
     } finally {
       setIsUploading(false);
     }
-  }, [onRemove, entityName]);
+  }, [onRemove, entityName, dictionary]);
 
   const handleButtonClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -234,7 +239,7 @@ export function LogoUpload({
         <div className="flex flex-col items-center gap-2" {...testId(SHARED_TEST_IDS.logoUpload.loadingSpinner)}>
           <Loader2 className={`${ICON_SIZES.xl} animate-spin ${ICON_COLORS.muted}`} />
           <span className="text-xs text-muted-foreground">
-            {dictionary?.uploading || "Uploading..."}
+            {dictionary.uploading}
           </span>
         </div>
       );
@@ -256,7 +261,7 @@ export function LogoUpload({
       <div className="flex flex-col items-center gap-2 p-4 text-center">
         <Building2 className={`${ICON_SIZES.xl} ${ICON_COLORS.muted}`} />
         <p className="text-xs text-muted-foreground">
-          {dictionary?.drag_drop || "Drag & drop or click to upload"}
+          {dictionary.drag_drop}
         </p>
       </div>
     );
@@ -344,17 +349,17 @@ export function LogoUpload({
           {...testId(SHARED_TEST_IDS.logoUpload.uploadButton)}
         >
           <Upload className={ICON_SIZES.sm} />
-          {dictionary?.upload_button || "Upload logo"}
+          {dictionary.upload_button}
         </Button>
       )}
 
       {/* File requirements */}
       <div className="space-y-1 text-xs text-muted-foreground" {...testId(SHARED_TEST_IDS.logoUpload.infoText)}>
         <p>
-          {dictionary?.max_size || `Max size: ${formatFileSize(maxSize)}`}
+          {dictionary.max_size.replace('{size}', formatFileSize(maxSize))}
         </p>
         <p>
-          {dictionary?.formats || `Formats: PNG, JPG, SVG`}
+          {dictionary.formats}
         </p>
       </div>
     </div>

@@ -205,9 +205,24 @@ function createCustomerColumns(
 export default function Customers({
   dictionary,
   commonTable,
+  logoUpload,
 }: {
   readonly dictionary: CustomersDictionary;
   readonly commonTable: CommonTableDictionary;
+  readonly logoUpload: {
+    upload_button: string;
+    remove_button: string;
+    drag_drop: string;
+    uploading: string;
+    max_size: string;
+    formats: string;
+    error_size: string;
+    error_format: string;
+    success_upload: string;
+    success_remove: string;
+    error_upload: string;
+    error_remove: string;
+  };
 }) {
   return (
     <GenericCrudTable<Customer, CustomerFormData>
@@ -243,6 +258,8 @@ export default function Customers({
                   ? `/api/identity/customers/${editingItem.id}/logo`
                   : undefined
               }
+              entityName="logo"
+              dictionary={logoUpload}
               onUpload={async (file) => {
                 const formData = new FormData();
                 formData.append("logo", file);
@@ -275,7 +292,6 @@ export default function Customers({
                   await refresh();
                 }
               }}
-              entityName="customer logo"
             />
           ) : (
             <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">

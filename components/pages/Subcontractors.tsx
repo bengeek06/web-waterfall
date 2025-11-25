@@ -216,9 +216,24 @@ function createSubcontractorColumns(
 export default function Subcontractors({
   dictionary,
   commonTable,
+  logoUpload,
 }: {
   readonly dictionary: SubcontractorsDictionary;
   readonly commonTable: CommonTableDictionary;
+  readonly logoUpload: {
+    upload_button: string;
+    remove_button: string;
+    drag_drop: string;
+    uploading: string;
+    max_size: string;
+    formats: string;
+    error_size: string;
+    error_format: string;
+    success_upload: string;
+    success_remove: string;
+    error_upload: string;
+    error_remove: string;
+  };
 }) {
   return (
     <GenericCrudTable<Subcontractor, SubcontractorFormData>
@@ -255,6 +270,8 @@ export default function Subcontractors({
                   ? `/api/identity/subcontractors/${editingItem.id}/logo`
                   : undefined
               }
+              entityName="logo"
+              dictionary={logoUpload}
               onUpload={async (file) => {
                 const formData = new FormData();
                 formData.append("logo", file);
@@ -287,7 +304,6 @@ export default function Subcontractors({
                   await refresh();
                 }
               }}
-              entityName="subcontractor logo"
             />
           ) : (
             <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">

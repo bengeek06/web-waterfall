@@ -44,7 +44,11 @@ export default async function CustomersPage() {
         </Breadcrumb>
       </div>
       <div className="max-w-6xl mx-auto">
-        <Customers dictionary={dict.customers} commonTable={dict.common_table} />
+        <Customers 
+          dictionary={dict.customers} 
+          commonTable={dict.common_table}
+          logoUpload={dict.logo_upload}
+        />
       </div>
     </main>
   );
