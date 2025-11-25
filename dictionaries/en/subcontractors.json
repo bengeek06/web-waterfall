@@ -1,6 +1,7 @@
 {
   "page_title": "Subcontractor Management",
   "create_button": "Create Subcontractor",
+  "table_logo": "Logo",
   "table_name": "Name",
   "table_email": "Email",
   "table_contact": "Contact",

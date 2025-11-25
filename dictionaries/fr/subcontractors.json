@@ -1,6 +1,7 @@
 {
   "page_title": "Gestion des Sous-traitants",
   "create_button": "Créer un Sous-traitant",
+  "table_logo": "Logo",
   "table_name": "Nom",
   "table_email": "Email",
   "table_contact": "Contact",
