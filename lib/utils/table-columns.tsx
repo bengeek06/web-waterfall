@@ -15,19 +15,19 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Check, X, MoreHorizontal, Pencil, Trash2, Eye, ArrowUpDown } from "lucide-react";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Check, X, Edit, Trash2, Eye, ArrowUpDown } from "lucide-react";
 import { testId } from "@/lib/test-ids";
 
 // ==================== TYPES ====================
 
 export interface ActionCallbacks<T> {
   onEdit?: (_item: T) => void;
-  onDelete?: (_item: T) => void;
+  onDelete?: (_item: T) => void | Promise<void>;
   onView?: (_item: T) => void;
 }
 
@@ -48,7 +48,7 @@ export type Locale = 'fr' | 'en';
 // ==================== COLUMN BUILDERS ====================
 
 /**
- * Creates a standard actions column with Edit/Delete/View dropdown
+ * Creates a standard actions column with Edit/Delete/View icon buttons with tooltips
  * 
  * @param entityIdPrefix - Prefix for test IDs (e.g., 'user', 'subcontractor')
  * @example
@@ -74,49 +74,67 @@ export function createActionColumn<T extends { id?: string | number }>(
       const item = row.original;
       const itemId = item.id;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8"
-              {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-actions-${itemId}`) : {})}
-            >
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">{dictionary.actions}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+        <TooltipProvider>
+          <div className="flex items-center gap-1">
             {callbacks.onView && (
-              <DropdownMenuItem 
-                onClick={() => callbacks.onView?.(item)}
-                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-view-${itemId}`) : {})}
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                {dictionary.view}
-              </DropdownMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => callbacks.onView?.(item)}
+                    {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-view-${itemId}`) : {})}
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">{dictionary.view}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{dictionary.view}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {callbacks.onEdit && (
-              <DropdownMenuItem 
-                onClick={() => callbacks.onEdit?.(item)}
-                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-edit-${itemId}`) : {})}
-              >
-                <Pencil className="mr-2 h-4 w-4" />
-                {dictionary.edit}
-              </DropdownMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8"
+                    onClick={() => callbacks.onEdit?.(item)}
+                    {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-edit-${itemId}`) : {})}
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only">{dictionary.edit}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{dictionary.edit}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {callbacks.onDelete && (
-              <DropdownMenuItem
-                onClick={() => callbacks.onDelete?.(item)}
-                className="text-destructive focus:text-destructive"
-                {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-delete-${itemId}`) : {})}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {dictionary.delete}
-              </DropdownMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => callbacks.onDelete?.(item)}
+                    {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-delete-${itemId}`) : {})}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">{dictionary.delete}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{dictionary.delete}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        </TooltipProvider>
       );
     },
   };
