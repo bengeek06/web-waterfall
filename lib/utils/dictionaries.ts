@@ -58,6 +58,7 @@ import workspace_fr from '../../dictionaries/fr/workspace.json';
 import errors_fr from '../../dictionaries/fr/errors.json';
 import commonTable_fr from '../../dictionaries/fr/common-table.json';
 import subcontractors_fr from '../../dictionaries/fr/subcontractors.json';
+import customers_fr from '../../dictionaries/fr/customers.json';
 
 import common_en from '../../dictionaries/en/common.json';
 import navigation_en from '../../dictionaries/en/navigation.json';
@@ -75,6 +76,7 @@ import workspace_en from '../../dictionaries/en/workspace.json';
 import errors_en from '../../dictionaries/en/errors.json';
 import commonTable_en from '../../dictionaries/en/common-table.json';
 import subcontractors_en from '../../dictionaries/en/subcontractors.json';
+import customers_en from '../../dictionaries/en/customers.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -97,6 +99,7 @@ const dictionaries = {
     errors: errors_fr,
     common_table: commonTable_fr,
     subcontractors: subcontractors_fr,
+    customers: customers_fr,
   },
   en: {
     ...common_en,
@@ -115,6 +118,7 @@ const dictionaries = {
     errors: errors_en,
     common_table: commonTable_en,
     subcontractors: subcontractors_en,
+    customers: customers_en,
   },
 } as const;
 
