@@ -1,0 +1,14 @@
+{
+  "upload_button": "Upload logo",
+  "remove_button": "Remove logo",
+  "drag_drop": "Drag & drop or click to upload",
+  "uploading": "Uploading...",
+  "max_size": "Max size: {size}",
+  "formats": "Formats: PNG, JPG, SVG",
+  "error_size": "File is too large (max {size})",
+  "error_format": "Invalid file format. Accepted: PNG, JPG, SVG",
+  "success_upload": "{entity} uploaded successfully",
+  "success_remove": "{entity} removed successfully",
+  "error_upload": "Failed to upload {entity}",
+  "error_remove": "Failed to remove {entity}"
+}

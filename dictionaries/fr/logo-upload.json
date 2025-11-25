@@ -1,0 +1,14 @@
+{
+  "upload_button": "Téléverser le logo",
+  "remove_button": "Supprimer le logo",
+  "drag_drop": "Glissez-déposez ou cliquez pour téléverser",
+  "uploading": "Téléversement...",
+  "max_size": "Taille max : {size}",
+  "formats": "Formats : PNG, JPG, SVG",
+  "error_size": "Fichier trop volumineux (max {size})",
+  "error_format": "Format de fichier invalide. Acceptés : PNG, JPG, SVG",
+  "success_upload": "{entity} téléversé avec succès",
+  "success_remove": "{entity} supprimé avec succès",
+  "error_upload": "Échec du téléversement de {entity}",
+  "error_remove": "Échec de la suppression de {entity}"
+}

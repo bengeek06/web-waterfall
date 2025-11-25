@@ -33,6 +33,10 @@ import { subcontractorSchema, SubcontractorFormData } from "@/lib/validation/ide
 // UI Components
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogoUpload } from "@/components/shared/LogoUpload";
+
+// Icons
+import { Building2 } from "lucide-react";
 
 // Test IDs
 import { testId } from "@/lib/test-ids";
@@ -42,6 +46,8 @@ import { testId } from "@/lib/test-ids";
 type Subcontractor = {
   id: string | number;
   name: string;
+  logo_file_id?: string;
+  has_logo?: boolean;
   email?: string;
   contact_person?: string;
   phone_number?: string;
@@ -52,6 +58,8 @@ type Subcontractor = {
 type SubcontractorsDictionary = {
   page_title: string;
   create_button: string;
+  table_logo: string;
+  logo_create_info: string;
   table_name: string;
   table_email: string;
   table_contact: string;
@@ -123,6 +131,27 @@ function createSubcontractorColumns(
   }
 ): ColumnDef<Subcontractor>[] {
   return [
+    // Logo column
+    {
+      accessorKey: "logo",
+      header: dict.table_logo,
+      enableColumnFilter: false,
+      enableSorting: false,
+      cell: ({ row }) => (
+        row.original.has_logo && row.original.id ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/identity/subcontractors/${row.original.id}/logo`}
+            alt={row.original.name}
+            className="h-10 w-10 rounded object-contain"
+          />
+        ) : (
+          <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+            <Building2 className="h-6 w-6 text-muted-foreground" />
+          </div>
+        )
+      ),
+    },
     createTextColumn<Subcontractor>("name", dict.table_name),
     {
       ...createTextColumn<Subcontractor>("email", dict.table_email),
@@ -187,9 +216,24 @@ function createSubcontractorColumns(
 export default function Subcontractors({
   dictionary,
   commonTable,
+  logoUpload,
 }: {
   readonly dictionary: SubcontractorsDictionary;
   readonly commonTable: CommonTableDictionary;
+  readonly logoUpload: {
+    upload_button: string;
+    remove_button: string;
+    drag_drop: string;
+    uploading: string;
+    max_size: string;
+    formats: string;
+    error_size: string;
+    error_format: string;
+    success_upload: string;
+    success_remove: string;
+    error_upload: string;
+    error_remove: string;
+  };
 }) {
   return (
     <GenericCrudTable<Subcontractor, SubcontractorFormData>
@@ -216,8 +260,59 @@ export default function Subcontractors({
       onExport={(data, format) => {
         console.log(`Export ${data.length} items in ${format} format`);
       }}
-      renderFormFields={(form, dict) => (
+      renderFormFields={(form, dict, editingItem, refresh) => (
         <>
+          {/* Logo Upload - Only in edit mode */}
+          {editingItem?.id ? (
+            <LogoUpload
+              currentLogoUrl={
+                editingItem.has_logo
+                  ? `/api/identity/subcontractors/${editingItem.id}/logo`
+                  : undefined
+              }
+              entityName="logo"
+              dictionary={logoUpload}
+              onUpload={async (file) => {
+                const formData = new FormData();
+                formData.append("logo", file);
+                
+                const response = await fetch(`/api/identity/subcontractors/${editingItem.id}/logo`, {
+                  method: "POST",
+                  body: formData,
+                });
+                
+                if (!response.ok) {
+                  throw new Error("Failed to upload logo");
+                }
+                
+                // Refresh data to update has_logo flag
+                if (refresh) {
+                  await refresh();
+                }
+              }}
+              onRemove={async () => {
+                const response = await fetch(`/api/identity/subcontractors/${editingItem.id}/logo`, {
+                  method: "DELETE",
+                });
+                
+                if (!response.ok) {
+                  throw new Error("Failed to remove logo");
+                }
+                
+                // Refresh data to update has_logo flag
+                if (refresh) {
+                  await refresh();
+                }
+              }}
+            />
+          ) : (
+            <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {dict.logo_create_info}
+              </p>
+            </div>
+          )}
+
           {/* Name - Required */}
           <div className="space-y-2">
             <Label htmlFor="name">{dict.form_name}</Label>

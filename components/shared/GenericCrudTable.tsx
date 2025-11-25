@@ -147,8 +147,13 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
     readonly save: string;
   };
   
-  /** Render form fields (receives form instance and dictionary) */
-  readonly renderFormFields: (_form: UseFormReturn<TForm>, _dictionary: Record<string, string>) => React.ReactNode;
+  /** Render form fields (receives form instance, dictionary, editing item, and refresh function) */
+  readonly renderFormFields: (
+    _form: UseFormReturn<TForm>, 
+    _dictionary: Record<string, string>,
+    _editingItem?: T | null,
+    _refresh?: () => Promise<void>
+  ) => React.ReactNode;
   
   /** Transform form data to API payload (optional) */
   readonly transformFormData?: (_data: TForm) => Partial<T>;
@@ -201,7 +206,7 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
 
   // ==================== DATA FETCHING ====================
 
-  const { data, isLoading, create, update, remove } = useTableCrud<T>({
+  const { data, isLoading, create, update, remove, refresh } = useTableCrud<T>({
     service,
     path,
   });
@@ -319,7 +324,7 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            {renderFormFields(form, dictionary)}
+            {renderFormFields(form, dictionary, editingItem, refresh)}
 
             <DialogFooter>
               <Button

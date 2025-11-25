@@ -1,6 +1,8 @@
 {
   "page_title": "Gestion des Clients",
   "create_button": "Créer un Client",
+  "table_logo": "Logo",
+  "logo_create_info": "💡 Créez d'abord le client, puis vous pourrez ajouter un logo en l'éditant.",
   "table_name": "Nom",
   "table_email": "Email",
   "table_contact": "Contact",
