@@ -282,8 +282,8 @@ export function GenericDataTable<T>({
 
   // Build final columns array with optional expansion and selection columns
   const finalColumns = [
-    ...(enableRowExpansion ? [expansionColumn] : []),
     ...(enableRowSelection ? [selectionColumn] : []),
+    ...(enableRowExpansion ? [expansionColumn] : []),
     ...columns,
   ];
 
