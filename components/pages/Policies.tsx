@@ -32,6 +32,7 @@ import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, SPACING, COLOR_CLASSES } from "@/lib/design-tokens";
 import { useZodForm } from "@/lib/hooks";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { policySchema, type PolicyFormData } from "@/lib/validation";
 
 // ==================== TYPES ====================
@@ -82,14 +83,25 @@ type PoliciesDictionary = {
   delete_tooltip?: string;
   add_permission_tooltip?: string;
   operation_list?: string;
+  errors: {
+    network: string;
+    unauthorized: string;
+    forbidden: string;
+    notFound: string;
+    serverError: string;
+    clientError: string;
+    unknown: string;
+  };
 };
 
 // ==================== COMPONENT ====================
 export default function Policies({ dictionary }: { readonly dictionary: PoliciesDictionary }) {
+  // Error handler
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
+
   // State
   const [policies, setPolicies] = useState<Policy[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Policy Dialog (Create/Edit)
@@ -183,13 +195,12 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       );
 
       setPolicies(policiesWithPermissions);
-      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : dictionary.error_fetch);
+      handleError(err);
     } finally {
       setIsLoading(false);
     }
-  }, [dictionary.error_fetch]);
+  }, [handleError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchData();
@@ -202,14 +213,14 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
     setShowPolicyDialog(true);
   };
 
-  const openEditPolicyDialog = (policy: Policy) => {
+  const openEditPolicyDialog = useCallback((policy: Policy) => {
     setEditingPolicy(policy);
     policyForm.reset({
       name: policy.name,
       description: policy.description || "",
     });
     setShowPolicyDialog(true);
-  };
+  }, [policyForm]);
 
   const handlePolicySubmit = async (data: PolicyFormData) => {
     try {
@@ -244,14 +255,14 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       setShowPolicyDialog(false);
       fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : dictionary.error_create);
+      handleError(err);
     }
   };
 
-  const handleDeletePolicy = async (policy: Policy) => {
+  const handleDeletePolicy = useCallback(async (policy: Policy) => {
     setPendingDeletePolicy(policy);
     setShowDeleteDialog(true);
-  };
+  }, []);
 
   const confirmDeletePolicy = async () => {
     if (!pendingDeletePolicy) return;
@@ -274,19 +285,19 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       setPendingDeletePolicy(null);
       fetchData();
     } catch (err) {
-      setError(err instanceof Error ? err.message : dictionary.error_delete);
+      handleError(err);
     }
   };
 
   // ==================== PERMISSION MANAGEMENT ====================
-  const handleAddPermission = (policy: Policy) => {
+  const handleAddPermission = useCallback((policy: Policy) => {
     setSelectedPolicy(policy);
     setFilterService("");
     setFilterResource("");
     setShowPermissionDialog(true);
-  };
+  }, []);
 
-  const handleEditPermissionGroup = (
+  const handleEditPermissionGroup = useCallback((
     policy: Policy,
     service: string,
     resourceName: string,
@@ -296,9 +307,9 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
     setFilterService(service);
     setFilterResource(resourceName);
     setShowPermissionDialog(true);
-  };
+  }, []);
 
-  const handleDeletePermissionGroup = async (
+  const handleDeletePermissionGroup = useCallback(async (
     policyId: string | number,
     permissions: Permission[]
   ) => {
@@ -314,9 +325,9 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       fetchData();
     } catch (err) {
       console.error("Error deleting permission group:", err);
-      setError("Failed to delete permission group");
+      handleError(err);
     }
-  };
+  }, [fetchData, handleError]);
 
   const handleAddPermissionsToPolicy = async (permissionIds: (string | number)[]) => {
     if (!selectedPolicy || permissionIds.length === 0) return;
@@ -348,7 +359,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       fetchData();
     } catch (err) {
       console.error("Error adding permissions:", err);
-      setError("Failed to add permissions");
+      handleError(err);
     }
   };
 
@@ -433,7 +444,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       a.remove();
       globalThis.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : dictionary.error_export);
+      handleError(err);
     } finally {
       setIsExporting(false);
     }
@@ -540,7 +551,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         setShowImportReport(true);
         fetchData();
       } catch (err) {
-        setError(err instanceof Error ? err.message : dictionary.error_import);
+        handleError(err);
       } finally {
         setIsImporting(false);
       }
@@ -573,7 +584,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         onDelete: handleDeletePolicy,
         onAddPermission: handleAddPermission,
       }),
-    [dictionary]
+    [dictionary, openEditPolicyDialog, handleDeletePolicy, handleAddPermission]
   );
 
   // ==================== EXPANDED ROW ====================
@@ -596,7 +607,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         onDeletePermissionGroup={handleDeletePermissionGroup}
       />
     ),
-    [dictionary]
+    [dictionary, handleEditPermissionGroup, handleDeletePermissionGroup]
   );
 
   // ==================== AVAILABLE PERMISSIONS ====================
@@ -833,13 +844,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Error Display */}
-      {error && (
-        <div className={`${COLOR_CLASSES.text.destructive} text-sm mt-2`} {...testId(DASHBOARD_TEST_IDS.policies.errorMessage)}>
-          {error}
-        </div>
-      )}
     </section>
   );
 }

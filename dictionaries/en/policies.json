@@ -43,5 +43,14 @@
   "import_report_success": "Success",
   "import_report_failed": "Failed",
   "import_report_errors": "Errors",
-  "import_report_warnings": "Warnings"
+  "import_report_warnings": "Warnings",
+  "errors": {
+    "network": "Network connection problem. Please check your internet connection.",
+    "unauthorized": "Session expired. Please log in again.",
+    "forbidden": "You do not have the necessary permissions for this action.",
+    "notFound": "Policy not found.",
+    "serverError": "Server error. Please try again in a few moments.",
+    "clientError": "Invalid request.",
+    "unknown": "An error occurred."
+  }
 }

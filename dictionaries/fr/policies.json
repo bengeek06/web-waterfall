@@ -43,5 +43,14 @@
   "import_report_success": "Succès",
   "import_report_failed": "Échecs",
   "import_report_errors": "Erreurs",
-  "import_report_warnings": "Avertissements"
+  "import_report_warnings": "Avertissements",
+  "errors": {
+    "network": "Problème de connexion réseau. Veuillez vérifier votre connexion internet.",
+    "unauthorized": "Session expirée. Veuillez vous reconnecter.",
+    "forbidden": "Vous n'avez pas les permissions nécessaires pour cette action.",
+    "notFound": "Politique non trouvée.",
+    "serverError": "Erreur serveur. Veuillez réessayer dans quelques instants.",
+    "clientError": "Requête invalide.",
+    "unknown": "Une erreur est survenue."
+  }
 }
