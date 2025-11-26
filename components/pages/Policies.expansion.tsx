@@ -10,8 +10,8 @@
  */
 
 import React from 'react';
-import { Eye, PlusSquare, List, Pencil, Trash2 } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Eye, PlusSquare, List, Edit, Trash2 } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { DASHBOARD_TEST_IDS, testId } from '@/lib/test-ids';
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from '@/lib/design-tokens';
@@ -26,7 +26,7 @@ function getOperationIcons(dictionary: Pick<PoliciesDictionary, 'operation_read'
     READ: { icon: Eye, label: dictionary.operation_read, color: COLOR_CLASSES.operations.read },
     CREATE: { icon: PlusSquare, label: dictionary.operation_create, color: COLOR_CLASSES.operations.create },
     LIST: { icon: List, label: dictionary.operation_list || 'List (LIST)', color: COLOR_CLASSES.operations.list },
-    UPDATE: { icon: Pencil, label: dictionary.operation_update, color: COLOR_CLASSES.operations.update },
+    UPDATE: { icon: Edit, label: dictionary.operation_update, color: COLOR_CLASSES.operations.update },
     DELETE: { icon: Trash2, label: dictionary.operation_delete, color: COLOR_CLASSES.operations.delete },
   } as const;
 }
@@ -184,63 +184,67 @@ export function PolicyExpansion({
               </span>
 
               {/* Action Buttons */}
-              <span className="ml-auto flex space-x-2">
-                {/* Edit Permission Group Button */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        onEditPermissionGroup(
-                          policy,
-                          group.service,
-                          group.resource_name,
-                          group.perms
-                        )
-                      }
-                      {...testId(
-                        DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
-                          group.service,
-                          group.resource_name
-                        )
-                      )}
-                    >
-                      <Pencil className={ICON_SIZES.sm} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {dictionary.edit_operations_tooltip || 'Éditer les opérations'}
-                  </TooltipContent>
-                </Tooltip>
+              <TooltipProvider>
+                <span className="ml-auto flex gap-1">
+                  {/* Edit Permission Group Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() =>
+                          onEditPermissionGroup(
+                            policy,
+                            group.service,
+                            group.resource_name,
+                            group.perms
+                          )
+                        }
+                        {...testId(
+                          DASHBOARD_TEST_IDS.policies.editPermissionGroupButton(
+                            group.service,
+                            group.resource_name
+                          )
+                        )}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">{dictionary.edit_operations_tooltip || 'Éditer les opérations'}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{dictionary.edit_operations_tooltip || 'Éditer les opérations'}</p>
+                    </TooltipContent>
+                  </Tooltip>
 
-                {/* Delete Permission Group Button */}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        onDeletePermissionGroup(policy.id, group.perms)
-                      }
-                      {...testId(
-                        DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
-                          group.service,
-                          group.resource_name
-                        )
-                      )}
-                    >
-                      <Trash2
-                        className={`${ICON_SIZES.sm} ${COLOR_CLASSES.text.destructive}`}
-                      />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {dictionary.delete_permission_group_tooltip ||
-                      'Supprimer toutes les permissions de ce groupe'}
-                  </TooltipContent>
-                </Tooltip>
-              </span>
+                  {/* Delete Permission Group Button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() =>
+                          onDeletePermissionGroup(policy.id, group.perms)
+                        }
+                        {...testId(
+                          DASHBOARD_TEST_IDS.policies.deletePermissionGroupButton(
+                            group.service,
+                            group.resource_name
+                          )
+                        )}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">{dictionary.delete_permission_group_tooltip || 'Supprimer toutes les permissions de ce groupe'}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{dictionary.delete_permission_group_tooltip ||
+                        'Supprimer toutes les permissions de ce groupe'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </span>
+              </TooltipProvider>
             </div>
           ))}
         </div>

@@ -11,10 +11,10 @@
 
 import React from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown, Pencil, Trash2, Plus } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from 'lucide-react';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { Button } from '@/components/ui/button';
 import { DASHBOARD_TEST_IDS, testId } from '@/lib/test-ids';
-import { ICON_SIZES, COLOR_CLASSES } from '@/lib/design-tokens';
 
 // ==================== TYPES ====================
 export type Permission = {
@@ -140,49 +140,66 @@ export function createPoliciesColumns({
       enableColumnFilter: false,
       header: () => <span className="text-right block">{dictionary.table_actions}</span>,
       cell: ({ row }) => (
-        <div className="text-right space-x-2">
-          {/* Add Permission Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onAddPermission(row.original)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(row.original.id.toString()))}
-              >
-                <Plus className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.create}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{dictionary.add_permission_tooltip}</TooltipContent>
-          </Tooltip>
+        <TooltipProvider>
+          <div className="flex items-center justify-end gap-1">
+            {/* Add Permission Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onAddPermission(row.original)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(row.original.id.toString()))}
+                >
+                  <PlusSquare className="h-4 w-4" />
+                  <span className="sr-only">{dictionary.add_permission_tooltip}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{dictionary.add_permission_tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          {/* Edit Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onEdit(row.original)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(DASHBOARD_TEST_IDS.policies.editButton(row.original.id.toString()))}
-              >
-                <Pencil className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.update}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{dictionary.edit_tooltip}</TooltipContent>
-          </Tooltip>
+            {/* Edit Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => onEdit(row.original)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.editButton(row.original.id.toString()))}
+                >
+                  <Edit className="h-4 w-4" />
+                  <span className="sr-only">{dictionary.edit_tooltip}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{dictionary.edit_tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
 
-          {/* Delete Button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onDelete(row.original)}
-                className="p-1 hover:bg-gray-100 rounded inline-flex"
-                {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(row.original.id.toString()))}
-              >
-                <Trash2 className={`${ICON_SIZES.sm} ${COLOR_CLASSES.operations.delete}`} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{dictionary.delete_tooltip}</TooltipContent>
-          </Tooltip>
-        </div>
+            {/* Delete Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => onDelete(row.original)}
+                  {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(row.original.id.toString()))}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">{dictionary.delete_tooltip}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{dictionary.delete_tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       ),
     },
   ];
