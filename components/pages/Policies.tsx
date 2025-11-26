@@ -200,7 +200,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
     } finally {
       setIsLoading(false);
     }
-  }, [handleError]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchData();
