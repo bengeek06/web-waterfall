@@ -87,7 +87,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 
 // Constants
 import { TABLE_TEST_IDS, testId } from "@/lib/test-ids";
@@ -149,6 +149,18 @@ export interface GenericDataTableProps<T> {
   
   /** Additional toolbar actions */
   toolbarActions?: React.ReactNode;
+  
+  /** Enable row expansion */
+  enableRowExpansion?: boolean;
+  
+  /** Render function for expanded row content */
+  renderExpandedRow?: (_item: T) => React.ReactNode;
+  
+  /** Callback when row expansion state changes */
+  onRowExpansionChange?: (_expandedRows: Record<string | number, boolean>) => void;
+  
+  /** Initial expanded state */
+  initialExpanded?: Record<string | number, boolean>;
 }
 
 // ==================== COMPONENT ====================
@@ -193,17 +205,59 @@ export function GenericDataTable<T>({
   filterPlaceholder,
   emptyState,
   toolbarActions,
+  enableRowExpansion = false,
+  renderExpandedRow,
+  onRowExpansionChange,
+  initialExpanded = {},
 }: Readonly<GenericDataTableProps<T>>) {
   // ==================== STATE ====================
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [expanded, setExpanded] = useState<Record<string | number, boolean>>(initialExpanded);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [pendingDeleteIds, setPendingDeleteIds] = useState<(string | number)[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  // ==================== EXPANSION HANDLERS ====================
+  const toggleExpand = (id: string | number) => {
+    setExpanded(prev => {
+      const newExpanded = { ...prev, [id]: !prev[id] };
+      onRowExpansionChange?.(newExpanded);
+      return newExpanded;
+    });
+  };
+
+  // ==================== EXPANSION COLUMN ====================
+  const expansionColumn: ColumnDef<T> = {
+    id: 'expand',
+    header: '',
+    cell: ({ row }) => {
+      const item = row.original as { id?: string | number };
+      const itemId = item.id;
+      if (!itemId) return null;
+      
+      return (
+        <button
+          onClick={() => toggleExpand(itemId)}
+          className="p-1 hover:bg-gray-100 rounded inline-flex"
+          aria-label={expanded[itemId] ? 'Collapse row' : 'Expand row'}
+        >
+          {expanded[itemId] ? (
+            <ChevronDown className={ICON_SIZES.sm} />
+          ) : (
+            <ChevronRight className={ICON_SIZES.sm} />
+          )}
+        </button>
+      );
+    },
+    enableSorting: false,
+    enableColumnFilter: false,
+    size: 50,
+  };
 
   // ==================== SELECTION COLUMN ====================
   const selectionColumn: ColumnDef<T> = {
@@ -226,7 +280,12 @@ export function GenericDataTable<T>({
     enableColumnFilter: false,
   };
 
-  const finalColumns = enableRowSelection ? [selectionColumn, ...columns] : columns;
+  // Build final columns array with optional expansion and selection columns
+  const finalColumns = [
+    ...(enableRowSelection ? [selectionColumn] : []),
+    ...(enableRowExpansion ? [expansionColumn] : []),
+    ...columns,
+  ];
 
   // ==================== TABLE INSTANCE ====================
   const table = useReactTable({
@@ -460,21 +519,33 @@ export function GenericDataTable<T>({
             ) : (
               <>
                 {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
+                  table.getRowModel().rows.map((row) => {
+                    const item = row.original as { id?: string | number };
+                    const itemId = item.id;
+                    const isExpanded = enableRowExpansion && itemId && expanded[itemId];
+                    
+                    return (
+                      <Fragment key={row.id}>
+                        <TableRow data-state={row.getIsSelected() && "selected"}>
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                        {isExpanded && renderExpandedRow && (
+                          <TableRow>
+                            <TableCell colSpan={finalColumns.length} className="p-0">
+                              {renderExpandedRow(row.original)}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </Fragment>
+                    );
+                  })
                 ) : (
                   <TableRow {...testId(TABLE_TEST_IDS.genericTable.emptyRow)}>
                     <TableCell
