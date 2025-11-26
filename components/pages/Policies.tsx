@@ -17,7 +17,7 @@ import { createPoliciesColumns, type Policy, type Permission } from "./Policies.
 import { PolicyExpansion } from "./Policies.expansion";
 import { PermissionDialog } from "@/components/modals/PermissionDialog";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, Download, Upload, FileJson, FileText } from "lucide-react";
+import { Plus, Download, Upload, FileJson, FileText, AlertTriangle } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
@@ -101,6 +101,10 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
   const [selectedPolicy, setSelectedPolicy] = useState<Policy | null>(null);
   const [filterService, setFilterService] = useState("");
   const [filterResource, setFilterResource] = useState("");
+
+  // Delete Confirmation Dialog
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [pendingDeletePolicy, setPendingDeletePolicy] = useState<Policy | null>(null);
 
   // Import/Export
   const [showImportReport, setShowImportReport] = useState(false);
@@ -245,10 +249,15 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
   };
 
   const handleDeletePolicy = async (policy: Policy) => {
-    if (!globalThis.confirm(dictionary.delete_confirm_message)) return;
+    setPendingDeletePolicy(policy);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeletePolicy = async () => {
+    if (!pendingDeletePolicy) return;
 
     try {
-      const res = await fetchWithAuth(GUARDIAN_ROUTES.policy(policy.id.toString()), {
+      const res = await fetchWithAuth(GUARDIAN_ROUTES.policy(pendingDeletePolicy.id.toString()), {
         method: "DELETE",
       });
 
@@ -261,6 +270,8 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         throw new Error(dictionary.error_delete);
       }
 
+      setShowDeleteDialog(false);
+      setPendingDeletePolicy(null);
       fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : dictionary.error_delete);
@@ -788,6 +799,38 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent aria-describedby={void 0} aria-label="delete-policy-dialog">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              {dictionary.delete_confirm_title}
+            </DialogTitle>
+            <DialogDescription>
+              {dictionary.delete_confirm_message}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                setPendingDeletePolicy(null);
+              }}
+            >
+              {dictionary.delete_cancel}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeletePolicy}
+            >
+              {dictionary.delete_confirm}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
