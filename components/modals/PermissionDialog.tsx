@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Eye, PlusSquare, List, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Plus, List, Pencil, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -52,7 +52,7 @@ export interface PermissionDialogProps {
 function getOperationIcons(dictionary: Pick<PermissionDialogDictionary, 'operation_read' | 'operation_create' | 'operation_update' | 'operation_delete'> & { operation_list?: string }) {
   return {
     READ: { icon: Eye, label: dictionary.operation_read, color: COLOR_CLASSES.operations.read },
-    CREATE: { icon: PlusSquare, label: dictionary.operation_create, color: COLOR_CLASSES.operations.create },
+    CREATE: { icon: Plus, label: dictionary.operation_create, color: COLOR_CLASSES.operations.create },
     LIST: { icon: List, label: dictionary.operation_list || 'List (LIST)', color: COLOR_CLASSES.operations.list },
     UPDATE: { icon: Pencil, label: dictionary.operation_update, color: COLOR_CLASSES.operations.update },
     DELETE: { icon: Trash2, label: dictionary.operation_delete, color: COLOR_CLASSES.operations.delete },
