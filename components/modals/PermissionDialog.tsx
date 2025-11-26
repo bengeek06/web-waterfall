@@ -116,6 +116,40 @@ function groupAvailablePermissions(perms: Permission[]): PermissionGroup[] {
   return Object.values(groups);
 }
 
+/**
+ * Dialog component for managing policy permissions
+ * 
+ * Displays a two-panel interface:
+ * - Left panel: Shows permissions already associated with the policy (read-only)
+ * - Right panel: Shows available permissions that can be added, with service/resource filters
+ * 
+ * Permissions are grouped by service and resource for better organization.
+ * 
+ * @param props - Component props
+ * @param props.open - Whether the dialog is open
+ * @param props.onOpenChange - Callback when dialog open state changes
+ * @param props.policyName - Name of the policy being edited
+ * @param props.associatedPermissions - Permissions already assigned to the policy
+ * @param props.availablePermissions - Permissions that can be added to the policy
+ * @param props.onAddPermissions - Callback when permissions are added, receives array of permission IDs
+ * @param props.dictionary - Translated labels for UI elements
+ * @param props.initialService - Optional: Pre-select a service filter
+ * @param props.initialResource - Optional: Pre-select a resource filter
+ * @returns React dialog component for permission management
+ * 
+ * @example
+ * ```tsx
+ * <PermissionDialog
+ *   open={showDialog}
+ *   onOpenChange={setShowDialog}
+ *   policyName="Admin Policy"
+ *   associatedPermissions={policy.permissions}
+ *   availablePermissions={allPermissions.filter(p => !isAssociated(p))}
+ *   onAddPermissions={handleAdd}
+ *   dictionary={dictionary}
+ * />
+ * ```
+ */
 // ==================== COMPONENT ====================
 export function PermissionDialog({
   open,

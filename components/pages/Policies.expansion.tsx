@@ -63,6 +63,25 @@ export interface PermissionGroup {
   perms: Permission[];
 }
 
+/**
+ * Groups permissions by service and resource name
+ * 
+ * Takes an array of permissions and groups them by their service and resource_name.
+ * Within each group, permissions are sorted by operation in a predefined order:
+ * LIST, CREATE, READ, UPDATE, DELETE.
+ * 
+ * @param permissions - Array of permissions to group
+ * @returns Array of permission groups, each containing service, resource_name, and sorted permissions
+ * 
+ * @example
+ * ```tsx
+ * const groups = groupPermissions([
+ *   { service: 'identity', resource_name: 'users', operation: 'READ', ... },
+ *   { service: 'identity', resource_name: 'users', operation: 'CREATE', ... },
+ * ]);
+ * // Returns: [{ service: 'identity', resource_name: 'users', perms: [CREATE, READ] }]
+ * ```
+ */
 export function groupPermissions(permissions: Permission[]): PermissionGroup[] {
   const groups: Record<string, PermissionGroup> = {};
 
@@ -124,6 +143,29 @@ export interface PolicyExpansionProps {
   onDeletePermissionGroup: (_policyId: string | number, _permissions: Permission[]) => void;
 }
 
+/**
+ * Renders the expanded row content for a policy, displaying grouped permissions
+ * 
+ * Groups permissions by service and resource, shows operation icons for each group,
+ * and provides edit/delete actions for permission groups.
+ * 
+ * @param props - Component props
+ * @param props.policy - The policy to display permissions for
+ * @param props.dictionary - Translated labels for operations and UI text
+ * @param props.onEditPermissionGroup - Callback when editing a permission group
+ * @param props.onDeletePermissionGroup - Callback when deleting a permission group
+ * @returns React component displaying grouped permissions with actions
+ * 
+ * @example
+ * ```tsx
+ * <PolicyExpansion
+ *   policy={policy}
+ *   dictionary={dictionary}
+ *   onEditPermissionGroup={handleEdit}
+ *   onDeletePermissionGroup={handleDelete}
+ * />
+ * ```
+ */
 export function PolicyExpansion({
   policy,
   dictionary,

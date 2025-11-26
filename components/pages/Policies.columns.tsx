@@ -61,6 +61,26 @@ export interface PoliciesColumnFactoryOptions {
   onAddPermission: (_policy: Policy) => void;
 }
 
+/**
+ * Factory function to create policy table columns
+ * 
+ * @param options - Configuration object containing:
+ * @param options.dictionary - Translated labels for columns and tooltips
+ * @param options.onEdit - Callback when edit button is clicked
+ * @param options.onDelete - Callback when delete button is clicked
+ * @param options.onAddPermission - Callback when add permission button is clicked
+ * @returns Array of column definitions for TanStack Table
+ * 
+ * @example
+ * ```tsx
+ * const columns = createPoliciesColumns({
+ *   dictionary,
+ *   onEdit: handleEdit,
+ *   onDelete: handleDelete,
+ *   onAddPermission: handleAddPermission,
+ * });
+ * ```
+ */
 export function createPoliciesColumns({
   dictionary,
   onEdit,
