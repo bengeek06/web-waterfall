@@ -308,20 +308,31 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
   };
 
   const handleAddPermissionsToPolicy = async (permissionIds: (string | number)[]) => {
-    if (!selectedPolicy) return;
+    if (!selectedPolicy || permissionIds.length === 0) return;
 
     try {
-      await Promise.all(
+      const results = await Promise.all(
         permissionIds.map((permId) =>
           fetchWithAuth(
-            GUARDIAN_ROUTES.policyPermission(selectedPolicy.id.toString(), permId.toString()),
+            GUARDIAN_ROUTES.policyPermissions(selectedPolicy.id.toString()),
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ permission_id: permId }),
             }
           )
         )
       );
+
+      if (results.some(res => res.status === 401)) {
+        globalThis.location.href = "/login";
+        return;
+      }
+
+      if (results.some(res => !res.ok)) {
+        throw new Error("Failed to add some permissions");
+      }
+
       setShowPermissionDialog(false);
       fetchData();
     } catch (err) {
