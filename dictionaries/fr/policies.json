@@ -1,6 +1,6 @@
 {
   "page_title": "Gestion des politiques",
-  "create_button": "Créer une politique",
+  "create_button": "Créer",
   "import_button": "Importer",
   "export_button": "Exporter",
   "import_json": "Importer JSON",
@@ -31,6 +31,7 @@
   "delete_confirm_message": "Êtes-vous sûr de vouloir supprimer cette politique ?",
   "delete_cancel": "Annuler",
   "delete_confirm": "Supprimer",
+  "delete_selected": "Supprimer",
   "error_fetch": "Erreur lors de la récupération des données",
   "error_create": "Erreur lors de la création",
   "error_update": "Erreur lors de la mise à jour",

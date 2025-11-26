@@ -19,18 +19,12 @@ import { PermissionDialog } from "@/components/modals/PermissionDialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Plus, Download, Upload, FileJson, FileText, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
-import { ICON_SIZES, SPACING, COLOR_CLASSES } from "@/lib/design-tokens";
+import { COLOR_CLASSES } from "@/lib/design-tokens";
 import { useZodForm } from "@/lib/hooks";
 import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { policySchema, type PolicyFormData } from "@/lib/validation";
@@ -83,6 +77,7 @@ type PoliciesDictionary = {
   delete_tooltip?: string;
   add_permission_tooltip?: string;
   operation_list?: string;
+  delete_selected: string;
   errors: {
     network: string;
     unauthorized: string;
@@ -127,8 +122,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
     errors: Array<string | { original_id?: string; error?: string }>;
     warnings: string[];
   } | null>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   // Form
   const policyForm = useZodForm({
@@ -289,6 +282,22 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
     }
   };
 
+  // Bulk Delete
+  const handleBulkDelete = useCallback(async (selectedIds: (string | number)[]) => {
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetchWithAuth(GUARDIAN_ROUTES.policy(id.toString()), {
+            method: "DELETE",
+          })
+        )
+      );
+      await fetchData();
+    } catch (err) {
+      handleError(err);
+    }
+  }, [fetchData]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ==================== PERMISSION MANAGEMENT ====================
   const handleAddPermission = useCallback((policy: Policy) => {
     setSelectedPolicy(policy);
@@ -365,7 +374,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
 
   // ==================== IMPORT/EXPORT ====================
   const handleExport = async (format: "json" | "csv") => {
-    setIsExporting(true);
     try {
       // Use basic-io to get policies (enrich=true resolves simple FK like company_id)
       // Then enrich with permissions from current state (policies_permissions table not handled by basic-io)
@@ -445,8 +453,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       globalThis.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       handleError(err);
-    } finally {
-      setIsExporting(false);
     }
   };
 
@@ -459,7 +465,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      setIsImporting(true);
       const errors: string[] = [];
       const warnings: string[] = [];
       let totalRecords = 0;
@@ -552,8 +557,6 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         fetchData();
       } catch (err) {
         handleError(err);
-      } finally {
-        setIsImporting(false);
       }
     };
 
@@ -624,73 +627,31 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         {dictionary.page_title}
       </h1>
 
-      {/* Toolbar */}
-      <div className="flex justify-between items-center mb-4">
-        <div />
-        <div className={`flex ${SPACING.gap.sm}`}>
-          {/* Import */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={isImporting} {...testId("policy-import-button")}>
-                <Upload className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.import_button}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleImport("json")}>
-                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.import_json}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleImport("csv")}>
-                <FileText className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.import_csv}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Export */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" disabled={isExporting} {...testId("policy-export-button")}>
-                <Download className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.export_button}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleExport("json")}>
-                <FileJson className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.export_json}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleExport("csv")}>
-                <FileText className={`${ICON_SIZES.sm} mr-2`} />
-                {dictionary.export_csv}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Create */}
-          <Button onClick={openCreatePolicyDialog} {...testId(DASHBOARD_TEST_IDS.policies.addButton)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {dictionary.create_button}
-          </Button>
-        </div>
-      </div>
-
       {/* Table */}
       <GenericDataTable
         data={policies}
         columns={columns}
         isLoading={isLoading}
         dictionary={{
+          create: dictionary.create_button,
+          import: dictionary.import_button,
+          export: dictionary.export_button,
           loading: "Loading...",
           no_results: dictionary.no_policies,
           showing_results: "Showing {from} to {to} of {total} result(s)",
           rows_per_page: "Rows per page",
           previous: "Previous",
           next: "Next",
+          delete_selected: dictionary.delete_selected,
         }}
         enableRowExpansion={true}
         renderExpandedRow={renderExpandedRow}
+        enableRowSelection={true}
+        onBulkDelete={handleBulkDelete}
+        enableImportExport={true}
+        onCreateClick={openCreatePolicyDialog}
+        onImport={handleImport}
+        onExport={(data, format) => handleExport(format)}
       />
 
       {/* Policy Create/Edit Dialog */}
@@ -699,7 +660,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
           <DialogTitle {...testId(DASHBOARD_TEST_IDS.policies.dialogTitle)}>
             {editingPolicy ? dictionary.modal_edit_title : dictionary.modal_create_title}
           </DialogTitle>
-          <form className={`p-6 ${SPACING.component.md}`} onSubmit={policyForm.handleSubmit(handlePolicySubmit)}>
+          <form className="p-6 space-y-4" onSubmit={policyForm.handleSubmit(handlePolicySubmit)}>
             <div>
               <label className="block text-sm mb-1">{dictionary.form_name_required}</label>
               <Input {...policyForm.register("name")} {...testId(DASHBOARD_TEST_IDS.policies.nameInput)} />
@@ -718,7 +679,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
                 </div>
               )}
             </div>
-            <div className={`flex ${SPACING.gap.sm} justify-end mt-4`}>
+            <div className="flex gap-2 justify-end mt-4">
               <Button type="button" variant="outline" onClick={() => setShowPolicyDialog(false)} {...testId(DASHBOARD_TEST_IDS.policies.cancelButton)}>
                 {dictionary.form_cancel}
               </Button>
