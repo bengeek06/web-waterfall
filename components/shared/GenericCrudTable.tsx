@@ -89,19 +89,24 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ImportReportModal, defaultImportReportDictionary } from "@/components/modals/import-report-modal";
 import { AlertTriangle } from "lucide-react";
 
 // Hooks & Utils
 import { useTableCrud } from "@/lib/hooks/useTableCrud";
 import { useZodForm } from "@/lib/hooks/useZodForm";
+import { useBasicIO, ImportReport } from "@/lib/hooks/useBasicIO";
 
 // Types
 export interface GenericCrudTableProps<T extends { id?: string | number }, TForm extends FieldValues = T & FieldValues> {
-  /** API service name */
+  /** API service name (identity, guardian, project, storage) */
   readonly service: string;
   
-  /** API endpoint path */
+  /** API endpoint path (e.g., /customers, /users) */
   readonly path: string;
+  
+  /** Entity name for export filename (defaults to path without leading slash) */
+  readonly entityName?: string;
   
   /** Column definitions factory (receives handlers) */
   readonly columns: (_handlers: { 
@@ -161,10 +166,17 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
   /** Transform API item to form data (optional) */
   readonly transformItemToForm?: (_item: T) => TForm;
   
-  /** Custom import handler (optional) */
-  readonly onImport?: (_format: 'json' | 'csv') => void;
+  /** 
+   * Custom import handler (optional)
+   * If not provided and enableImportExport=true, uses basic-io service automatically
+   */
+  readonly onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
   
-  /** Custom export handler (optional) - receives selected data if any, otherwise all data */
+  /** 
+   * Custom export handler (optional)
+   * If not provided and enableImportExport=true, uses basic-io service automatically
+   * Receives selected data if any, otherwise all data
+   */
   readonly onExport?: (_data: T[], _format: 'json' | 'csv') => void;
   
   /** Enable import/export (default: false) */
@@ -182,6 +194,7 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
 export function GenericCrudTable<T extends { id?: string | number }, TForm extends FieldValues = T & FieldValues>({
   service,
   path,
+  entityName,
   columns,
   schema,
   defaultFormValues,
@@ -203,12 +216,36 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | number | null>(null);
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<ImportReport | null>(null);
 
   // ==================== DATA FETCHING ====================
 
   const { data, isLoading, create, update, remove, refresh } = useTableCrud<T>({
     service,
     path,
+  });
+
+  // ==================== BASIC-IO IMPORT/EXPORT ====================
+  
+  // Convert path to endpoint (remove leading slash)
+  const endpoint = path.startsWith('/') ? path.slice(1) : path;
+  
+  const { exportData, importData, isExporting, isImporting } = useBasicIO({
+    service,
+    endpoint,
+    entityName: entityName ?? endpoint,
+    onImportSuccess: (report) => {
+      // Show import report modal
+      setImportReport(report);
+      setShowImportReport(true);
+      // Refresh table data after successful import
+      refresh();
+    },
+    onImportError: (error) => {
+      // If we have a report in the error response, show it
+      console.error('Import error:', error);
+    },
   });
 
   // ==================== FORM ====================
@@ -278,6 +315,47 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
     }
   };
 
+  // ==================== IMPORT/EXPORT HANDLERS ====================
+  
+  /**
+   * Default export handler using basic-io service
+   * Can be overridden via onExport prop
+   * 
+   * If selectedData is empty or has no valid IDs, exports ALL data (no ids param)
+   * If selectedData has valid IDs, exports only those items (partial export)
+   */
+  const handleDefaultExport = async (selectedData: T[], format: 'json' | 'csv') => {
+    // Only pass ids if we have selected items with valid IDs
+    const validIds = selectedData
+      .map(item => item.id)
+      .filter((id): id is string | number => id !== undefined);
+    
+    // Pass ids only for partial export (when we have selected items)
+    const ids = validIds.length > 0 ? validIds : undefined;
+    
+    console.log(`Export requested: ${validIds.length} items selected, exporting ${ids ? 'partial' : 'all'}`);
+    
+    await exportData({
+      format,
+      ids,
+      enrich: true, // Include reference metadata for re-import
+    });
+  };
+  
+  /**
+   * Default import handler using basic-io service
+   * Can be overridden via onImport prop
+   */
+  const handleDefaultImport = async (format: 'json' | 'csv', file?: File) => {
+    await importData({
+      format,
+      file,
+      resolveRefs: true,
+      onAmbiguous: 'skip',
+      onMissing: 'skip',
+    });
+  };
+
   // ==================== RENDER ====================
 
   return (
@@ -311,8 +389,10 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
         enableImportExport={enableImportExport}
         enableRowSelection={enableRowSelection}
         onBulkDelete={enableRowSelection ? handleBulkDelete : undefined}
-        onExport={onExport ? (data, format) => onExport(data, format) : undefined}
-        onImport={onImport ? (format) => onImport(format) : undefined}
+        onExport={onExport ?? (enableImportExport ? handleDefaultExport : undefined)}
+        onImport={onImport ?? (enableImportExport ? handleDefaultImport : undefined)}
+        isExporting={isExporting}
+        isImporting={isImporting}
       />
 
       {/* Create/Edit Dialog */}
@@ -374,6 +454,14 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Import Report Modal */}
+      <ImportReportModal
+        open={showImportReport}
+        onOpenChange={setShowImportReport}
+        report={importReport}
+        dictionary={defaultImportReportDictionary}
+      />
     </div>
   );
 }

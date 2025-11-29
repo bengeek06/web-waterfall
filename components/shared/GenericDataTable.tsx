@@ -87,7 +87,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown, FileJson, FileSpreadsheet } from "lucide-react";
 
 // Constants
 import { TABLE_TEST_IDS, testId } from "@/lib/test-ids";
@@ -130,7 +130,13 @@ export interface GenericDataTableProps<T> {
   onExport?: (_data: T[], _format: 'json' | 'csv') => void;
   
   /** Callback for import action */
-  onImport?: (_format: 'json' | 'csv') => void;
+  onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
+  
+  /** Loading state for import operation */
+  isImporting?: boolean;
+  
+  /** Loading state for export operation */
+  isExporting?: boolean;
   
   /** Callback for bulk delete action */
   onBulkDelete?: (_selectedIds: (string | number)[]) => void | Promise<void>;
@@ -199,6 +205,8 @@ export function GenericDataTable<T>({
   enableImportExport = false,
   onExport,
   onImport,
+  isImporting = false,
+  isExporting = false,
   onBulkDelete,
   enableRowSelection = false,
   enableColumnFilters = true,
@@ -312,7 +320,7 @@ export function GenericDataTable<T>({
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>, format: 'json' | 'csv') => {
     const file = event.target.files?.[0];
     if (file && onImport) {
-      onImport(format);
+      onImport(format, file);
       // Reset input to allow re-importing the same file
       event.target.value = '';
     }
@@ -400,17 +408,24 @@ export function GenericDataTable<T>({
                     <Button 
                       variant="outline" 
                       size="sm"
+                      disabled={isImporting}
                       {...testId(TABLE_TEST_IDS.genericTable.importButton)}
                     >
-                      <Upload className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      {isImporting ? (
+                        <Spinner className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      ) : (
+                        <Upload className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      )}
                       {dictionary.import || "Import"}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => document.getElementById('file-import-json')?.click()}>
+                      <FileJson className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                       Import JSON
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => document.getElementById('file-import-csv')?.click()}>
+                      <FileSpreadsheet className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                       Import CSV
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -438,18 +453,25 @@ export function GenericDataTable<T>({
                   <Button 
                     variant="outline" 
                     size="sm"
+                    disabled={isExporting}
                     {...testId(TABLE_TEST_IDS.genericTable.exportButton)}
                   >
-                    <Download className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    {isExporting ? (
+                      <Spinner className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    ) : (
+                      <Download className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    )}
                     {dictionary.export || "Export"}
                     {selectedCount > 0 && ` (${selectedCount})`}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => handleExport('json')}>
+                    <FileJson className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                     Export JSON
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileSpreadsheet className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                     Export CSV
                   </DropdownMenuItem>
                 </DropdownMenuContent>

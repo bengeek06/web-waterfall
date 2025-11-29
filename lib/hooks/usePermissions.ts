@@ -98,10 +98,6 @@ export function usePermissions(): UsePermissionsReturn {
         }
         
         setPermissions(normalizedPerms);
-        
-        // Debug: log guardian role permissions
-        const guardianRolePerms = normalizedPerms.filter(p => p.service === 'guardian' && p.resource === 'role');
-        console.log('🔐 Guardian role permissions:', guardianRolePerms);
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
         // En cas d'erreur, on ne bloque pas l'UI mais on log
