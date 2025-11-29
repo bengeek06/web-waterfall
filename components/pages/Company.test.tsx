@@ -10,24 +10,26 @@
  */
 
 /**
- * Note: Some tests are skipped due to jest mock issues with fetchWithAuth in useEffect.
- * The component stays in loading state even with proper mocks configured.
+ * Tests for Company component including:
+ * - Error handling for failed API calls
+ * - Loading state behavior
+ * - Unsaved changes detection for back button navigation
  * 
- * The error handling tests work because they check for specific status codes.
- * 
- * TODO: Investigate proper mocking strategy for async fetchWithAuth calls in useEffect.
+ * IMPORTANT: The useRouter mock MUST return a stable object reference.
+ * Creating a new object on each call (e.g., `useRouter: () => ({ push: mockPush })`)
+ * causes infinite re-renders because the router object is a useEffect dependency.
  */
 
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { COMPANY_TEST_IDS } from "@/lib/test-ids";
 
-// Mock useRouter
+// Mock useRouter - MUST return stable reference to avoid infinite loops
 const mockPush = jest.fn();
+const mockRouter = { push: mockPush };
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: mockPush,
-  }),
+  useRouter: () => mockRouter,
 }));
 
 // Mock fetchWithAuth
@@ -62,6 +64,7 @@ const mockDictionary = {
     save: "Save",
     cancel: "Cancel",
     back: "Back",
+    edit: "Edit",
   },
   dialog: {
     unsaved_changes_title: "Unsaved Changes",
@@ -73,6 +76,7 @@ const mockDictionary = {
     save_success: "Company information has been successfully updated.",
     save_error: "Error saving company information.",
     load_error: "Error loading company information.",
+    saving: "Saving...",
   },
   validation: {
     name_required: "Company name is required.",
@@ -136,6 +140,262 @@ describe("Company", () => {
       render(<Company companyId="company-123" dictionary={mockDictionary} />);
       
       expect(screen.getByText("Chargement...")).toBeInTheDocument();
+    });
+  });
+
+  describe("unsaved changes detection", () => {
+    const mockCompanyData = {
+      id: "company-123",
+      name: "Test Company",
+      address: "123 Test Street",
+      city: "Test City",
+      postal_code: "12345",
+      country: "Test Country",
+      phone: "+1234567890",
+      email: "company@test.com",
+      website: "https://test.com",
+      siret: "12345678901234",
+      vat_number: "FR12345678901",
+    };
+
+    beforeEach(() => {
+      // Use mockImplementation to have more control over the resolved promise
+      mockFetchWithAuth.mockImplementation(() => 
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve(mockCompanyData),
+        })
+      );
+    });
+
+    it("should navigate directly when clicking back button without unsaved changes", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Click back button (not in edit mode, so no unsaved changes)
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Should navigate directly
+      expect(mockPush).toHaveBeenCalledWith("/home/settings");
+      
+      // Dialog should not appear
+      expect(screen.queryByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).not.toBeInTheDocument();
+    });
+
+    it("should show dialog when clicking back button with unsaved changes", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make a change to the form
+      const nameInput = screen.getByTestId(COMPANY_TEST_IDS.nameInput);
+      await user.clear(nameInput);
+      await user.type(nameInput, "Modified Company Name");
+
+      // Click back button
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Dialog should appear
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).toBeInTheDocument();
+      });
+
+      // Should not navigate yet
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it("should close dialog and stay on page when clicking Keep Editing", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make a change to the form
+      const nameInput = screen.getByTestId(COMPANY_TEST_IDS.nameInput);
+      await user.clear(nameInput);
+      await user.type(nameInput, "Modified Company Name");
+
+      // Click back button
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Dialog should appear
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).toBeInTheDocument();
+      });
+
+      // Click "Keep Editing" button
+      const keepEditingButton = screen.getByTestId(COMPANY_TEST_IDS.keepEditingButton);
+      await user.click(keepEditingButton);
+
+      // Dialog should close
+      await waitFor(() => {
+        expect(screen.queryByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).not.toBeInTheDocument();
+      });
+
+      // Should still be on page (no navigation)
+      expect(mockPush).not.toHaveBeenCalled();
+
+      // Changes should still be present
+      expect(nameInput).toHaveValue("Modified Company Name");
+    });
+
+    it("should navigate away when clicking Discard Changes", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make a change to the form
+      const nameInput = screen.getByTestId(COMPANY_TEST_IDS.nameInput);
+      await user.clear(nameInput);
+      await user.type(nameInput, "Modified Company Name");
+
+      // Click back button
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Dialog should appear
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).toBeInTheDocument();
+      });
+
+      // Click "Discard Changes" button
+      const discardChangesButton = screen.getByTestId(COMPANY_TEST_IDS.discardChangesButton);
+      await user.click(discardChangesButton);
+
+      // Should navigate away
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith("/home/settings");
+      });
+    });
+
+    it("should correctly detect changes in multiple form fields", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make changes to multiple fields
+      const addressInput = screen.getByTestId(COMPANY_TEST_IDS.addressInput);
+      await user.clear(addressInput);
+      await user.type(addressInput, "456 New Street");
+
+      const cityInput = screen.getByTestId(COMPANY_TEST_IDS.cityInput);
+      await user.clear(cityInput);
+      await user.type(cityInput, "New City");
+
+      // Click back button
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Dialog should appear because of changes
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).toBeInTheDocument();
+      });
+    });
+
+    it("should not show dialog after canceling edit mode", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make a change to the form
+      const nameInput = screen.getByTestId(COMPANY_TEST_IDS.nameInput);
+      await user.clear(nameInput);
+      await user.type(nameInput, "Modified Company Name");
+
+      // Cancel editing
+      const cancelButton = screen.getByTestId(COMPANY_TEST_IDS.cancelButton);
+      await user.click(cancelButton);
+
+      // Click back button - should navigate directly since we're no longer editing
+      const backButton = screen.getByTestId(COMPANY_TEST_IDS.backButton);
+      await user.click(backButton);
+
+      // Should navigate directly (no dialog)
+      expect(mockPush).toHaveBeenCalledWith("/home/settings");
+      expect(screen.queryByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).not.toBeInTheDocument();
+    });
+
+    it("should work with header back button as well", async () => {
+      const user = userEvent.setup();
+      
+      render(<Company companyId="company-123" dictionary={mockDictionary} />);
+
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.card)).toBeInTheDocument();
+      });
+
+      // Enter edit mode
+      const editButton = screen.getByTestId(COMPANY_TEST_IDS.editButton);
+      await user.click(editButton);
+
+      // Make a change to the form
+      const nameInput = screen.getByTestId(COMPANY_TEST_IDS.nameInput);
+      await user.clear(nameInput);
+      await user.type(nameInput, "Modified Company Name");
+
+      // Click header back button
+      const backButtonHeader = screen.getByTestId(COMPANY_TEST_IDS.backButtonHeader);
+      await user.click(backButtonHeader);
+
+      // Dialog should appear
+      await waitFor(() => {
+        expect(screen.getByTestId(COMPANY_TEST_IDS.unsavedChangesDialog)).toBeInTheDocument();
+      });
     });
   });
 });
