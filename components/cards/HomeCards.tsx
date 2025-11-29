@@ -35,21 +35,6 @@ interface HomeCardsProps {
 export function HomeCards({ dictionary }: HomeCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-      {/* Card Workspace - Always visible */}
-      <Card className={`border-l-4 ${COLOR_CLASSES.border.primary} shadow-sm hover:shadow-md transition-shadow`}>
-        <CardHeader className="flex flex-row items-center gap-3">
-          <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.primary}`} />
-          <CardTitle>{dictionary.workspace}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Link href="/home/workspace" className="w-full mt-2">
-            <Button variant="outline" className="w-full">
-              Accéder
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-
       {/* Card Users Administration - Protected */}
       <ProtectedCard 
         requirements={PERMISSION_REQUIREMENTS.USER_ADMINISTRATION}
@@ -63,7 +48,7 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
           <CardContent>
             <Link href="/home/admin" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access_administration}
               </Button>
             </Link>
           </CardContent>
@@ -83,7 +68,7 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
           <CardContent>
             <Link href="/home/settings" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access_company}
               </Button>
             </Link>
           </CardContent>
@@ -99,7 +84,22 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
         <CardContent>
           <Link href="/home/projects" className="w-full mt-2">
             <Button variant="outline" className="w-full">
-              Accéder
+              {dictionary.access_projects}
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
+      {/* Card Workspace - Always visible (last position) */}
+      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallWorkspace} shadow-sm hover:shadow-md transition-shadow`}>
+        <CardHeader className="flex flex-row items-center gap-3">
+          <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallWorkspace}`} />
+          <CardTitle>{dictionary.workspace}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link href="/home/workspace" className="w-full mt-2">
+            <Button variant="outline" className="w-full">
+              {dictionary.access_workspace}
             </Button>
           </Link>
         </CardContent>
