@@ -228,6 +228,7 @@ export default function Customers({
     <GenericCrudTable<Customer, CustomerFormData>
       service="identity"
       path="/customers"
+      entityName="customers"
       columns={(handlers) => createCustomerColumns(dictionary, commonTable, handlers)}
       schema={customerSchema}
       defaultFormValues={{
@@ -242,12 +243,6 @@ export default function Customers({
       commonTable={commonTable}
       enableImportExport={true}
       enableRowSelection={true}
-      onImport={(format) => {
-        console.log(`Import ${format} clicked`);
-      }}
-      onExport={(data, format) => {
-        console.log(`Export ${data.length} items in ${format} format`);
-      }}
       renderFormFields={(form, dict, editingItem, refresh) => (
         <>
           {/* Logo Upload - Only in edit mode */}

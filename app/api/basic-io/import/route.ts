@@ -16,85 +16,58 @@ import { proxyRequest } from "@/lib/proxy";
  * POST /api/basic-io/import
  * Import data from file to a Waterfall service endpoint
  * 
- * Query parameters:
- * - service: Target service name (identity, guardian, project, storage) - required
- * - path: Path within the service (e.g., /customers) - required
- * - type: Import format (json, csv, mermaid) - default: json
- * - resolve_foreign_keys: Resolve FK references using enriched metadata (true/false) - default: true
- * - skip_on_ambiguous: Skip records with ambiguous references (true/false) - default: true
- * - skip_on_missing: Skip records with missing references (true/false) - default: true
- * - detect_cycles: Detect circular parent references in tree structures (true/false) - default: true
+ * Query parameters (passed through to basic-io service):
+ * - service: Target service name (identity, guardian, project, storage, diagram) - required
+ * - endpoint: API endpoint path (e.g., users, customers) - required
+ * - type: Import file format (json, csv) - default: json
+ * - resolve_refs: Resolve FK references using _references metadata (true/false) - default: true
+ * - on_ambiguous: Behavior for multiple FK matches (skip, fail) - default: skip
+ * - on_missing: Behavior for missing FK matches (skip, fail) - default: skip
+ * - associations_mode: How to handle M2M associations (skip, merge, recreate) - default: skip
  * 
  * Body: multipart/form-data with 'file' field
  * 
- * This endpoint translates the service name to the internal backend URL
+ * @see https://github.com/bengeek06/basic-io-api-waterfall/blob/develop/openapi.yml
  */
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
   const searchParams = url.searchParams;
   
-  // Get service and path from query params
-  const serviceName = searchParams.get('service');
-  const servicePath = searchParams.get('path');
+  // Validate required parameters
+  const service = searchParams.get('service');
+  const endpoint = searchParams.get('endpoint');
   
-  if (!serviceName || !servicePath) {
+  if (!service || !endpoint) {
     return new Response(
-      JSON.stringify({ error: 'Missing required parameters: service and path' }),
+      JSON.stringify({ error: 'Missing required parameters: service and endpoint' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
   
-  // Map service name to environment variable (use BASIC_IO_* variants for Docker access)
-  const serviceEnvMap: Record<string, string> = {
-    'identity': 'BASIC_IO_IDENTITY_SERVICE_URL',
-    'guardian': 'BASIC_IO_GUARDIAN_SERVICE_URL',
-    'project': 'BASIC_IO_PROJECT_SERVICE_URL',
-    'storage': 'BASIC_IO_STORAGE_SERVICE_URL',
-  };
-  
-  const serviceEnvVar = serviceEnvMap[serviceName.toLowerCase()];
-  if (!serviceEnvVar) {
+  // Validate service name
+  const validServices = ['identity', 'guardian', 'project', 'storage', 'diagram'];
+  if (!validServices.includes(service.toLowerCase())) {
     return new Response(
-      JSON.stringify({ error: `Unknown service: ${serviceName}` }),
+      JSON.stringify({ error: `Unknown service: ${service}. Valid services: ${validServices.join(', ')}` }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
     );
   }
   
-  const serviceUrl = process.env[serviceEnvVar];
-  if (!serviceUrl) {
-    return new Response(
-      JSON.stringify({ error: `Service URL not configured: ${serviceEnvVar}` }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-  
-  // Build the target URL for the backend service
-  const targetUrl = `${serviceUrl}${servicePath}`;
-  
-  // Build new query params for basic-io service
-  const newSearchParams = new URLSearchParams(searchParams);
-  newSearchParams.set('url', targetUrl);
-  newSearchParams.delete('service');
-  newSearchParams.delete('path');
-  
+  // Pass all query params directly to basic-io (it handles service+endpoint resolution)
   return proxyRequest(req, {
     service: 'BASIC_IO_SERVICE_URL',
-    path: `/import?${newSearchParams.toString()}`,
+    path: `/import?${searchParams.toString()}`,
     method: 'POST',
     mock: {
       status: 200,
       body: { 
-        total_records: 0,
-        successful_imports: 0,
-        failed_imports: 0,
-        auto_resolved_references: 0,
-        ambiguous_references: 0,
-        missing_references: 0,
-        id_mapping: {},
-        reference_resolutions: [],
-        errors: [],
-        warnings: [],
-        duration_seconds: 0
+        import_report: {
+          total: 0,
+          success: 0,
+          failed: 0,
+          id_mapping: {},
+          errors: [],
+        }
       },
     },
   });

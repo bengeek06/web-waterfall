@@ -94,14 +94,18 @@ import { AlertTriangle } from "lucide-react";
 // Hooks & Utils
 import { useTableCrud } from "@/lib/hooks/useTableCrud";
 import { useZodForm } from "@/lib/hooks/useZodForm";
+import { useBasicIO } from "@/lib/hooks/useBasicIO";
 
 // Types
 export interface GenericCrudTableProps<T extends { id?: string | number }, TForm extends FieldValues = T & FieldValues> {
-  /** API service name */
+  /** API service name (identity, guardian, project, storage) */
   readonly service: string;
   
-  /** API endpoint path */
+  /** API endpoint path (e.g., /customers, /users) */
   readonly path: string;
+  
+  /** Entity name for export filename (defaults to path without leading slash) */
+  readonly entityName?: string;
   
   /** Column definitions factory (receives handlers) */
   readonly columns: (_handlers: { 
@@ -161,10 +165,17 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
   /** Transform API item to form data (optional) */
   readonly transformItemToForm?: (_item: T) => TForm;
   
-  /** Custom import handler (optional) */
+  /** 
+   * Custom import handler (optional)
+   * If not provided and enableImportExport=true, uses basic-io service automatically
+   */
   readonly onImport?: (_format: 'json' | 'csv') => void;
   
-  /** Custom export handler (optional) - receives selected data if any, otherwise all data */
+  /** 
+   * Custom export handler (optional)
+   * If not provided and enableImportExport=true, uses basic-io service automatically
+   * Receives selected data if any, otherwise all data
+   */
   readonly onExport?: (_data: T[], _format: 'json' | 'csv') => void;
   
   /** Enable import/export (default: false) */
@@ -182,6 +193,7 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
 export function GenericCrudTable<T extends { id?: string | number }, TForm extends FieldValues = T & FieldValues>({
   service,
   path,
+  entityName,
   columns,
   schema,
   defaultFormValues,
@@ -209,6 +221,21 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
   const { data, isLoading, create, update, remove, refresh } = useTableCrud<T>({
     service,
     path,
+  });
+
+  // ==================== BASIC-IO IMPORT/EXPORT ====================
+  
+  // Convert path to endpoint (remove leading slash)
+  const endpoint = path.startsWith('/') ? path.slice(1) : path;
+  
+  const { exportData, importData } = useBasicIO({
+    service,
+    endpoint,
+    entityName: entityName ?? endpoint,
+    onImportSuccess: () => {
+      // Refresh table data after successful import
+      refresh();
+    },
   });
 
   // ==================== FORM ====================
@@ -278,6 +305,37 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
     }
   };
 
+  // ==================== IMPORT/EXPORT HANDLERS ====================
+  
+  /**
+   * Default export handler using basic-io service
+   * Can be overridden via onExport prop
+   */
+  const handleDefaultExport = async (selectedData: T[], format: 'json' | 'csv') => {
+    const ids = selectedData.length > 0 
+      ? selectedData.map(item => item.id).filter((id): id is string | number => id !== undefined)
+      : undefined;
+    
+    await exportData({
+      format,
+      ids,
+      enrich: true, // Include reference metadata for re-import
+    });
+  };
+  
+  /**
+   * Default import handler using basic-io service
+   * Can be overridden via onImport prop
+   */
+  const handleDefaultImport = async (format: 'json' | 'csv') => {
+    await importData({
+      format,
+      resolveRefs: true,
+      onAmbiguous: 'skip',
+      onMissing: 'skip',
+    });
+  };
+
   // ==================== RENDER ====================
 
   return (
@@ -311,8 +369,8 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
         enableImportExport={enableImportExport}
         enableRowSelection={enableRowSelection}
         onBulkDelete={enableRowSelection ? handleBulkDelete : undefined}
-        onExport={onExport ? (data, format) => onExport(data, format) : undefined}
-        onImport={onImport ? (format) => onImport(format) : undefined}
+        onExport={onExport ?? (enableImportExport ? handleDefaultExport : undefined)}
+        onImport={onImport ?? (enableImportExport ? handleDefaultImport : undefined)}
       />
 
       {/* Create/Edit Dialog */}

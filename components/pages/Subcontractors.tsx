@@ -239,6 +239,7 @@ export default function Subcontractors({
     <GenericCrudTable<Subcontractor, SubcontractorFormData>
       service="identity"
       path="/subcontractors"
+      entityName="subcontractors"
       columns={(handlers) => createSubcontractorColumns(dictionary, commonTable, handlers)}
       schema={subcontractorSchema}
       defaultFormValues={{
@@ -254,12 +255,6 @@ export default function Subcontractors({
       commonTable={commonTable}
       enableImportExport={true}
       enableRowSelection={true}
-      onImport={(format) => {
-        console.log(`Import ${format} clicked`);
-      }}
-      onExport={(data, format) => {
-        console.log(`Export ${data.length} items in ${format} format`);
-      }}
       renderFormFields={(form, dict, editingItem, refresh) => (
         <>
           {/* Logo Upload - Only in edit mode */}
