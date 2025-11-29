@@ -160,7 +160,6 @@ function openFilePicker(accept: string): Promise<File | null> {
       if (resolved) return;
       cleanup();
       const file = (e.target as HTMLInputElement).files?.[0] || null;
-      console.log('[useBasicIO] File selected:', file?.name, file?.size, file?.type);
       resolve(file);
     };
     
@@ -168,11 +167,9 @@ function openFilePicker(accept: string): Promise<File | null> {
     input.oncancel = () => {
       if (resolved) return;
       cleanup();
-      console.log('[useBasicIO] File picker cancelled');
       resolve(null);
     };
     
-    console.log('[useBasicIO] Opening file picker for:', accept);
     input.click();
   });
 }
@@ -331,7 +328,6 @@ export function useBasicIO({
       
       return null;
     } catch (error) {
-      console.error('[useBasicIO] Import error:', error);
       const err = error instanceof Error ? error : new Error(String(error));
       setImportError(err);
       onImportError?.(err);
