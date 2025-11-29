@@ -70,6 +70,7 @@ const mockDictionary = {
     discard_changes: "Discard Changes",
   },
   messages: {
+    loading: "Loading...",
     save_success: "Company information has been successfully updated.",
     save_error: "Error saving company information.",
     load_error: "Error loading company information.",
@@ -135,7 +136,7 @@ describe("Company", () => {
       
       render(<Company companyId="company-123" dictionary={mockDictionary} />);
       
-      expect(screen.getByText("Chargement...")).toBeInTheDocument();
+      expect(screen.getByText(mockDictionary.messages.loading)).toBeInTheDocument();
     });
   });
 });

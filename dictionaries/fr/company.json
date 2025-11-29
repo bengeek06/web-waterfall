@@ -23,6 +23,7 @@
     "discard_changes": "Abandonner les modifications"
   },
   "messages": {
+    "loading": "Chargement...",
     "save_success": "Les informations de l'entreprise ont été mises à jour avec succès.",
     "save_error": "Erreur lors de l'enregistrement des informations.",
     "load_error": "Erreur lors du chargement des informations de l'entreprise."
