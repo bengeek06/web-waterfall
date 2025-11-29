@@ -94,6 +94,7 @@
   --waterfall-company-color: #5dade2;   /* Bleu ciel - Entreprise */
   --waterfall-user-color: #52c89f;      /* Vert menthe - Utilisateur */
   --waterfall-project-color: #9b59b6;   /* Violet - Projets */
+  --waterfall-workspace-color: #e67e22; /* Orange - Workspace/Files */
 
   /* Gradient colors - subtle gray tones */
   --waterfall-gradient-start: #f8f9fa;  /* Gris très clair */

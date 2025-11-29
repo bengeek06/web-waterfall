@@ -19,7 +19,7 @@ export async function GET() {
     const version = fs.readFileSync(versionPath, 'utf-8').trim();
 
     return NextResponse.json({ version });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: 'Version file not found', version: 'Unknown' },
       { status: 500 }

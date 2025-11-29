@@ -108,6 +108,7 @@ export const COLOR_CLASSES = {
     waterfallCompany: 'text-[var(--waterfall-company-color)]',
     waterfallUser: 'text-[var(--waterfall-user-color)]',
     waterfallProject: 'text-[var(--waterfall-project-color)]',
+    waterfallWorkspace: 'text-[var(--waterfall-workspace-color)]',
     waterfallPrimaryDark: 'text-[var(--waterfall-primary-dark)]',
   },
   operations: {
@@ -148,6 +149,7 @@ export const COLOR_CLASSES = {
     waterfallCompany: 'border-l-[var(--waterfall-company-color)]',
     waterfallUser: 'border-l-[var(--waterfall-user-color)]',
     waterfallProject: 'border-l-[var(--waterfall-project-color)]',
+    waterfallWorkspace: 'border-l-[var(--waterfall-workspace-color)]',
   },
 } as const;
 
