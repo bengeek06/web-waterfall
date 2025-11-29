@@ -18,6 +18,7 @@ import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ProtectedCard } from "@/components/shared/ProtectedCard";
 import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
+import { HOME_CARDS_TEST_IDS, testId } from "@/lib/test-ids";
 
 interface HomeCardsProps {
   readonly dictionary: {
@@ -34,20 +35,30 @@ interface HomeCardsProps {
 
 export function HomeCards({ dictionary }: HomeCardsProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+    <div 
+      className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto"
+      {...testId(HOME_CARDS_TEST_IDS.container)}
+    >
       {/* Card Users Administration - Protected */}
       <ProtectedCard 
         requirements={PERMISSION_REQUIREMENTS.USER_ADMINISTRATION}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(HOME_CARDS_TEST_IDS.administrationCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <ShieldCheck className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallUser}`} />
             <CardTitle>{dictionary.administration}</CardTitle>
           </CardHeader>
           <CardContent>
             <Link href="/home/admin" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(HOME_CARDS_TEST_IDS.administrationButton)}
+              >
                 {dictionary.access_administration}
               </Button>
             </Link>
@@ -60,14 +71,21 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
         requirements={PERMISSION_REQUIREMENTS.COMPANY_SETTINGS}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(HOME_CARDS_TEST_IDS.companyCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <Building2 className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>{dictionary.company}</CardTitle>
           </CardHeader>
           <CardContent>
             <Link href="/home/settings" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(HOME_CARDS_TEST_IDS.companyButton)}
+              >
                 {dictionary.access_company}
               </Button>
             </Link>
@@ -76,14 +94,21 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
       </ProtectedCard>
 
       {/* Card Projects - Always visible for now */}
-      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallProject} shadow-sm hover:shadow-md transition-shadow`}>
+      <Card 
+        className={`border-l-4 ${COLOR_CLASSES.border.waterfallProject} shadow-sm hover:shadow-md transition-shadow`}
+        {...testId(HOME_CARDS_TEST_IDS.projectsCard)}
+      >
         <CardHeader className="flex flex-row items-center gap-3">
           <FolderKanban className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallProject}`} />
           <CardTitle>{dictionary.projects}</CardTitle>
         </CardHeader>
         <CardContent>
           <Link href="/home/projects" className="w-full mt-2">
-            <Button variant="outline" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              {...testId(HOME_CARDS_TEST_IDS.projectsButton)}
+            >
               {dictionary.access_projects}
             </Button>
           </Link>
@@ -91,14 +116,21 @@ export function HomeCards({ dictionary }: HomeCardsProps) {
       </Card>
 
       {/* Card Workspace - Always visible (last position) */}
-      <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallWorkspace} shadow-sm hover:shadow-md transition-shadow`}>
+      <Card 
+        className={`border-l-4 ${COLOR_CLASSES.border.waterfallWorkspace} shadow-sm hover:shadow-md transition-shadow`}
+        {...testId(HOME_CARDS_TEST_IDS.workspaceCard)}
+      >
         <CardHeader className="flex flex-row items-center gap-3">
           <Folder className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallWorkspace}`} />
           <CardTitle>{dictionary.workspace}</CardTitle>
         </CardHeader>
         <CardContent>
           <Link href="/home/workspace" className="w-full mt-2">
-            <Button variant="outline" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              {...testId(HOME_CARDS_TEST_IDS.workspaceButton)}
+            >
               {dictionary.access_workspace}
             </Button>
           </Link>
