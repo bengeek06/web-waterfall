@@ -43,7 +43,7 @@ describe('GET /api/basic-io/export', () => {
   });
   it('should forward Content-Disposition header from upstream service', async () => {
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?service=identity&path=/users&type=json',
+      'http://localhost:3000/api/basic-io/export?service=identity&endpoint=users&type=json',
       {
         method: 'GET',
         headers: {
@@ -61,7 +61,7 @@ describe('GET /api/basic-io/export', () => {
 
   it('should forward Cache-Control header from upstream service', async () => {
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?service=identity&path=/companies&type=csv',
+      'http://localhost:3000/api/basic-io/export?service=identity&endpoint=companies&type=csv',
       {
         method: 'GET',
       }
@@ -77,7 +77,7 @@ describe('GET /api/basic-io/export', () => {
     // This test verifies the fix for IncompleteRead bug
     // Content-Length from upstream should be ignored, Next.js calculates its own
     const req = new NextRequest(
-      'http://localhost:3000/api/basic-io/export?service=identity&path=/users&type=json',
+      'http://localhost:3000/api/basic-io/export?service=identity&endpoint=users&type=json',
       {
         method: 'GET',
       }
