@@ -132,6 +132,12 @@ export interface GenericDataTableProps<T> {
   /** Callback for import action */
   onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
   
+  /** Loading state for import operation */
+  isImporting?: boolean;
+  
+  /** Loading state for export operation */
+  isExporting?: boolean;
+  
   /** Callback for bulk delete action */
   onBulkDelete?: (_selectedIds: (string | number)[]) => void | Promise<void>;
   
@@ -199,6 +205,8 @@ export function GenericDataTable<T>({
   enableImportExport = false,
   onExport,
   onImport,
+  isImporting = false,
+  isExporting = false,
   onBulkDelete,
   enableRowSelection = false,
   enableColumnFilters = true,
@@ -400,9 +408,14 @@ export function GenericDataTable<T>({
                     <Button 
                       variant="outline" 
                       size="sm"
+                      disabled={isImporting}
                       {...testId(TABLE_TEST_IDS.genericTable.importButton)}
                     >
-                      <Upload className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      {isImporting ? (
+                        <Spinner className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      ) : (
+                        <Upload className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                      )}
                       {dictionary.import || "Import"}
                     </Button>
                   </DropdownMenuTrigger>
@@ -438,9 +451,14 @@ export function GenericDataTable<T>({
                   <Button 
                     variant="outline" 
                     size="sm"
+                    disabled={isExporting}
                     {...testId(TABLE_TEST_IDS.genericTable.exportButton)}
                   >
-                    <Download className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    {isExporting ? (
+                      <Spinner className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    ) : (
+                      <Download className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
+                    )}
                     {dictionary.export || "Export"}
                     {selectedCount > 0 && ` (${selectedCount})`}
                   </Button>

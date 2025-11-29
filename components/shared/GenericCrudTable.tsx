@@ -231,7 +231,7 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
   // Convert path to endpoint (remove leading slash)
   const endpoint = path.startsWith('/') ? path.slice(1) : path;
   
-  const { exportData, importData } = useBasicIO({
+  const { exportData, importData, isExporting, isImporting } = useBasicIO({
     service,
     endpoint,
     entityName: entityName ?? endpoint,
@@ -391,6 +391,8 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
         onBulkDelete={enableRowSelection ? handleBulkDelete : undefined}
         onExport={onExport ?? (enableImportExport ? handleDefaultExport : undefined)}
         onImport={onImport ?? (enableImportExport ? handleDefaultImport : undefined)}
+        isExporting={isExporting}
+        isImporting={isImporting}
       />
 
       {/* Create/Edit Dialog */}
