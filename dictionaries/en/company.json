@@ -23,6 +23,7 @@
     "discard_changes": "Discard Changes"
   },
   "messages": {
+    "loading": "Loading...",
     "save_success": "Company information has been successfully updated.",
     "save_error": "Error saving company information.",
     "load_error": "Error loading company information."

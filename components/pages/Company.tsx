@@ -302,7 +302,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Chargement...</p>
+        <p className="text-muted-foreground">{dictionary.messages.loading}</p>
       </div>
     );
   }
