@@ -512,7 +512,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                   onClick={handleEdit}
                   {...testId(COMPANY_TEST_IDS.editButton)}
                 >
-                  Modifier
+                  {dictionary.form.edit}
                 </Button>
               ) : (
                 <>
