@@ -143,7 +143,7 @@ export default function AboutModal({ children, className, dictionary }: AboutMod
   };
 
   const getVersionClassName = (status: ServiceVersion['status']) => {
-    const base = 'text-sm font-mono px-2 py-1 rounded text-xs';
+    const base = 'font-mono px-2 py-1 rounded text-xs';
     switch (status) {
       case 'success':
         return `${base} ${COLOR_CLASSES.statusBadge.success}`;
