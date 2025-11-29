@@ -1,0 +1,10 @@
+{
+  "title": "À propos de Waterfall",
+  "application": "Application",
+  "app_name": "Waterfall Web",
+  "backend_services": "Services Backend",
+  "loading": "Chargement...",
+  "unknown": "Inconnu",
+  "error": "Erreur",
+  "copyright": "© 2025 Waterfall Project Management"
+}

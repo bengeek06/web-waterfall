@@ -123,10 +123,10 @@ export default async function TopBar() {
               <DropdownMenuItem asChild>
                 <AboutModal
                   className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
-                  testId={COMMON_TEST_IDS.topBar.aboutLink}
+                  dictionary={dictionary}
                 >
                   <Info size={16} className="text-gray-500" />
-                  <span>{dictionary.about}</span>
+                  <span>{dictionary.about_menu}</span>
                 </AboutModal>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
