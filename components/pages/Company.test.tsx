@@ -160,13 +160,13 @@ describe("Company", () => {
 
     beforeEach(() => {
       // Use mockImplementation to have more control over the resolved promise
-      mockFetchWithAuth.mockImplementation(() => 
+      mockFetchWithAuth.mockImplementation(() => (
         Promise.resolve({
           ok: true,
           status: 200,
           json: () => Promise.resolve(mockCompanyData),
         })
-      );
+      ));
     });
 
     it("should navigate directly when clicking back button without unsaved changes", async () => {
