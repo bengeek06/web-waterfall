@@ -14,18 +14,28 @@ import { buildExportUrl, buildImportUrl } from '@/lib/api-routes/basic_io';
 
 // ==================== TYPES ====================
 
+export interface ImportReportDetails {
+  field: string;
+  status: 'resolved' | 'ambiguous' | 'missing' | 'error';
+  lookup_value?: string;
+  candidates?: number;
+  error?: string;
+}
+
+export interface ImportReportError {
+  original_id?: string;
+  status_code?: number | null;
+  error?: string;
+  response_body?: Record<string, unknown>;
+}
+
 export interface ImportReport {
   import_report: {
     total: number;
     success: number;
     failed: number;
     id_mapping: Record<string, string>;
-    errors?: Array<{
-      original_id?: string;
-      status_code?: number;
-      error?: string;
-      response_body?: Record<string, unknown>;
-    }>;
+    errors?: ImportReportError[];
     associations_stats?: Record<string, {
       total: number;
       resolved: number;
@@ -35,19 +45,13 @@ export interface ImportReport {
       failed_links: number;
       errors?: string[];
     }>;
-    resolution_report?: {
-      resolved: number;
-      ambiguous: number;
-      missing: number;
-      errors: number;
-      details?: Array<{
-        field: string;
-        status: 'resolved' | 'ambiguous' | 'missing' | 'error';
-        lookup_value?: string;
-        candidates?: number;
-        error?: string;
-      }>;
-    };
+  };
+  resolution_report?: {
+    resolved: number;
+    ambiguous: number;
+    missing: number;
+    errors: number;
+    details?: ImportReportDetails[];
   };
 }
 
@@ -84,6 +88,8 @@ export interface ExportOptions {
 export interface ImportOptions {
   /** Import format */
   format: 'json' | 'csv';
+  /** File to import (if not provided, opens file picker) */
+  file?: File;
   /** Resolve FK references using _references metadata */
   resolveRefs?: boolean;
   /** Behavior for ambiguous FK matches */
@@ -143,11 +149,30 @@ function openFilePicker(accept: string): Promise<File | null> {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
+    
+    let resolved = false;
+    
+    const cleanup = () => {
+      resolved = true;
+    };
+    
     input.onchange = (e) => {
+      if (resolved) return;
+      cleanup();
       const file = (e.target as HTMLInputElement).files?.[0] || null;
+      console.log('[useBasicIO] File selected:', file?.name, file?.size, file?.type);
       resolve(file);
     };
-    input.oncancel = () => resolve(null);
+    
+    // Handle cancel via oncancel event (modern browsers)
+    input.oncancel = () => {
+      if (resolved) return;
+      cleanup();
+      console.log('[useBasicIO] File picker cancelled');
+      resolve(null);
+    };
+    
+    console.log('[useBasicIO] Opening file picker for:', accept);
     input.click();
   });
 }
@@ -248,9 +273,12 @@ export function useBasicIO({
   const importData = useCallback(async (options: ImportOptions): Promise<ImportReport | null> => {
     const { service, endpoint, onImportSuccess, onImportError } = optionsRef.current;
     
-    // Open file picker
-    const accept = options.format === 'csv' ? '.csv' : '.json';
-    const file = await openFilePicker(accept);
+    // Use provided file or open file picker
+    let file: File | null | undefined = options.file;
+    if (!file) {
+      const accept = options.format === 'csv' ? '.csv' : '.json';
+      file = await openFilePicker(accept);
+    }
     
     if (!file) {
       return null; // User cancelled
@@ -281,16 +309,29 @@ export function useBasicIO({
       
       const result = await response.json();
       
+      // Check if response contains an import_report (even on error responses like 400)
+      const hasImportReport = result?.import_report;
+      
+      if (hasImportReport) {
+        // We have a valid report - show it regardless of HTTP status
+        const report = result as ImportReport;
+        setLastImportReport(report);
+        
+        // If there were failures, still call success callback to show the report
+        // The modal will display the errors
+        onImportSuccess?.(report);
+        
+        return report;
+      }
+      
+      // No import report in response - this is a real error
       if (!response.ok) {
         throw new Error(result.error || result.message || `Import failed: ${response.status}`);
       }
       
-      const report = result as ImportReport;
-      setLastImportReport(report);
-      onImportSuccess?.(report);
-      
-      return report;
+      return null;
     } catch (error) {
+      console.error('[useBasicIO] Import error:', error);
       const err = error instanceof Error ? error : new Error(String(error));
       setImportError(err);
       onImportError?.(err);

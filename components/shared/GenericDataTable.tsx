@@ -130,7 +130,7 @@ export interface GenericDataTableProps<T> {
   onExport?: (_data: T[], _format: 'json' | 'csv') => void;
   
   /** Callback for import action */
-  onImport?: (_format: 'json' | 'csv') => void;
+  onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
   
   /** Callback for bulk delete action */
   onBulkDelete?: (_selectedIds: (string | number)[]) => void | Promise<void>;
@@ -312,7 +312,7 @@ export function GenericDataTable<T>({
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>, format: 'json' | 'csv') => {
     const file = event.target.files?.[0];
     if (file && onImport) {
-      onImport(format);
+      onImport(format, file);
       // Reset input to allow re-importing the same file
       event.target.value = '';
     }

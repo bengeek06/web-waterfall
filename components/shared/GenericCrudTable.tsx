@@ -89,12 +89,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { ImportReportModal, defaultImportReportDictionary } from "@/components/modals/import-report-modal";
 import { AlertTriangle } from "lucide-react";
 
 // Hooks & Utils
 import { useTableCrud } from "@/lib/hooks/useTableCrud";
 import { useZodForm } from "@/lib/hooks/useZodForm";
-import { useBasicIO } from "@/lib/hooks/useBasicIO";
+import { useBasicIO, ImportReport } from "@/lib/hooks/useBasicIO";
 
 // Types
 export interface GenericCrudTableProps<T extends { id?: string | number }, TForm extends FieldValues = T & FieldValues> {
@@ -169,7 +170,7 @@ export interface GenericCrudTableProps<T extends { id?: string | number }, TForm
    * Custom import handler (optional)
    * If not provided and enableImportExport=true, uses basic-io service automatically
    */
-  readonly onImport?: (_format: 'json' | 'csv') => void;
+  readonly onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
   
   /** 
    * Custom export handler (optional)
@@ -215,6 +216,8 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
   const [editingItem, setEditingItem] = useState<T | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | number | null>(null);
+  const [showImportReport, setShowImportReport] = useState(false);
+  const [importReport, setImportReport] = useState<ImportReport | null>(null);
 
   // ==================== DATA FETCHING ====================
 
@@ -232,9 +235,16 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
     service,
     endpoint,
     entityName: entityName ?? endpoint,
-    onImportSuccess: () => {
+    onImportSuccess: (report) => {
+      // Show import report modal
+      setImportReport(report);
+      setShowImportReport(true);
       // Refresh table data after successful import
       refresh();
+    },
+    onImportError: (error) => {
+      // If we have a report in the error response, show it
+      console.error('Import error:', error);
     },
   });
 
@@ -310,11 +320,20 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
   /**
    * Default export handler using basic-io service
    * Can be overridden via onExport prop
+   * 
+   * If selectedData is empty or has no valid IDs, exports ALL data (no ids param)
+   * If selectedData has valid IDs, exports only those items (partial export)
    */
   const handleDefaultExport = async (selectedData: T[], format: 'json' | 'csv') => {
-    const ids = selectedData.length > 0 
-      ? selectedData.map(item => item.id).filter((id): id is string | number => id !== undefined)
-      : undefined;
+    // Only pass ids if we have selected items with valid IDs
+    const validIds = selectedData
+      .map(item => item.id)
+      .filter((id): id is string | number => id !== undefined);
+    
+    // Pass ids only for partial export (when we have selected items)
+    const ids = validIds.length > 0 ? validIds : undefined;
+    
+    console.log(`Export requested: ${validIds.length} items selected, exporting ${ids ? 'partial' : 'all'}`);
     
     await exportData({
       format,
@@ -327,9 +346,10 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
    * Default import handler using basic-io service
    * Can be overridden via onImport prop
    */
-  const handleDefaultImport = async (format: 'json' | 'csv') => {
+  const handleDefaultImport = async (format: 'json' | 'csv', file?: File) => {
     await importData({
       format,
+      file,
       resolveRefs: true,
       onAmbiguous: 'skip',
       onMissing: 'skip',
@@ -432,6 +452,14 @@ export function GenericCrudTable<T extends { id?: string | number }, TForm exten
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Import Report Modal */}
+      <ImportReportModal
+        open={showImportReport}
+        onOpenChange={setShowImportReport}
+        report={importReport}
+        dictionary={defaultImportReportDictionary}
+      />
     </div>
   );
 }

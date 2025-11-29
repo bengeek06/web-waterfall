@@ -118,22 +118,30 @@ export async function proxyRequest(
 
   // Read request body - preserve FormData for multipart requests
   const requestContentType = req.headers.get('content-type') || '';
-  let body: string | ReadableStream<Uint8Array> | null = null;
+  let body: ArrayBuffer | string | null = null;
   
   if (requestContentType.includes('multipart/form-data')) {
-    // For multipart/form-data, pass the stream directly without reading it
-    body = req.body;
+    // For multipart/form-data, read the full body as ArrayBuffer
+    // Streaming can cause issues with some Python backends (query params not parsed)
+    body = await req.arrayBuffer();
+    logger.debug(`Multipart body read: ${body.byteLength} bytes`);
   } else if (req.body) {
     // For other content types, read as text
     body = await req.text();
   }
 
   // Prepare headers (exclude 'host' header)
+  // Also update Content-Length for multipart if we read the body
   const headers = Object.fromEntries(
     Array.from(req.headers.entries()).filter(
       ([key]) => key.toLowerCase() !== "host"
     )
   );
+  
+  // Update Content-Length if we have an ArrayBuffer body
+  if (body instanceof ArrayBuffer) {
+    headers['content-length'] = String(body.byteLength);
+  }
   
   logger.debug(`Headers being sent to backend: ${JSON.stringify(headers)}`);
 
@@ -145,8 +153,6 @@ export async function proxyRequest(
       headers,
       body: body || undefined,
       credentials: "include",
-      // @ts-expect-error - duplex is required for streaming bodies but not in TypeScript types yet
-      duplex: requestContentType.includes('multipart/form-data') ? 'half' : undefined,
     });
   } catch (err: unknown) {
     // Handle fetch errors
