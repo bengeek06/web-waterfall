@@ -530,7 +530,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                     disabled={isSaving}
                     {...testId(COMPANY_TEST_IDS.saveButton)}
                   >
-                    {isSaving ? "Enregistrement..." : dictionary.form.save}
+                    {isSaving ? dictionary.messages.saving : dictionary.form.save}
                   </Button>
                 </>
               )}
