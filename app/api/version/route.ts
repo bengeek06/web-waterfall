@@ -20,7 +20,6 @@ export async function GET() {
 
     return NextResponse.json({ version });
   } catch (error) {
-    console.error('Failed to read VERSION file:', error);
     return NextResponse.json(
       { error: 'Version file not found', version: 'Unknown' },
       { status: 500 }
