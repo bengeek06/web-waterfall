@@ -87,7 +87,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { Download, Upload, FileQuestion, Trash2, PlusCircle, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown, FileJson, FileSpreadsheet } from "lucide-react";
 
 // Constants
 import { TABLE_TEST_IDS, testId } from "@/lib/test-ids";
@@ -421,9 +421,11 @@ export function GenericDataTable<T>({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => document.getElementById('file-import-json')?.click()}>
+                      <FileJson className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                       Import JSON
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => document.getElementById('file-import-csv')?.click()}>
+                      <FileSpreadsheet className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                       Import CSV
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -465,9 +467,11 @@ export function GenericDataTable<T>({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => handleExport('json')}>
+                    <FileJson className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                     Export JSON
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleExport('csv')}>
+                    <FileSpreadsheet className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
                     Export CSV
                   </DropdownMenuItem>
                 </DropdownMenuContent>
