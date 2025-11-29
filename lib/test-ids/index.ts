@@ -23,6 +23,7 @@ export * from './pages';
 export * from './shared';
 export * from './about';
 export * from './home-cards';
+export * from './company';
 
 // Re-export helper function
 export { testId } from './auth';
@@ -37,6 +38,7 @@ import { PAGES_TEST_IDS } from './pages';
 import { SHARED_TEST_IDS } from './shared';
 import { ABOUT_TEST_IDS } from './about';
 import { HOME_CARDS_TEST_IDS } from './home-cards';
+import { COMPANY_TEST_IDS } from './company';
 
 export const TEST_IDS = {
   auth: AUTH_TEST_IDS,
@@ -48,4 +50,5 @@ export const TEST_IDS = {
   shared: SHARED_TEST_IDS,
   about: ABOUT_TEST_IDS,
   homeCards: HOME_CARDS_TEST_IDS,
+  company: COMPANY_TEST_IDS,
 } as const;

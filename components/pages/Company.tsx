@@ -19,10 +19,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+// Icons
+import { ArrowLeft } from "lucide-react";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+import { COMPANY_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
@@ -62,6 +74,13 @@ type CompanyProps = {
       vat_number: string;
       save: string;
       cancel: string;
+      back: string;
+    };
+    dialog: {
+      unsaved_changes_title: string;
+      unsaved_changes_description: string;
+      keep_editing: string;
+      discard_changes: string;
     };
     messages: {
       save_success: string;
@@ -83,6 +102,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -149,6 +169,36 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
     setIsEditing(true);
     setError(null);
     setSuccessMessage(null);
+  };
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = (): boolean => {
+    if (!isEditing || !company) return false;
+    return (
+      formData.name !== (company.name || "") ||
+      formData.address !== (company.address || "") ||
+      formData.city !== (company.city || "") ||
+      formData.postal_code !== (company.postal_code || "") ||
+      formData.country !== (company.country || "") ||
+      formData.phone !== (company.phone || "") ||
+      formData.email !== (company.email || "") ||
+      formData.website !== (company.website || "") ||
+      formData.siret !== (company.siret || "") ||
+      formData.vat_number !== (company.vat_number || "")
+    );
+  };
+
+  const handleBack = () => {
+    if (hasUnsavedChanges()) {
+      setShowUnsavedDialog(true);
+    } else {
+      router.push("/home/settings");
+    }
+  };
+
+  const handleConfirmLeave = () => {
+    setShowUnsavedDialog(false);
+    router.push("/home/settings");
   };
 
   const handleCancel = () => {
@@ -252,7 +302,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Chargement...</p>
+        <p className="text-muted-foreground">{dictionary.messages.loading}</p>
       </div>
     );
   }
@@ -266,23 +316,44 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   }
 
   return (
-    <Card className="max-w-3xl mx-auto">
-      <CardHeader>
-        <CardTitle>{dictionary.title}</CardTitle>
-        <CardDescription>{dictionary.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <>
+      <Card className="max-w-3xl mx-auto" {...testId(COMPANY_TEST_IDS.card)}>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              aria-label={dictionary.form.back}
+              {...testId(COMPANY_TEST_IDS.backButtonHeader)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <CardTitle>{dictionary.title}</CardTitle>
+              <CardDescription>{dictionary.description}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
         <form onSubmit={handleSave} className={SPACING.component.md}>
           {/* Success Message */}
           {successMessage && (
-            <div className="p-3 mb-4 bg-green-50 border border-green-200 rounded-md">
+            <div 
+              className="p-3 mb-4 bg-green-50 border border-green-200 rounded-md"
+              {...testId(COMPANY_TEST_IDS.successMessage)}
+            >
               <p className="text-sm text-green-800">{successMessage}</p>
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md">
+            <div 
+              className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md"
+              {...testId(COMPANY_TEST_IDS.errorMessage)}
+            >
               <p className="text-sm text-red-800">{error}</p>
             </div>
           )}
@@ -297,6 +368,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               onChange={(e) => updateField("name", e.target.value)}
               disabled={!isEditing}
               className={errors.name ? "border-red-500" : ""}
+              {...testId(COMPANY_TEST_IDS.nameInput)}
             />
             {errors.name && (
               <p className={`${COLOR_CLASSES.text.destructive} text-sm mt-1`}>
@@ -314,6 +386,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               value={formData.address}
               onChange={(e) => updateField("address", e.target.value)}
               disabled={!isEditing}
+              {...testId(COMPANY_TEST_IDS.addressInput)}
             />
           </div>
 
@@ -327,6 +400,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.city}
                 onChange={(e) => updateField("city", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.cityInput)}
               />
             </div>
             <div className={SPACING.component.xs}>
@@ -337,6 +411,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.postal_code}
                 onChange={(e) => updateField("postal_code", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.postalCodeInput)}
               />
             </div>
           </div>
@@ -350,6 +425,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               value={formData.country}
               onChange={(e) => updateField("country", e.target.value)}
               disabled={!isEditing}
+              {...testId(COMPANY_TEST_IDS.countryInput)}
             />
           </div>
 
@@ -363,6 +439,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.phone}
                 onChange={(e) => updateField("phone", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.phoneInput)}
               />
             </div>
             <div className={SPACING.component.xs}>
@@ -373,6 +450,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.email}
                 onChange={(e) => updateField("email", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.emailInput)}
               />
             </div>
           </div>
@@ -386,6 +464,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               value={formData.website}
               onChange={(e) => updateField("website", e.target.value)}
               disabled={!isEditing}
+              {...testId(COMPANY_TEST_IDS.websiteInput)}
             />
           </div>
 
@@ -399,6 +478,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.siret}
                 onChange={(e) => updateField("siret", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.siretInput)}
               />
             </div>
             <div className={SPACING.component.xs}>
@@ -409,34 +489,84 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
                 value={formData.vat_number}
                 onChange={(e) => updateField("vat_number", e.target.value)}
                 disabled={!isEditing}
+                {...testId(COMPANY_TEST_IDS.vatNumberInput)}
               />
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 mt-6">
-            {!isEditing ? (
-              <Button type="button" onClick={handleEdit}>
-                Modifier
-              </Button>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={isSaving}
+          <div className="flex justify-between mt-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleBack}
+              {...testId(COMPANY_TEST_IDS.backButton)}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {dictionary.form.back}
+            </Button>
+            <div className="flex gap-2">
+              {!isEditing ? (
+                <Button 
+                  type="button" 
+                  onClick={handleEdit}
+                  {...testId(COMPANY_TEST_IDS.editButton)}
                 >
-                  {dictionary.form.cancel}
+                  {dictionary.form.edit}
                 </Button>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving ? "Enregistrement..." : dictionary.form.save}
-                </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={isSaving}
+                    {...testId(COMPANY_TEST_IDS.cancelButton)}
+                  >
+                    {dictionary.form.cancel}
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSaving}
+                    {...testId(COMPANY_TEST_IDS.saveButton)}
+                  >
+                    {isSaving ? dictionary.messages.saving : dictionary.form.save}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </form>
       </CardContent>
     </Card>
+
+    {/* Unsaved Changes Confirmation Dialog */}
+    <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+      <DialogContent {...testId(COMPANY_TEST_IDS.unsavedChangesDialog)}>
+        <DialogHeader>
+          <DialogTitle>{dictionary.dialog.unsaved_changes_title}</DialogTitle>
+          <DialogDescription>
+            {dictionary.dialog.unsaved_changes_description}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setShowUnsavedDialog(false)}
+            {...testId(COMPANY_TEST_IDS.keepEditingButton)}
+          >
+            {dictionary.dialog.keep_editing}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleConfirmLeave}
+            {...testId(COMPANY_TEST_IDS.discardChangesButton)}
+          >
+            {dictionary.dialog.discard_changes}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

@@ -13,9 +13,17 @@
     "siret": "SIRET",
     "vat_number": "VAT Number",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "back": "Back"
+  },
+  "dialog": {
+    "unsaved_changes_title": "Unsaved Changes",
+    "unsaved_changes_description": "You have unsaved changes. Are you sure you want to leave?",
+    "keep_editing": "Keep Editing",
+    "discard_changes": "Discard Changes"
   },
   "messages": {
+    "loading": "Loading...",
     "save_success": "Company information has been successfully updated.",
     "save_error": "Error saving company information.",
     "load_error": "Error loading company information."
