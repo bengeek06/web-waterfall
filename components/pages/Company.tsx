@@ -75,6 +75,7 @@ type CompanyProps = {
       save: string;
       cancel: string;
       back: string;
+      edit: string;
     };
     dialog: {
       unsaved_changes_title: string;
@@ -83,6 +84,8 @@ type CompanyProps = {
       discard_changes: string;
     };
     messages: {
+      loading: string;
+      saving: string;
       save_success: string;
       save_error: string;
       load_error: string;

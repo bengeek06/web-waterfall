@@ -14,7 +14,8 @@
     "vat_number": "VAT Number",
     "save": "Save",
     "cancel": "Cancel",
-    "back": "Back"
+    "back": "Back",
+    "edit": "Edit"
   },
   "dialog": {
     "unsaved_changes_title": "Unsaved Changes",
@@ -24,6 +25,7 @@
   },
   "messages": {
     "loading": "Loading...",
+    "saving": "Saving...",
     "save_success": "Company information has been successfully updated.",
     "save_error": "Error saving company information.",
     "load_error": "Error loading company information."
