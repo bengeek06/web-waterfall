@@ -16,10 +16,10 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, UseFormProps, UseFormReturn, FieldValues } from 'react-hook-form';
-import { z } from 'zod';
+import type { ZodType } from 'zod';
 
-type UseZodFormProps<T extends FieldValues> = UseFormProps<T> & {
-  schema: z.ZodType<T>;
+type UseZodFormProps<T extends FieldValues> = Omit<UseFormProps<T>, 'resolver'> & {
+  schema: ZodType<T>;
 };
 
 /**
@@ -44,6 +44,7 @@ export function useZodForm<T extends FieldValues>({
 }: UseZodFormProps<T>): UseFormReturn<T> {
   return useForm<T>({
     ...formConfig,
-    resolver: zodResolver(schema as unknown as z.ZodTypeAny),
-  });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(schema as any),
+  }) as UseFormReturn<T>;
 }

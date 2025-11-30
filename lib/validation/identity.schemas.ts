@@ -52,7 +52,7 @@ export const createUserSchema = z.object({
     .optional()
     .nullable(),
   language: z
-    .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
+    .enum(['en', 'fr'], { message: 'Langue invalide (en ou fr)' })
     .optional()
     .default('fr'),
   is_active: z.boolean().optional().default(true),
@@ -91,7 +91,7 @@ export const updateUserSchema = z.object({
     .optional()
     .nullable(),
   language: z
-    .enum(['en', 'fr'], { errorMap: () => ({ message: 'Langue invalide (en ou fr)' }) })
+    .enum(['en', 'fr'], { message: 'Langue invalide (en ou fr)' })
     .optional(),
   is_active: z.boolean().optional(),
   is_verified: z.boolean().optional(),

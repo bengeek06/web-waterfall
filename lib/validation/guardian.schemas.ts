@@ -60,7 +60,7 @@ export const permissionSchema = z.object({
     .regex(/^[a-z_]+$/, 'La ressource ne peut contenir que des lettres minuscules et underscores'),
   operation: z
     .enum(['READ', 'CREATE', 'UPDATE', 'DELETE', 'LIST'], {
-      errorMap: () => ({ message: 'Opération invalide' }),
+      message: 'Opération invalide',
     }),
   description: z
     .string()
