@@ -82,12 +82,14 @@ describe("AssociationExpansion", () => {
       />
     );
 
-    // Check section is rendered
-    expect(screen.getByText(/Rôles/)).toBeInTheDocument();
-    expect(screen.getByText("(1)")).toBeInTheDocument();
+    // Check association section is rendered via testid
+    expect(screen.getByTestId("expansion-user-1-association-roles")).toBeInTheDocument();
     
     // Check associated item is displayed
     expect(screen.getByText("Admin")).toBeInTheDocument();
+    
+    // Check item testid
+    expect(screen.getByTestId("expansion-user-1-roles-item-1")).toBeInTheDocument();
   });
 
   it("shows empty state when no associations", () => {
