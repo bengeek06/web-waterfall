@@ -13,19 +13,17 @@
  * Enhanced Logger with beautiful colors for development and structured JSON for production
  *
  * In development mode:
- * - Uses colorized, human-readable output (no JSON) 
+ * - Uses colorized, human-readable output with emojis
  * - Shows timestamps and beautiful colors for different log levels
  * - Compatible with Next.js 16 and Turbopack
  * 
  * In production mode:
- * - Uses structured JSON logging with Pino for better parsing
+ * - Uses structured JSON logging for better parsing
  * - Optimized for log aggregation systems
- * - Redacts sensitive information
  *
  * The logger's log level is determined by the `LOG_LEVEL` environment variable,
  * defaulting to `"info"` if not specified.
  */
-import pino from "pino";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const logLevel = process.env.LOG_LEVEL || "info";
@@ -74,22 +72,19 @@ class DevLogger {
     return `${config.color}${config.icon} ${config.label}${colors.reset}`;
   }
 
-  private formatMessage(level: keyof typeof levelConfig, obj: any, msg?: string): string {
+  private formatMessage(level: keyof typeof levelConfig, obj: unknown, msg?: string): string {
     const timestamp = this.formatTimestamp();
     const levelStr = this.formatLevel(level);
     
     if (typeof obj === 'string' && !msg) {
-      // Simple string message
       return `${timestamp} ${levelStr}: ${obj}`;
     } else if (typeof obj === 'object' && msg) {
-      // Object with message
       const objStr = JSON.stringify(obj, null, 2)
         .split('\n')
         .map((line, index) => index === 0 ? line : `  ${line}`)
         .join('\n');
       return `${timestamp} ${levelStr}: ${msg}\n${colors.cyan}${objStr}${colors.reset}`;
     } else {
-      // Fallback
       const content = msg || JSON.stringify(obj, null, 2);
       return `${timestamp} ${levelStr}: ${content}`;
     }
@@ -99,68 +94,74 @@ class DevLogger {
     return levelConfig[level].priority >= currentLevelPriority;
   }
 
-  trace(obj: any, msg?: string) {
-    if (this.shouldLog('trace')) {
-      console.log(this.formatMessage('trace', obj, msg));
-    }
+  trace(obj: unknown, msg?: string) {
+    if (this.shouldLog('trace')) console.log(this.formatMessage('trace', obj, msg));
   }
 
-  debug(obj: any, msg?: string) {
-    if (this.shouldLog('debug')) {
-      console.log(this.formatMessage('debug', obj, msg));
-    }
+  debug(obj: unknown, msg?: string) {
+    if (this.shouldLog('debug')) console.log(this.formatMessage('debug', obj, msg));
   }
 
-  info(obj: any, msg?: string) {
-    if (this.shouldLog('info')) {
-      console.log(this.formatMessage('info', obj, msg));
-    }
+  info(obj: unknown, msg?: string) {
+    if (this.shouldLog('info')) console.log(this.formatMessage('info', obj, msg));
   }
 
-  warn(obj: any, msg?: string) {
-    if (this.shouldLog('warn')) {
-      console.log(this.formatMessage('warn', obj, msg));
-    }
+  warn(obj: unknown, msg?: string) {
+    if (this.shouldLog('warn')) console.warn(this.formatMessage('warn', obj, msg));
   }
 
-  error(obj: any, msg?: string) {
-    if (this.shouldLog('error')) {
-      console.log(this.formatMessage('error', obj, msg));
-    }
+  error(obj: unknown, msg?: string) {
+    if (this.shouldLog('error')) console.error(this.formatMessage('error', obj, msg));
   }
 
-  fatal(obj: any, msg?: string) {
-    if (this.shouldLog('fatal')) {
-      console.log(this.formatMessage('fatal', obj, msg));
-    }
-  }
-
-  get level() {
-    return logLevel;
-  }
-
-  set level(newLevel: string) {
-    // Pour la compatibilité avec Pino
+  fatal(obj: unknown, msg?: string) {
+    if (this.shouldLog('fatal')) console.error(this.formatMessage('fatal', obj, msg));
   }
 }
 
-// Logger pour la production avec Pino
-const productionLogger = pino({
-  level: logLevel,
-  formatters: {
-    level(label) {
-      return { level: label };
-    }
-  },
-  timestamp: pino.stdTimeFunctions.isoTime,
-  redact: {
-    paths: ["password", "token", "authorization", "cookie", "auth", "secret"],
-    censor: "[REDACTED]"
+// Logger JSON pour la production (sans dépendance externe)
+class ProdLogger {
+  private shouldLog(level: keyof typeof levelConfig): boolean {
+    return levelConfig[level].priority >= currentLevelPriority;
   }
-});
+
+  private log(level: string, obj: unknown, msg?: string) {
+    const logObj = {
+      level,
+      time: new Date().toISOString(),
+      ...(typeof obj === 'object' && obj !== null ? obj : {}),
+      msg: msg || (typeof obj === 'string' ? obj : undefined),
+    };
+    console.log(JSON.stringify(logObj));
+  }
+
+  trace(obj: unknown, msg?: string) {
+    if (this.shouldLog('trace')) this.log('trace', obj, msg);
+  }
+
+  debug(obj: unknown, msg?: string) {
+    if (this.shouldLog('debug')) this.log('debug', obj, msg);
+  }
+
+  info(obj: unknown, msg?: string) {
+    if (this.shouldLog('info')) this.log('info', obj, msg);
+  }
+
+  warn(obj: unknown, msg?: string) {
+    if (this.shouldLog('warn')) this.log('warn', obj, msg);
+  }
+
+  error(obj: unknown, msg?: string) {
+    if (this.shouldLog('error')) this.log('error', obj, msg);
+  }
+
+  fatal(obj: unknown, msg?: string) {
+    if (this.shouldLog('fatal')) this.log('fatal', obj, msg);
+  }
+}
 
 // Exporter le logger approprié selon l'environnement
-const logger = isDevelopment ? new DevLogger() : productionLogger;
+const logger = isDevelopment ? new DevLogger() : new ProdLogger();
 
 // Message d'initialisation
 logger.info(`🚀 Logger initialized with level: ${logLevel} (${isDevelopment ? 'development' : 'production'} mode)`);
