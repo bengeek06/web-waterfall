@@ -70,6 +70,16 @@ jest.mock('@/lib/utils/dictionaries', () => ({
     profile: 'Profil',
     settings: 'Paramètres',
     logout: 'Déconnexion',
+    about: {
+      title: 'About Waterfall',
+      application: 'Application',
+      app_name: 'Waterfall Web',
+      backend_services: 'Backend Services',
+      loading: 'Loading...',
+      unknown: 'Unknown',
+      error: 'Error',
+      copyright: '© 2025 Waterfall Project Management',
+    },
   })),
 }));
 
