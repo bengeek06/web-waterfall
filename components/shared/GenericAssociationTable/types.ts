@@ -121,6 +121,13 @@ export type AssociationConfig<TAssociated extends BaseItem = BaseItem> = {
     /** Render function for group header */
     renderGroupHeader?: (_group: { key: string; items: TAssociated[] }) => React.ReactNode;
   };
+  
+  /**
+   * Exclude this association from basic-io export
+   * Useful when the associated entity doesn't have a unique lookup field
+   * @default false
+   */
+  excludeFromExport?: boolean;
 };
 
 // ==================== DICTIONARY ====================
@@ -296,6 +303,15 @@ export type GenericAssociationTableProps<
   
   /** Custom export handler (overrides default basic-io export) */
   onExport?: (_data: T[], _format: 'json' | 'csv') => void;
+  
+  // ==================== CUSTOM RENDERING ====================
+  
+  /** 
+   * Custom render function for expanded rows
+   * If provided, overrides the default AssociationExpansion component
+   * Useful for complex association displays (e.g., grouped permissions)
+   */
+  renderExpandedRow?: (_item: T) => React.ReactNode;
   
   // ==================== TEST ====================
   

@@ -43,7 +43,7 @@
  * @typeParam T - The type of data items in the table
  */
 
-import { useState, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 
 // UI Components
 import {
@@ -229,6 +229,18 @@ export function GenericDataTable<T>({
     pageIndex: 0,
     pageSize: 10,
   });
+
+  // Track previous data length to detect deletions
+  const prevDataLengthRef = useRef(data.length);
+
+  // Clear row selection when data changes (e.g., row deleted)
+  // This prevents stale selections pointing to wrong rows after deletion
+  useEffect(() => {
+    if (data.length !== prevDataLengthRef.current) {
+      setRowSelection({});
+      prevDataLengthRef.current = data.length;
+    }
+  }, [data.length]);
 
   // ==================== EXPANSION HANDLERS ====================
   const toggleExpand = (id: string | number) => {

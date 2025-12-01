@@ -133,6 +133,7 @@ export function GenericAssociationTable<
   emptyState,
   onImport,
   onExport,
+  renderExpandedRow: customRenderExpandedRow,
   testIdPrefix = "association-table",
 }: Readonly<GenericAssociationTableProps<T, TForm>>) {
   // ==================== STATE ====================
@@ -458,11 +459,12 @@ export function GenericAssociationTable<
   
   // Build associations string for basic-io export
   // Format: field:service:endpoint_pattern:lookup_field
+  // Excludes associations with excludeFromExport: true
   const associationsExportParam = useMemo(() => {
     if (associations.length === 0) return undefined;
     
-    return associations
-      .filter(a => a.type === "many-to-many" && a.junctionEndpoint)
+    const exportableAssociations = associations
+      .filter(a => a.type === "many-to-many" && a.junctionEndpoint && !a.excludeFromExport)
       .map(a => {
         // Convert junctionEndpoint to basic-io format
         // e.g., "/roles/{id}/policies" -> "/roles/{id}/policies"
@@ -471,6 +473,8 @@ export function GenericAssociationTable<
         return `${a.name}:${a.service}:${endpointPattern}:${lookupField}`;
       })
       .join(",");
+    
+    return exportableAssociations || undefined;
   }, [associations]);
   
   const handleDefaultExport = useCallback(async (selectedData: T[], format: "json" | "csv") => {
@@ -511,7 +515,7 @@ export function GenericAssociationTable<
 
   // ==================== EXPANSION ====================
 
-  const renderExpandedRow = useCallback((item: T) => {
+  const defaultRenderExpandedRow = useCallback((item: T) => {
     if (associations.length === 0) return null;
     
     return (
@@ -524,6 +528,9 @@ export function GenericAssociationTable<
       />
     );
   }, [associations, handleAddAssociation, handleRemoveAssociation, dictionary]);
+
+  // Use custom renderExpandedRow if provided, otherwise use default
+  const renderExpandedRow = customRenderExpandedRow || defaultRenderExpandedRow;
 
   // Get available items for association dialog
   const availableAssociationItems = useMemo(() => {
@@ -574,8 +581,8 @@ export function GenericAssociationTable<
         onImport={onImport ?? (enableImportExport ? handleDefaultImport : undefined)}
         isExporting={isExporting}
         isImporting={isImporting}
-        enableRowExpansion={associations.length > 0}
-        renderExpandedRow={associations.length > 0 ? renderExpandedRow : undefined}
+        enableRowExpansion={associations.length > 0 || !!customRenderExpandedRow}
+        renderExpandedRow={(associations.length > 0 || customRenderExpandedRow) ? renderExpandedRow : undefined}
         toolbarActions={toolbarActions}
         emptyState={emptyState}
       />
