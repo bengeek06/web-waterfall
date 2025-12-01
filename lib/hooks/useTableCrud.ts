@@ -147,7 +147,7 @@ export function useTableCrud<T extends { id?: string | number }>(
   };
 
   // Fetch data with SWR
-  const { data, error, mutate, isValidating } = useSWR<T[]>(
+  const { data, error, mutate, isValidating, isLoading: swrIsLoading } = useSWR<T[]>(
     apiUrl,
     fetcher,
     {
@@ -258,9 +258,10 @@ export function useTableCrud<T extends { id?: string | number }>(
   }, [mutate]);
 
   return {
-    data: data || [],
+    data: data ?? [],
     error,
-    isLoading: (!error && !data) || isMutating,
+    // isLoading: true when initial fetch (no data yet) or during mutations
+    isLoading: swrIsLoading || isMutating || data === undefined,
     isValidating,
     create,
     update,

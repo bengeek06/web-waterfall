@@ -551,7 +551,7 @@ export function GenericAssociationTable<
       <GenericDataTable
         columns={tableColumns}
         data={dataWithAssociations}
-        isLoading={isLoading}
+        isLoading={isLoading || (data.length > 0 && dataWithAssociations.length === 0)}
         dictionary={{
           create: dictionary.create,
           filter_placeholder: dictionary.filter_placeholder,
