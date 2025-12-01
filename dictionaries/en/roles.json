@@ -40,5 +40,18 @@
   "import_report_success": "Successful",
   "import_report_failed": "Failed",
   "import_report_errors": "Errors",
-  "import_report_warnings": "Warnings"
+  "import_report_warnings": "Warnings",
+  "association_dialog_title": "Add policies to \"{name}\"",
+  "association_dialog_description": "Select items to associate",
+  "associated_items": "Already associated",
+  "available_items": "Available",
+  "no_available_items": "No items available",
+  "no_associations": "No policies",
+  "add_selected": "Add ({count})",
+  "selected_count": "{count} selected",
+  "select_all": "Select all",
+  "clear_selection": "Clear",
+  "search_placeholder": "Search...",
+  "add_association": "Add",
+  "remove_association": "Remove"
 }

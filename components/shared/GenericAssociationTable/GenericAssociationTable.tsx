@@ -84,6 +84,7 @@ import { ImportReportModal, defaultImportReportDictionary } from "@/components/m
 import { useTableCrud } from "@/lib/hooks/useTableCrud";
 import { useZodForm } from "@/lib/hooks/useZodForm";
 import { useBasicIO, ImportReport } from "@/lib/hooks/useBasicIO";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { getServiceRoute } from "@/lib/api-routes";
 import { testId } from "@/lib/test-ids";
@@ -158,6 +159,28 @@ export function GenericAssociationTable<
   // Version counter to force association refresh after CRUD operations
   const [dataVersion, setDataVersion] = useState(0);
 
+  // ==================== ERROR HANDLING ====================
+
+  // Memoize error messages to avoid triggering useCallback dependencies
+  const errorMessages = useMemo(() => ({
+    fetch: dictionary.errors?.fetch || "An error occurred",
+    create: dictionary.errors?.create || "Error creating item",
+    update: dictionary.errors?.update || "Error updating item",
+    delete: dictionary.errors?.delete || "Error deleting item",
+  }), [dictionary.errors?.fetch, dictionary.errors?.create, dictionary.errors?.update, dictionary.errors?.delete]);
+  
+  const { handleError } = useErrorHandler({
+    messages: {
+      network: errorMessages.fetch,
+      unauthorized: "Unauthorized access",
+      forbidden: "Access forbidden",
+      notFound: "Resource not found",
+      serverError: errorMessages.fetch,
+      clientError: errorMessages.fetch,
+      unknown: errorMessages.fetch,
+    },
+  });
+
   // ==================== DATA FETCHING ====================
 
   const { data, isLoading, create, update, remove, refresh } = useTableCrud<T>({
@@ -179,7 +202,7 @@ export function GenericAssociationTable<
       refresh();
     },
     onImportError: (error) => {
-      console.error("Import error:", error);
+      handleError(error);
     },
   });
 
@@ -211,14 +234,14 @@ export function GenericAssociationTable<
               : (responseData.data || responseData[config.name] || []);
           }
         } catch (err) {
-          console.error(`Error fetching ${config.name}:`, err);
+          handleError(err instanceof Error ? err : new Error(`Error fetching ${config.name}`));
           items[config.name] = [];
         }
       })
     );
     
     setAllAssociationItems(items);
-  }, [associations]);
+  }, [associations, handleError]);
 
   /**
    * Fetch associations for a single item
@@ -245,7 +268,7 @@ export function GenericAssociationTable<
               associationData[config.name] = [];
             }
           } catch (err) {
-            console.error(`Error fetching ${config.name} for item ${item.id}:`, err);
+            handleError(err instanceof Error ? err : new Error(`Error fetching ${config.name} for item ${item.id}`));
             associationData[config.name] = [];
           }
         }
@@ -253,7 +276,7 @@ export function GenericAssociationTable<
     );
     
     return { ...item, ...associationData };
-  }, [associations]);
+  }, [associations, handleError]);
 
   /**
    * Fetch associations for all items
@@ -311,9 +334,9 @@ export function GenericAssociationTable<
       setShowDeleteDialog(false);
       setPendingDeleteId(null);
     } catch (err) {
-      console.error("Delete error:", err);
+      handleError(err instanceof Error ? err : new Error(errorMessages.delete));
     }
-  }, [pendingDeleteId, remove]);
+  }, [pendingDeleteId, remove, handleError, errorMessages.delete]);
 
   const handleSubmit = useCallback(async (formData: TForm) => {
     const payload = transformFormData 
@@ -330,9 +353,9 @@ export function GenericAssociationTable<
       // Increment version to trigger association refresh
       setDataVersion(v => v + 1);
     } catch (err) {
-      console.error("Submit error:", err);
+      handleError(err instanceof Error ? err : new Error(errorMessages.update));
     }
-  }, [editingItem, create, update, transformFormData]);
+  }, [editingItem, create, update, transformFormData, handleError, errorMessages.update]);
 
   // ==================== BULK DELETE ====================
   
@@ -340,9 +363,9 @@ export function GenericAssociationTable<
     try {
       await Promise.all(selectedIds.map(id => remove(String(id))));
     } catch (err) {
-      console.error("Bulk delete error:", err);
+      handleError(err instanceof Error ? err : new Error(errorMessages.delete));
     }
-  }, [remove]);
+  }, [remove, handleError, errorMessages.delete]);
 
   // ==================== ASSOCIATION HANDLERS ====================
 
@@ -362,7 +385,7 @@ export function GenericAssociationTable<
   ) => {
     const config = associations.find(a => a.name === associationName);
     if (!config?.junctionEndpoint || config.type !== "many-to-many") {
-      console.error("Cannot remove association: invalid config");
+      handleError(new Error("Cannot remove association: invalid config"));
       return;
     }
     
@@ -384,15 +407,15 @@ export function GenericAssociationTable<
       // Increment version to trigger association refresh
       setDataVersion(v => v + 1);
     } catch (err) {
-      console.error("Error removing association:", err);
+      handleError(err instanceof Error ? err : new Error(errorMessages.delete));
     }
-  }, [associations]);
+  }, [associations, handleError, errorMessages.delete]);
 
   const handleAddAssociationsSubmit = useCallback(async (itemIds: (string | number)[]) => {
     if (!selectedItem || !selectedAssociation) return;
     
     if (selectedAssociation.type !== "many-to-many" || !selectedAssociation.junctionEndpoint) {
-      console.error("Cannot add association: invalid config");
+      handleError(new Error("Cannot add association: invalid config"));
       return;
     }
     
@@ -427,9 +450,9 @@ export function GenericAssociationTable<
       setDataVersion(v => v + 1);
       setShowAssociationDialog(false);
     } catch (err) {
-      console.error("Error adding associations:", err);
+      handleError(err instanceof Error ? err : new Error(errorMessages.create));
     }
-  }, [selectedItem, selectedAssociation]);
+  }, [selectedItem, selectedAssociation, handleError, errorMessages.create]);
 
   // ==================== IMPORT/EXPORT HANDLERS ====================
   

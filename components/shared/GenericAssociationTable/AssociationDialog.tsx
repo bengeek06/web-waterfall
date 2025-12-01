@@ -114,21 +114,14 @@ function ItemList<T extends BaseItem>({
         const itemClassName = getItemClassName(variant, isSelected);
         
         return (
-          <div
+          <button
             key={item.id}
-            role="button"
-            tabIndex={0}
+            type="button"
             className={`
               flex items-center w-full p-2 rounded border cursor-pointer transition-colors text-left
               ${itemClassName}
             `}
             onClick={() => onToggle?.(item.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onToggle?.(item.id);
-              }
-            }}
             {...testId(`${testIdPrefix}-${variant}-${item.id}`)}
           >
             {showCheckboxes && (
@@ -154,7 +147,7 @@ function ItemList<T extends BaseItem>({
                 </div>
               )}
             </div>
-          </div>
+          </button>
         );
       })}
     </div>
@@ -313,7 +306,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
               || `Ajouter ${label} à "${parentName}"`}
           </DialogTitle>
           <DialogDescription>
-            Sélectionnez les éléments à associer
+            {dictionary.association_dialog_description || "Select items to associate"}
           </DialogDescription>
         </DialogHeader>
 
@@ -345,7 +338,8 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
                   {dictionary.available_items || "Disponibles"} ({filteredItems.length})
                 </span>
                 <span className="text-xs text-gray-500">
-                  {selectedIds.size} sélectionné(s)
+                  {dictionary.selected_count?.replace("{count}", String(selectedIds.size)) 
+                    || `${selectedIds.size} selected`}
                 </span>
               </h3>
 
@@ -354,7 +348,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className={`absolute left-2 top-1/2 -translate-y-1/2 ${ICON_SIZES.xs} text-gray-400`} />
                   <Input
-                    placeholder="Rechercher..."
+                    placeholder={dictionary.search_placeholder || "Search..."}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8 h-8"
@@ -389,7 +383,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
                   disabled={filteredItems.length === 0}
                   {...testId(`${testIdPrefix}-select-all`)}
                 >
-                  Tout sélectionner
+                  {dictionary.select_all || "Select all"}
                 </Button>
                 <Button
                   variant="outline"
@@ -399,7 +393,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
                   {...testId(`${testIdPrefix}-clear-selection`)}
                 >
                   <X className={`${ICON_SIZES.xs} mr-1`} />
-                  Effacer
+                  {dictionary.clear_selection || "Clear"}
                 </Button>
               </div>
 

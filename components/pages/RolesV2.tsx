@@ -103,6 +103,20 @@ type RolesDictionary = {
   import_report_failed: string;
   import_report_errors: string;
   import_report_warnings: string;
+  // Association dialog keys
+  association_dialog_title?: string;
+  association_dialog_description?: string;
+  associated_items?: string;
+  available_items?: string;
+  no_available_items?: string;
+  no_associations?: string;
+  add_selected?: string;
+  selected_count?: string;
+  select_all?: string;
+  clear_selection?: string;
+  search_placeholder?: string;
+  add_association?: string;
+  remove_association?: string;
 };
 
 // ==================== COLUMN FACTORY ====================
@@ -238,14 +252,14 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
   const tableDictionary: AssociationTableDictionary = {
     create: dictionary.create_button,
     no_results: dictionary.no_roles,
-    loading: "Chargement...",
+    loading: "Loading...",
     export: dictionary.export_button,
     import: dictionary.import_button,
     delete_selected: dictionary.delete_confirm,
-    showing_results: "Affichage de {from} à {to} sur {total} résultat(s)",
-    rows_per_page: "Lignes par page",
-    previous: "Précédent",
-    next: "Suivant",
+    showing_results: "Showing {from} to {to} of {total} result(s)",
+    rows_per_page: "Rows per page",
+    previous: "Previous",
+    next: "Next",
     modal_create_title: dictionary.modal_create_title,
     modal_edit_title: dictionary.modal_edit_title,
     delete_confirm_title: dictionary.delete_confirm_title,
@@ -253,14 +267,21 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
     cancel: dictionary.form_cancel,
     save: dictionary.form_save,
     delete: dictionary.delete_confirm,
-    no_associations: "Aucune politique associée",
-    add_association: "Ajouter",
-    remove_association: "Retirer",
-    association_dialog_title: `${dictionary.policies_modal_title} "{name}"`,
-    associated_items: "Politiques associées",
-    available_items: "Politiques disponibles",
-    no_available_items: dictionary.policies_select,
-    add_selected: dictionary.policies_add,
+    // Association keys from dictionary
+    no_associations: dictionary.no_associations,
+    add_association: dictionary.add_association,
+    remove_association: dictionary.remove_association,
+    association_dialog_title: dictionary.association_dialog_title,
+    association_dialog_description: dictionary.association_dialog_description,
+    associated_items: dictionary.associated_items,
+    available_items: dictionary.available_items,
+    no_available_items: dictionary.no_available_items,
+    add_selected: dictionary.add_selected,
+    selected_count: dictionary.selected_count,
+    select_all: dictionary.select_all,
+    clear_selection: dictionary.clear_selection,
+    search_placeholder: dictionary.search_placeholder,
+    // Import report
     import_report_title: dictionary.import_report_title,
     import_report_total: dictionary.import_report_total,
     import_report_success: dictionary.import_report_success,

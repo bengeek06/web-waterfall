@@ -40,5 +40,18 @@
   "import_report_success": "Réussis",
   "import_report_failed": "Échoués",
   "import_report_errors": "Erreurs",
-  "import_report_warnings": "Avertissements"
+  "import_report_warnings": "Avertissements",
+  "association_dialog_title": "Ajouter des politiques à \"{name}\"",
+  "association_dialog_description": "Sélectionnez les éléments à associer",
+  "associated_items": "Déjà associés",
+  "available_items": "Disponibles",
+  "no_available_items": "Aucun élément disponible",
+  "no_associations": "Aucune politique",
+  "add_selected": "Ajouter ({count})",
+  "selected_count": "{count} sélectionné(s)",
+  "select_all": "Tout sélectionner",
+  "clear_selection": "Effacer",
+  "search_placeholder": "Rechercher...",
+  "add_association": "Ajouter",
+  "remove_association": "Retirer"
 }

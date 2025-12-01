@@ -160,10 +160,15 @@ export type AssociationTableDictionary = {
   
   // Association dialog
   association_dialog_title?: string;
+  association_dialog_description?: string;
   associated_items?: string;
   available_items?: string;
   no_available_items?: string;
   add_selected?: string;
+  selected_count?: string;
+  select_all?: string;
+  clear_selection?: string;
+  search_placeholder?: string;
   
   // Import/Export report
   import_report_title?: string;
