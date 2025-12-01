@@ -1,6 +1,6 @@
 {
   "page_title": "Roles Management",
-  "create_button": "Create Role",
+  "create_button": "Create",
   "table_name": "Name",
   "table_description": "Description",
   "table_policies": "Policies",

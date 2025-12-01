@@ -114,14 +114,21 @@ function ItemList<T extends BaseItem>({
         const itemClassName = getItemClassName(variant, isSelected);
         
         return (
-          <button
+          <div
             key={item.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             className={`
               flex items-center w-full p-2 rounded border cursor-pointer transition-colors text-left
               ${itemClassName}
             `}
             onClick={() => onToggle?.(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onToggle?.(item.id);
+              }
+            }}
             {...testId(`${testIdPrefix}-${variant}-${item.id}`)}
           >
             {showCheckboxes && (
@@ -147,7 +154,7 @@ function ItemList<T extends BaseItem>({
                 </div>
               )}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

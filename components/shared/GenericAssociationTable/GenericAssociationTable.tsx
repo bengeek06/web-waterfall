@@ -154,6 +154,9 @@ export function GenericAssociationTable<
   
   // Data with associations attached
   const [dataWithAssociations, setDataWithAssociations] = useState<T[]>([]);
+  
+  // Version counter to force association refresh after CRUD operations
+  const [dataVersion, setDataVersion] = useState(0);
 
   // ==================== DATA FETCHING ====================
 
@@ -255,24 +258,28 @@ export function GenericAssociationTable<
   /**
    * Fetch associations for all items
    */
-  const fetchAllAssociations = useCallback(async () => {
-    if (!data || data.length === 0) {
+  const fetchAllAssociations = useCallback(async (items: T[]) => {
+    if (!items || items.length === 0) {
       setDataWithAssociations([]);
       return;
     }
     
     const itemsWithAssociations = await Promise.all(
-      data.map(fetchAssociationsForItem)
+      items.map(fetchAssociationsForItem)
     );
     
     setDataWithAssociations(itemsWithAssociations);
-  }, [data, fetchAssociationsForItem]);
+  }, [fetchAssociationsForItem]);
 
-  // Fetch associations when data changes
+  // Fetch associations when data changes or after CRUD operations
+  // Using data.length, data IDs and dataVersion as stable dependencies
+  const dataIds = useMemo(() => data.map(d => d.id).join(","), [data]);
+  
   useEffect(() => {
-    fetchAllAssociations();
+    fetchAllAssociations(data);
     fetchAllAssociationItems();
-  }, [fetchAllAssociations, fetchAllAssociationItems]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataIds, associations.length, dataVersion]);
 
   // ==================== CRUD HANDLERS ====================
 
@@ -320,6 +327,8 @@ export function GenericAssociationTable<
         await create(payload);
       }
       setShowFormDialog(false);
+      // Increment version to trigger association refresh
+      setDataVersion(v => v + 1);
     } catch (err) {
       console.error("Submit error:", err);
     }
@@ -372,12 +381,12 @@ export function GenericAssociationTable<
         throw new Error(`Failed to remove association: ${response.status}`);
       }
       
-      // Refresh data
-      await fetchAllAssociations();
+      // Increment version to trigger association refresh
+      setDataVersion(v => v + 1);
     } catch (err) {
       console.error("Error removing association:", err);
     }
-  }, [associations, fetchAllAssociations]);
+  }, [associations]);
 
   const handleAddAssociationsSubmit = useCallback(async (itemIds: (string | number)[]) => {
     if (!selectedItem || !selectedAssociation) return;
@@ -414,15 +423,32 @@ export function GenericAssociationTable<
         })
       );
       
-      // Refresh data
-      await fetchAllAssociations();
+      // Increment version to trigger association refresh
+      setDataVersion(v => v + 1);
       setShowAssociationDialog(false);
     } catch (err) {
       console.error("Error adding associations:", err);
     }
-  }, [selectedItem, selectedAssociation, fetchAllAssociations]);
+  }, [selectedItem, selectedAssociation]);
 
   // ==================== IMPORT/EXPORT HANDLERS ====================
+  
+  // Build associations string for basic-io export
+  // Format: field:service:endpoint_pattern:lookup_field
+  const associationsExportParam = useMemo(() => {
+    if (associations.length === 0) return undefined;
+    
+    return associations
+      .filter(a => a.type === "many-to-many" && a.junctionEndpoint)
+      .map(a => {
+        // Convert junctionEndpoint to basic-io format
+        // e.g., "/roles/{id}/policies" -> "/roles/{id}/policies"
+        const endpointPattern = a.junctionEndpoint!.replace("{id}", "{id}");
+        const lookupField = a.displayField || "name";
+        return `${a.name}:${a.service}:${endpointPattern}:${lookupField}`;
+      })
+      .join(",");
+  }, [associations]);
   
   const handleDefaultExport = useCallback(async (selectedData: T[], format: "json" | "csv") => {
     const validIds = selectedData
@@ -435,8 +461,9 @@ export function GenericAssociationTable<
       format,
       ids,
       enrich: true,
+      associations: associationsExportParam,
     });
-  }, [exportData]);
+  }, [exportData, associationsExportParam]);
   
   const handleDefaultImport = useCallback(async (format: "json" | "csv", file?: File) => {
     await importData({
@@ -445,8 +472,9 @@ export function GenericAssociationTable<
       resolveRefs: true,
       onAmbiguous: "skip",
       onMissing: "skip",
+      associationsMode: associations.length > 0 ? "merge" : "skip",
     });
-  }, [importData]);
+  }, [importData, associations.length]);
 
   // ==================== COLUMNS ====================
 
