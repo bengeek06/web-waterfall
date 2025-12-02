@@ -32,7 +32,26 @@ import type { BaseItem, AssociationDialogProps } from "./types";
 // ==================== UTILITY FUNCTIONS ====================
 
 /**
+ * Get nested value from an object using dot notation
+ * @example getNestedValue({ role: { name: "Admin" } }, "role.name") => "Admin"
+ */
+function getNestedValue(obj: unknown, path: string): unknown {
+  const keys = path.split(".");
+  let current: unknown = obj;
+  
+  for (const key of keys) {
+    if (current === null || current === undefined) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[key];
+  }
+  
+  return current;
+}
+
+/**
  * Get display value from an item
+ * Supports nested paths like "role.name" for enriched junction objects
  */
 function getDisplayValue<T extends BaseItem>(
   item: T,
@@ -40,7 +59,22 @@ function getDisplayValue<T extends BaseItem>(
   fallback = "name"
 ): string {
   const fieldToUse = field || fallback;
-  const value = item[fieldToUse as keyof T];
+  
+  // Support nested paths (e.g., "role.name")
+  let value: unknown = fieldToUse.includes(".")
+    ? getNestedValue(item, fieldToUse)
+    : item[fieldToUse as keyof T];
+
+  // If nested value is missing (e.g., available items without enrichment),
+  // gracefully fall back to common name field or id.
+  if (value === undefined || value === null) {
+    // Try the default fallback key first (usually 'name')
+    const fallbackValue = item[fallback as keyof T];
+    if (fallbackValue !== undefined && fallbackValue !== null) {
+      value = fallbackValue;
+    }
+  }
+
   return value !== undefined && value !== null ? String(value) : String(item.id);
 }
 
@@ -114,14 +148,21 @@ function ItemList<T extends BaseItem>({
         const itemClassName = getItemClassName(variant, isSelected);
         
         return (
-          <button
+          <div
             key={item.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             className={`
               flex items-center w-full p-2 rounded border cursor-pointer transition-colors text-left
               ${itemClassName}
             `}
             onClick={() => onToggle?.(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onToggle?.(item.id);
+              }
+            }}
             {...testId(`${testIdPrefix}-${variant}-${item.id}`)}
           >
             {showCheckboxes && (
@@ -147,7 +188,7 @@ function ItemList<T extends BaseItem>({
                 </div>
               )}
             </div>
-          </button>
+          </div>
         );
       })}
     </div>
@@ -296,7 +337,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="max-w-4xl max-h-[80vh]"
+        className="max-w-4xl max-h-[80vh] overflow-hidden"
         {...testId(testIdPrefix)}
       >
         <DialogHeader>
@@ -310,7 +351,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-4 min-h-[400px]">
+        <div className="flex gap-4 min-h-[400px] overflow-auto">
           {/* Left Panel: Associated Items */}
           <div className="w-1/3 border rounded-lg p-3 bg-gray-50">
             <h3 className="font-medium text-sm mb-3 flex items-center gap-2">
@@ -331,7 +372,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
           </div>
 
           {/* Right Panel: Available Items */}
-          <div className="flex-1 border rounded-lg p-3">
+          <div className="flex-1 border rounded-lg p-3 min-w-0">
             <div className="space-y-3">
               <h3 className="font-medium text-sm flex items-center justify-between">
                 <span>
@@ -398,7 +439,7 @@ export function AssociationDialog<TAssociated extends BaseItem = BaseItem>({
               </div>
 
               {/* Items List */}
-              <ScrollArea className="h-[280px]">
+              <ScrollArea className="h-[350px]">
                 <ItemList
                   items={filteredItems}
                   selectedIds={selectedIds}

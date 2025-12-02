@@ -22,7 +22,26 @@ import type { BaseItem, AssociationConfig, AssociationExpansionProps } from "./t
 // ==================== UTILITY FUNCTIONS ====================
 
 /**
+ * Get nested value from an object using dot notation
+ * @example getNestedValue({ role: { name: "Admin" } }, "role.name") => "Admin"
+ */
+function getNestedValue(obj: unknown, path: string): unknown {
+  const keys = path.split(".");
+  let current: unknown = obj;
+  
+  for (const key of keys) {
+    if (current === null || current === undefined) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[key];
+  }
+  
+  return current;
+}
+
+/**
  * Get display value from an item
+ * Supports nested paths like "role.name" for enriched junction objects
  */
 function getDisplayValue<T extends BaseItem>(
   item: T,
@@ -30,7 +49,12 @@ function getDisplayValue<T extends BaseItem>(
   fallback = "name"
 ): string {
   const fieldToUse = field || fallback;
-  const value = item[fieldToUse as keyof T];
+  
+  // Support nested paths (e.g., "role.name")
+  const value = fieldToUse.includes(".")
+    ? getNestedValue(item, fieldToUse)
+    : item[fieldToUse as keyof T];
+  
   return value !== undefined && value !== null ? String(value) : String(item.id);
 }
 

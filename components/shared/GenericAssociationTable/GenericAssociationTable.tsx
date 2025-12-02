@@ -131,6 +131,8 @@ export function GenericAssociationTable<
   enableColumnFilters = true,
   toolbarActions,
   emptyState,
+  onAfterSave,
+  onDataEnrich,
   onImport,
   onExport,
   renderExpandedRow: customRenderExpandedRow,
@@ -225,7 +227,9 @@ export function GenericAssociationTable<
     await Promise.all(
       associations.map(async (config) => {
         try {
-          const url = getServiceRoute(config.service, config.path);
+          // Use itemsService if provided, otherwise fall back to service
+          const itemsServiceName = config.itemsService || config.service;
+          const url = getServiceRoute(itemsServiceName, config.path);
           const response = await fetchWithAuth(url);
           
           if (response.ok) {
@@ -256,15 +260,43 @@ export function GenericAssociationTable<
       associations.map(async (config) => {
         if (config.type === "many-to-many" && config.junctionEndpoint) {
           try {
-            const junctionPath = config.junctionEndpoint.replace("{id}", String(item.id));
-            const url = getServiceRoute(config.service, junctionPath);
+            let url: string;
+            if (config.junctionQueryParam) {
+              // Query param style: /user-roles?user_id=123
+              url = getServiceRoute(config.service, `${config.junctionEndpoint}?${config.junctionQueryParam}=${item.id}`);
+            } else {
+              // Path param style: /users/123/roles
+              const junctionPath = config.junctionEndpoint.replace("{id}", String(item.id));
+              url = getServiceRoute(config.service, junctionPath);
+            }
             const response = await fetchWithAuth(url);
             
             if (response.ok) {
               const responseData = await response.json();
-              associationData[config.name] = Array.isArray(responseData)
+              let junctionItems = Array.isArray(responseData)
                 ? responseData
                 : (responseData[config.name] || []);
+              
+              // Enrich junction items with full item data if not already enriched
+              // Check if items have nested data (e.g., role.name exists)
+              const singularName = getSingularName(config.name);
+              const needsEnrichment = junctionItems.length > 0 && !junctionItems[0][singularName];
+              
+              if (needsEnrichment && allAssociationItems[config.name]) {
+                const availableItems = allAssociationItems[config.name];
+                junctionItems = junctionItems.map((junctionItem: BaseItem) => {
+                  const itemIdField = `${singularName}_id`;
+                  const itemId = (junctionItem as Record<string, unknown>)[itemIdField];
+                  const fullItem = availableItems.find(ai => ai.id === itemId);
+                  
+                  return {
+                    ...junctionItem,
+                    [singularName]: fullItem || null,
+                  };
+                });
+              }
+              
+              associationData[config.name] = junctionItems;
             } else {
               associationData[config.name] = [];
             }
@@ -277,7 +309,7 @@ export function GenericAssociationTable<
     );
     
     return { ...item, ...associationData };
-  }, [associations, handleError]);
+  }, [associations, allAssociationItems, handleError]);
 
   /**
    * Fetch associations for all items
@@ -288,22 +320,32 @@ export function GenericAssociationTable<
       return;
     }
     
+    // First enrich data if callback provided (e.g., resolve foreign keys)
+    let enrichedItems = items;
+    if (onDataEnrich) {
+      enrichedItems = await Promise.resolve(onDataEnrich(items));
+    }
+    
     const itemsWithAssociations = await Promise.all(
-      items.map(fetchAssociationsForItem)
+      enrichedItems.map(fetchAssociationsForItem)
     );
     
     setDataWithAssociations(itemsWithAssociations);
-  }, [fetchAssociationsForItem]);
+  }, [fetchAssociationsForItem, onDataEnrich]);
 
   // Fetch associations when data changes or after CRUD operations
   // Using data.length, data IDs and dataVersion as stable dependencies
   const dataIds = useMemo(() => data.map(d => d.id).join(","), [data]);
   
   useEffect(() => {
-    fetchAllAssociations(data);
-    fetchAllAssociationItems();
+    // Fetch available items first, then enrich associations
+    const fetchData = async () => {
+      await fetchAllAssociationItems();
+      await fetchAllAssociations(data);
+    };
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataIds, associations.length, dataVersion]);
+  }, [dataIds, associations.length, dataVersion, onDataEnrich]);
 
   // ==================== CRUD HANDLERS ====================
 
@@ -345,18 +387,27 @@ export function GenericAssociationTable<
       : (formData as unknown as Partial<T>);
 
     try {
+      let savedItem: T;
+      const isNew = !editingItem?.id;
+      
       if (editingItem?.id) {
-        await update(String(editingItem.id), payload);
+        savedItem = await update(String(editingItem.id), payload);
       } else {
-        await create(payload);
+        savedItem = await create(payload);
       }
+      
       setShowFormDialog(false);
       // Increment version to trigger association refresh
       setDataVersion(v => v + 1);
+      
+      // Call onAfterSave callback if provided
+      if (onAfterSave) {
+        await onAfterSave(savedItem, isNew);
+      }
     } catch (err) {
       handleError(err instanceof Error ? err : new Error(errorMessages.update));
     }
-  }, [editingItem, create, update, transformFormData, handleError, errorMessages.update]);
+  }, [editingItem, create, update, transformFormData, onAfterSave, handleError, errorMessages.update]);
 
   // ==================== BULK DELETE ====================
   
@@ -391,8 +442,19 @@ export function GenericAssociationTable<
     }
     
     try {
-      const junctionPath = config.junctionEndpoint.replace("{id}", String(item.id));
-      const url = getServiceRoute(config.service, `${junctionPath}/${associatedItem.id}`);
+      // Use deleteIdField if specified, otherwise default to "id"
+      const deleteIdField = config.deleteIdField || "id";
+      const deleteId = (associatedItem as Record<string, unknown>)[deleteIdField] ?? associatedItem.id;
+      
+      let url: string;
+      if (config.junctionQueryParam) {
+        // Query param style: DELETE /user-roles/123 (no parent ID in path)
+        url = getServiceRoute(config.service, `${config.junctionEndpoint}/${deleteId}`);
+      } else {
+        // Path param style: DELETE /users/123/roles/456
+        const junctionPath = config.junctionEndpoint.replace("{id}", String(item.id));
+        url = getServiceRoute(config.service, `${junctionPath}/${deleteId}`);
+      }
       
       const response = await fetchWithAuth(url, { method: "DELETE" });
       
@@ -420,8 +482,15 @@ export function GenericAssociationTable<
       return;
     }
     
-    const junctionPath = selectedAssociation.junctionEndpoint.replace("{id}", String(selectedItem.id));
-    const url = getServiceRoute(selectedAssociation.service, junctionPath);
+    let url: string;
+    if (selectedAssociation.junctionQueryParam) {
+      // Query param style: POST /user-roles (no parent ID in path, sent in body)
+      url = getServiceRoute(selectedAssociation.service, selectedAssociation.junctionEndpoint);
+    } else {
+      // Path param style: POST /users/123/roles
+      const junctionPath = selectedAssociation.junctionEndpoint.replace("{id}", String(selectedItem.id));
+      url = getServiceRoute(selectedAssociation.service, junctionPath);
+    }
     
     // Determine body field name
     const singularName = getSingularName(selectedAssociation.name);
@@ -430,10 +499,24 @@ export function GenericAssociationTable<
     try {
       await Promise.all(
         itemIds.map(async (itemId) => {
+          let requestBody: Record<string, unknown>;
+          if (selectedAssociation.junctionQueryParam) {
+            // Query param style: send both user_id and role_id in body
+            // e.g., { user_id: "123", role_id: "456" }
+            requestBody = {
+              [selectedAssociation.junctionQueryParam]: selectedItem.id,
+              [bodyField]: itemId,
+            };
+          } else {
+            // Path param style: only send role_id (user_id is in path)
+            requestBody = { [bodyField]: itemId };
+          }
+          
+          console.log(`[DEBUG] POST to ${url} with body:`, requestBody);
           const response = await fetchWithAuth(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ [bodyField]: itemId }),
+            body: JSON.stringify(requestBody),
           });
           
           if (response.status === 401) {
@@ -442,7 +525,9 @@ export function GenericAssociationTable<
           }
           
           if (!response.ok) {
-            console.warn(`Failed to add ${selectedAssociation.name} ${itemId}`);
+            console.warn(`Failed to add ${selectedAssociation.name} ${itemId}`, await response.text());
+          } else {
+            console.log(`[DEBUG] Successfully added ${selectedAssociation.name} ${itemId} to ${selectedItem.id}`);
           }
         })
       );
@@ -596,6 +681,11 @@ export function GenericAssociationTable<
                 ? dictionary.modal_edit_title 
                 : dictionary.modal_create_title}
             </DialogTitle>
+            <DialogDescription>
+              {editingItem
+                ? (dictionary.modal_edit_description || "Modifiez les informations ci-dessous.")
+                : (dictionary.modal_create_description || "Remplissez les informations ci-dessous pour créer un nouvel élément.")}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             {renderFormFields(form, dictionary, editingItem, refresh)}

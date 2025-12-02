@@ -61,6 +61,53 @@ export const createUserSchema = z.object({
 
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
+// ==================== USER SCHEMA (Form - supports both create and edit) ====================
+// Password is optional - validated manually in create mode
+export const userFormSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email requis')
+    .email('Email invalide')
+    .max(100, 'L\'email ne peut pas dépasser 100 caractères'),
+  password: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine((val) => !val || val.length >= 8, 'Le mot de passe doit contenir au moins 8 caractères')
+    .refine((val) => !val || /[A-Z]/.test(val), 'Le mot de passe doit contenir au moins une majuscule')
+    .refine((val) => !val || /[a-z]/.test(val), 'Le mot de passe doit contenir au moins une minuscule')
+    .refine((val) => !val || /\d/.test(val), 'Le mot de passe doit contenir au moins un chiffre'),
+  first_name: z
+    .string()
+    .max(50, 'Le prénom ne peut pas dépasser 50 caractères')
+    .optional()
+    .or(z.literal('')),
+  last_name: z
+    .string()
+    .max(50, 'Le nom ne peut pas dépasser 50 caractères')
+    .optional()
+    .or(z.literal('')),
+  phone_number: z
+    .string()
+    .max(50, 'Le téléphone ne peut pas dépasser 50 caractères')
+    .optional()
+    .or(z.literal('')),
+  has_avatar: z.boolean().optional().default(false),
+  avatar_file_id: z
+    .string()
+    .uuid('ID de fichier avatar invalide')
+    .optional()
+    .nullable(),
+  language: z
+    .enum(['en', 'fr'], { message: 'Langue invalide (en ou fr)' })
+    .optional()
+    .default('fr'),
+  is_active: z.boolean().optional().default(true),
+  is_verified: z.boolean().optional().default(false),
+});
+
+export type UserFormData = z.infer<typeof userFormSchema>;
+
 // ==================== USER SCHEMA (Update) ====================
 export const updateUserSchema = z.object({
   email: z

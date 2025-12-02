@@ -73,8 +73,18 @@ export type AssociationConfig<TAssociated extends BaseItem = BaseItem> = {
   /** Human-readable label for the association */
   label?: string;
   
-  /** API service for the associated entity (identity, guardian, project, storage) */
+  /** 
+   * API service for the junction endpoint (where to POST/DELETE associations)
+   * @example "identity" for /users/{id}/roles endpoint
+   */
   service: string;
+  
+  /**
+   * API service for fetching available items (optional, defaults to service)
+   * Use when items are in a different service than the junction endpoint
+   * @example "guardian" to fetch /roles from guardian while junction is in identity
+   */
+  itemsService?: string;
   
   /** API endpoint path for the associated entity (e.g., /roles, /policies) */
   path: string;
@@ -85,6 +95,13 @@ export type AssociationConfig<TAssociated extends BaseItem = BaseItem> = {
    * @example "/users/{id}/roles" 
    */
   junctionEndpoint?: string;
+  
+  /**
+   * Query parameter name for M2M associations (alternative to path param)
+   * Use when junction endpoint uses query params instead of path params
+   * @example "user_id" for GET /user-roles?user_id={id}
+   */
+  junctionQueryParam?: string;
   
   /**
    * Foreign key field name for 1-N associations
@@ -111,6 +128,16 @@ export type AssociationConfig<TAssociated extends BaseItem = BaseItem> = {
    * @default "<association_name>_id" (e.g., "role_id" for association "roles")
    */
   addBodyField?: string;
+  
+  /**
+   * Field to use for delete URL (default: "id")
+   * Use this when the delete endpoint needs a different ID than the item's id field.
+   * @example For junction tables that return { id: junction_id, role_id: actual_role_id }
+   *          If backend DELETE expects /users/{user_id}/roles/{junction_id}, use "id" (default)
+   *          If backend DELETE expects /users/{user_id}/roles/{role_id}, use "role_id"
+   * @default "id"
+   */
+  deleteIdField?: string;
   
   /**
    * Grouping configuration for associations (like Policies grouping by service/resource)
@@ -297,6 +324,21 @@ export type GenericAssociationTableProps<
   emptyState?: React.ReactNode;
   
   // ==================== HANDLERS (OPTIONAL OVERRIDES) ====================
+  
+  /** 
+   * Callback after successful create or update
+   * @param item - The saved item (with ID)
+   * @param isNew - Whether this was a create (true) or update (false)
+   */
+  onAfterSave?: (_item: T, _isNew: boolean) => void | Promise<void>;
+  
+  /**
+   * Callback to enrich data after fetching (e.g., resolve foreign keys)
+   * Use this to add related data that isn't fetched automatically
+   * @param items - The fetched items
+   * @returns The enriched items
+   */
+  onDataEnrich?: (_items: T[]) => Promise<T[]> | T[];
   
   /** Custom import handler (overrides default basic-io import) */
   onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;

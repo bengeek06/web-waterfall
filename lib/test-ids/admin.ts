@@ -36,6 +36,8 @@ export const ADMIN_TEST_IDS = {
     phoneInput: 'admin-users-phone-input',
     avatarUrlInput: 'admin-users-avatar-url-input',
     languageSelect: 'admin-users-language-select',
+    rolesDropdown: 'admin-users-roles-dropdown',
+    positionSelect: 'admin-users-position-select',
     isActiveSwitch: 'admin-users-is-active-switch',
     isVerifiedSwitch: 'admin-users-is-verified-switch',
     cancelButton: 'admin-users-cancel-button',
