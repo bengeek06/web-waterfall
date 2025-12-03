@@ -1,4 +1,11 @@
 {
   "welcome": "Welcome to Waterfall",
-  "description": "From initial need to final result."
+  "description": "From initial need to final result.",
+  "auth_guard_verifying": "Verifying authentication...",
+  "auth_guard_redirecting": "Redirecting to login page...",
+  "loading": "Loading...",
+  "saving": "Saving...",
+  "edit": "Edit",
+  "access": "Access",
+  "select_unit_prompt": "Select a unit to view its positions"
 }

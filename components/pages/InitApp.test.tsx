@@ -118,7 +118,7 @@ describe('InitApp Component', () => {
 
       // Zod validation should show inline errors for empty fields
       await waitFor(() => {
-        expect(screen.getByText('Nom de la compagnie requis')).toBeInTheDocument();
+        expect(screen.getByText('Company name is required')).toBeInTheDocument();
       });
     });
 
@@ -138,7 +138,7 @@ describe('InitApp Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Les mots de passe ne correspondent pas')).toBeInTheDocument();
+        expect(screen.getByText('Passwords do not match')).toBeInTheDocument();
       });
     });
   });

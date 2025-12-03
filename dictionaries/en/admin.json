@@ -5,5 +5,6 @@
   "roles": "Roles",
   "manage_roles": "Manage Roles",
   "policies": "Policies",
-  "manage_policies": "Manage Policies"
+  "manage_policies": "Manage Policies",
+  "access": "Access"
 }

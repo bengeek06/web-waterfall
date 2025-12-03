@@ -120,9 +120,9 @@ describe('Login Component', () => {
       await user.type(passwordInput, '12345'); // 5 chars - invalid
       await user.click(submitButton);
 
-      // Zod validation should show inline error for password
+      // Zod validation should show inline error for password (uses default English messages)
       await waitFor(() => {
-        expect(screen.getByText('Le mot de passe doit contenir au moins 6 caractères')).toBeInTheDocument();
+        expect(screen.getByText('Password must be at least 6 characters')).toBeInTheDocument();
       });
       
       // Should not call API with invalid data

@@ -37,6 +37,7 @@
   "positions": {
     "title": "Positions",
     "no_positions": "Aucune position dans cette unité",
+    "select_unit_prompt": "Sélectionnez une unité pour voir ses positions",
     "add_position": "Ajouter",
     "edit": "Modifier",
     "delete": "Supprimer"

@@ -25,6 +25,7 @@ interface AdminCardsProps {
     readonly manage_users: string;
     readonly roles: string;
     readonly manage_roles: string;
+    readonly access: string;
   };
 }
 
@@ -44,7 +45,7 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
           <CardContent>
             <Link href="/home/admin/users" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access}
               </Button>
             </Link>
           </CardContent>
@@ -64,7 +65,7 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
           <CardContent>
             <Link href="/home/admin/roles" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access}
               </Button>
             </Link>
           </CardContent>

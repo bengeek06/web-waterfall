@@ -17,6 +17,10 @@ import { initTokenRefresh, cancelTokenRefresh } from "@/lib/auth/tokenRefreshSch
 
 interface AuthGuardProps {
   readonly children: React.ReactNode;
+  readonly dictionary?: {
+    readonly verifying?: string;
+    readonly redirecting?: string;
+  };
 }
 
 /**
@@ -24,7 +28,7 @@ interface AuthGuardProps {
  * Gère automatiquement le refresh du token et la redirection vers /login si nécessaire
  * Initialise le refresh proactif du token quand l'utilisateur est authentifié
  */
-export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
+export default function AuthGuard({ children, dictionary }: Readonly<AuthGuardProps>) {
   const { isVerifying, isAuthenticated } = useAuthVerification();
 
   // Initialiser le refresh proactif du token quand authentifié
@@ -45,7 +49,7 @@ export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--waterfall-primary-dark)] mx-auto mb-4"></div>
-          <p className="text-gray-600">Vérification de l&apos;authentification...</p>
+          <p className="text-gray-600">{dictionary?.verifying || "Verifying authentication..."}</p>
         </div>
       </div>
     );
@@ -59,7 +63,7 @@ export default function AuthGuard({ children }: Readonly<AuthGuardProps>) {
   // Si non authentifié, le hook redirige automatiquement vers /login
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white">
-      <p className="text-gray-600">Redirection vers la page de connexion...</p>
+      <p className="text-gray-600">{dictionary?.redirecting || "Redirecting to login page..."}</p>
     </div>
   );
 }
