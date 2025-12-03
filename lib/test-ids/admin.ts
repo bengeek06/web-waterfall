@@ -25,6 +25,7 @@ export const ADMIN_TEST_IDS = {
     tableRow: (id: string) => `admin-users-table-row-${id}`,
     editButton: (id: string) => `admin-users-edit-button-${id}`,
     deleteButton: (id: string) => `admin-users-delete-button-${id}`,
+    isActiveToggle: (id: string) => `admin-users-is-active-toggle-${id}`,
     
     // Create/Edit Modal
     modal: 'admin-users-modal',

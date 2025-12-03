@@ -12,10 +12,10 @@
 "use client";
 
 /**
- * Subcontractors Management Component - REFACTORED WITH GenericCrudTable
+ * Subcontractors Management Component - Using GenericAssociationTable
  * 
- * Now uses GenericCrudTable for all CRUD operations.
- * This component is reduced from 425 lines to ~150 lines.
+ * Migrated from GenericCrudTable to GenericAssociationTable for Phase 3.
+ * Uses expandable={false} since Subcontractors have no associations.
  */
 
 // ==================== IMPORTS ====================
@@ -24,8 +24,9 @@ import React from "react";
 
 // Table Infrastructure
 import { ColumnDef } from "@tanstack/react-table";
-import { GenericCrudTable } from "@/components/shared/GenericCrudTable";
-import { createTextColumn, createActionColumn } from "@/lib/utils/table-columns";
+import { GenericAssociationTable } from "@/components/shared/GenericAssociationTable";
+import type { ColumnHandlers, AssociationTableDictionary } from "@/components/shared/GenericAssociationTable";
+import { createFilterableTextColumn, createActionColumn } from "@/components/shared/tables";
 
 // API & Validation
 import { subcontractorSchema, SubcontractorFormData } from "@/lib/validation/identity.schemas";
@@ -39,7 +40,7 @@ import { LogoUpload } from "@/components/shared/LogoUpload";
 import { Building2 } from "lucide-react";
 
 // Test IDs
-import { testId } from "@/lib/test-ids";
+import { PAGES_TEST_IDS, testId } from "@/lib/test-ids";
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -125,10 +126,7 @@ function optionalFieldFilter<T>(
 function createSubcontractorColumns(
   dict: SubcontractorsDictionary,
   commonTable: CommonTableDictionary,
-  handlers: {
-    onEdit: (_item: Subcontractor) => void;
-    onDelete: (_id: string | number) => void | Promise<void>;
-  }
+  handlers: ColumnHandlers<Subcontractor>
 ): ColumnDef<Subcontractor>[] {
   return [
     // Logo column
@@ -152,18 +150,14 @@ function createSubcontractorColumns(
         )
       ),
     },
-    createTextColumn<Subcontractor>("name", dict.table_name),
+    createFilterableTextColumn<Subcontractor>("name", dict.table_name, "subcontractors"),
     {
-      ...createTextColumn<Subcontractor>("email", dict.table_email),
+      ...createFilterableTextColumn<Subcontractor>("email", dict.table_email, "subcontractors"),
       cell: ({ row }) => row.original.email || "-",
-      filterFn: (row, columnId, filterValue) =>
-        optionalFieldFilter(row, columnId, filterValue, (item) => item.email),
     },
     {
-      ...createTextColumn<Subcontractor>("contact_person", dict.table_contact),
+      ...createFilterableTextColumn<Subcontractor>("contact_person", dict.table_contact, "subcontractors"),
       cell: ({ row }) => row.original.contact_person || "-",
-      filterFn: (row, columnId, filterValue) =>
-        optionalFieldFilter(row, columnId, filterValue, (item) => item.contact_person),
     },
     {
       accessorKey: "phone_number",
@@ -211,6 +205,46 @@ function createSubcontractorColumns(
   ];
 }
 
+/**
+ * Map dictionaries to GenericAssociationTable format
+ */
+function mapToAssociationTableDictionary(
+  dict: SubcontractorsDictionary,
+  commonTable: CommonTableDictionary
+): AssociationTableDictionary {
+  return {
+    // Table strings
+    create: commonTable.create,
+    filter_placeholder: commonTable.filter_placeholder,
+    no_results: commonTable.no_results,
+    loading: commonTable.loading,
+    export: commonTable.export,
+    import: commonTable.import,
+    delete_selected: commonTable.delete_selected,
+    showing_results: commonTable.showing_results,
+    rows_per_page: commonTable.rows_per_page,
+    previous: commonTable.previous,
+    next: commonTable.next,
+    
+    // Modal strings
+    modal_create_title: dict.modal_create_title,
+    modal_edit_title: dict.modal_edit_title,
+    
+    // Delete confirmation
+    delete_confirm_title: commonTable.confirm_delete_title,
+    delete_confirm_message: dict.delete_confirm_message,
+    cancel: commonTable.cancel,
+    save: commonTable.save,
+    delete: commonTable.delete,
+    
+    // Error messages
+    errors: {
+      create: dict.error_create,
+      update: dict.error_update,
+    },
+  };
+}
+
 // ==================== MAIN COMPONENT ====================
 
 export default function Subcontractors({
@@ -235,8 +269,11 @@ export default function Subcontractors({
     error_remove: string;
   };
 }) {
+  // Map dictionaries to GenericAssociationTable format
+  const tableDictionary = mapToAssociationTableDictionary(dictionary, commonTable);
+
   return (
-    <GenericCrudTable<Subcontractor, SubcontractorFormData>
+    <GenericAssociationTable<Subcontractor, SubcontractorFormData>
       service="identity"
       path="/subcontractors"
       entityName="subcontractors"
@@ -251,11 +288,12 @@ export default function Subcontractors({
         description: "",
       }}
       pageTitle={dictionary.page_title}
-      dictionary={dictionary}
-      commonTable={commonTable}
+      dictionary={tableDictionary}
+      expandable={false}
       enableImportExport={true}
       enableRowSelection={true}
-      renderFormFields={(form, dict, editingItem, refresh) => (
+      testIdPrefix="subcontractors"
+      renderFormFields={(form, _dict, editingItem, refresh) => (
         <>
           {/* Logo Upload - Only in edit mode */}
           {editingItem?.id ? (
@@ -303,75 +341,75 @@ export default function Subcontractors({
           ) : (
             <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-4 text-center">
               <p className="text-sm text-muted-foreground">
-                {dict.logo_create_info}
+                {dictionary.logo_create_info}
               </p>
             </div>
           )}
 
           {/* Name - Required */}
           <div className="space-y-2">
-            <Label htmlFor="name">{dict.form_name}</Label>
+            <Label htmlFor="name">{dictionary.form_name}</Label>
             <Input
-              {...testId("subcontractor-name-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.nameInput)}
               {...form.register("name")}
-              placeholder={dict.form_name}
+              placeholder={dictionary.form_name}
               aria-invalid={!!form.formState.errors.name}
             />
             {form.formState.errors.name && (
               <p className="text-sm text-red-500">
-                {dict.form_name_required}
+                {dictionary.form_name_required}
               </p>
             )}
           </div>
 
           {/* Email - Optional */}
           <div className="space-y-2">
-            <Label htmlFor="email">{dict.form_email}</Label>
+            <Label htmlFor="email">{dictionary.form_email}</Label>
             <Input
-              {...testId("subcontractor-email-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.emailInput)}
               type="email"
               {...form.register("email")}
-              placeholder={dict.form_email}
+              placeholder={dictionary.form_email}
             />
           </div>
 
           {/* Contact Person - Optional */}
           <div className="space-y-2">
-            <Label htmlFor="contact_person">{dict.form_contact}</Label>
+            <Label htmlFor="contact_person">{dictionary.form_contact}</Label>
             <Input
-              {...testId("subcontractor-contact-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.contactInput)}
               {...form.register("contact_person")}
-              placeholder={dict.form_contact}
+              placeholder={dictionary.form_contact}
             />
           </div>
 
           {/* Phone Number - Optional */}
           <div className="space-y-2">
-            <Label htmlFor="phone_number">{dict.form_phone}</Label>
+            <Label htmlFor="phone_number">{dictionary.form_phone}</Label>
             <Input
-              {...testId("subcontractor-phone-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.phoneInput)}
               {...form.register("phone_number")}
-              placeholder={dict.form_phone}
+              placeholder={dictionary.form_phone}
             />
           </div>
 
           {/* Address - Optional */}
           <div className="space-y-2">
-            <Label htmlFor="address">{dict.form_address}</Label>
+            <Label htmlFor="address">{dictionary.form_address}</Label>
             <Input
-              {...testId("subcontractor-address-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.addressInput)}
               {...form.register("address")}
-              placeholder={dict.form_address}
+              placeholder={dictionary.form_address}
             />
           </div>
 
           {/* Description - Optional */}
           <div className="space-y-2">
-            <Label htmlFor="description">{dict.form_description}</Label>
+            <Label htmlFor="description">{dictionary.form_description}</Label>
             <Input
-              {...testId("subcontractor-description-input")}
+              {...testId(PAGES_TEST_IDS.subcontractors.descriptionInput)}
               {...form.register("description")}
-              placeholder={dict.form_description}
+              placeholder={dictionary.form_description}
             />
           </div>
         </>

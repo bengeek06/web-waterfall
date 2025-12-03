@@ -179,6 +179,8 @@ export type AssociationTableDictionary = {
   // Modal strings
   modal_create_title?: string;
   modal_edit_title?: string;
+  modal_create_description?: string;
+  modal_edit_description?: string;
   
   // Delete confirmation
   delete_confirm_title?: string;
@@ -233,6 +235,8 @@ export type ColumnHandlers<T extends BaseItem> = {
   onEdit: (_item: T) => void;
   onDelete: (_id: string | number) => void | Promise<void>;
   onAddAssociation?: (_item: T, _associationName: string) => void;
+  /** Optional inline patch handler for quick field updates (e.g., toggle is_active) */
+  onPatch?: (_id: string | number, _data: Partial<T>) => Promise<T>;
 };
 
 /**
@@ -314,8 +318,28 @@ export type GenericAssociationTableProps<
   /** Enable row selection (default: false) */
   enableRowSelection?: boolean;
   
-  /** Enable per-column filtering (default: true) */
-  enableColumnFilters?: boolean;
+  /** 
+   * Enable row expansion (default: true if associations exist)
+   * Set to false to disable row expansion even if associations are defined
+   */
+  expandable?: boolean;
+  
+  /**
+   * Persist filter state in URL query params
+   * Filters will survive page refresh and can be shared via URL
+   */
+  persistFiltersInUrl?: boolean;
+  
+  /**
+   * Fetch options for server-side features
+   */
+  fetchOptions?: {
+    /** 
+     * Relations to expand via ?expand= query parameter
+     * @example ['roles', 'position'] -> ?expand=roles,position
+     */
+    expand?: string[];
+  };
   
   /** Custom toolbar actions */
   toolbarActions?: React.ReactNode;

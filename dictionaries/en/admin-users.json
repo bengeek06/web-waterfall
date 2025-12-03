@@ -1,6 +1,6 @@
 {
   "page_title": "User Management",
-  "create_button": "Create User",
+  "create_button": "Create",
   "import_button": "Import",
   "export_button": "Export",
   "import_json": "Import from JSON",

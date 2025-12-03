@@ -169,7 +169,7 @@ export const userSchema = z.object({
     .or(z.literal('')),
 });
 
-export type UserFormData = z.infer<typeof userSchema>;
+export type LegacyUserFormData = z.infer<typeof userSchema>;
 
 // ==================== COMPANY SCHEMA ====================
 export const companySchema = z.object({

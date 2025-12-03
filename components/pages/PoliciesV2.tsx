@@ -29,8 +29,10 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from "lucide-react";
+import { Edit, Trash2, PlusSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ColumnHeader } from "@/components/shared/tables";
+import type { ColumnConfig } from "@/components/shared/tables";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -121,14 +123,26 @@ type PoliciesDictionary = {
   };
 };
 
-// ==================== SORT ICON HELPER ====================
+// ==================== COLUMN CONFIGS ====================
 
-function SortIcon({ column }: Readonly<{ column: { getIsSorted: () => false | "asc" | "desc" } }>) {
-  const sorted = column.getIsSorted();
-  if (sorted === "asc") return <ArrowUp className="h-4 w-4" />;
-  if (sorted === "desc") return <ArrowDown className="h-4 w-4" />;
-  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
-}
+const createColumnConfigs = (dictionary: PoliciesDictionary): Record<string, ColumnConfig<Policy>> => ({
+  name: {
+    key: "name" as keyof Policy,
+    header: dictionary.table_name,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par nom...",
+  },
+  description: {
+    key: "description" as keyof Policy,
+    header: dictionary.table_description,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par description...",
+  },
+});
 
 // ==================== COLUMN FACTORY ====================
 
@@ -136,34 +150,38 @@ function createPoliciesColumns(
   dictionary: PoliciesDictionary,
   handlers: ColumnHandlers<Policy> & { onAddPermission: (_policy: Policy) => void }
 ): ColumnDef<Policy>[] {
+  const configs = createColumnConfigs(dictionary);
+  
   return [
-    // Name column with sorting
+    // Name column with sorting and filtering
     {
       accessorKey: "name",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.table_name}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<Policy>
+          config={configs.name}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="policies"
+        />
       ),
       cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
-    // Description column
+    // Description column with sorting and filtering
     {
       accessorKey: "description",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.table_description}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<Policy>
+          config={configs.description}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="policies"
+        />
       ),
       cell: ({ row }) => row.original.description || "-",
     },
@@ -449,7 +467,6 @@ export default function PoliciesV2({ dictionary }: { readonly dictionary: Polici
         ]}
         enableImportExport={true}
         enableRowSelection={true}
-        enableColumnFilters={true}
         testIdPrefix="policies"
         // Custom expansion renderer (not using default AssociationExpansion)
         renderExpandedRow={renderExpandedRow}

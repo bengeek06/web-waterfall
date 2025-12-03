@@ -567,57 +567,8 @@ describe('GenericDataTable', () => {
     });
   });
 
-  describe('Filtering', () => {
-    it('should show filter input when enableColumnFilters is true', () => {
-      render(
-        <GenericDataTable
-          columns={mockColumns}
-          data={mockData}
-          dictionary={mockDictionary}
-          enableColumnFilters={true}
-          filterPlaceholder="Search..."
-        />
-      );
-
-      // Should have filter inputs for filterable columns
-      expect(screen.getByTestId('generic-table-table-filter-name')).toBeInTheDocument();
-      expect(screen.getByTestId('generic-table-table-filter-email')).toBeInTheDocument();
-    });
-
-    it('should not show filter input when enableColumnFilters is false', () => {
-      render(
-        <GenericDataTable
-          columns={mockColumns}
-          data={mockData}
-          dictionary={mockDictionary}
-          enableColumnFilters={false}
-        />
-      );
-
-      expect(screen.queryByPlaceholderText('Filter...')).not.toBeInTheDocument();
-    });
-
-    it('should filter data when typing in filter input', async () => {
-      render(
-        <GenericDataTable
-          columns={mockColumns}
-          data={mockData}
-          dictionary={mockDictionary}
-          enableColumnFilters={true}
-        />
-      );
-
-      // Filter by name column
-      const filterInput = screen.getByTestId('generic-table-table-filter-name');
-      fireEvent.change(filterInput, { target: { value: 'Alice' } });
-
-      await waitFor(() => {
-        expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
-        expect(screen.queryByText('Bob Smith')).not.toBeInTheDocument();
-        expect(screen.queryByText('Charlie Brown')).not.toBeInTheDocument();
-      });
-    });
-  });
+  // NOTE: Column filtering tests removed - filters are now in ColumnHeader popovers
+  // See components/shared/tables/column-header.tsx for the new implementation
 
   describe('Toolbar Actions', () => {
     it('should render custom toolbar actions when provided', () => {

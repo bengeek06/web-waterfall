@@ -23,6 +23,21 @@ const TEST_PREFIX = 'roles';
 // Mock fetch globally
 globalThis.fetch = jest.fn();
 
+// Mock next/navigation - required for GenericDataTable which uses useRouter
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  forward: jest.fn(),
+  refresh: jest.fn(),
+  prefetch: jest.fn(),
+};
+jest.mock("next/navigation", () => ({
+  useRouter: () => mockRouter,
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/test",
+}));
+
 // Mock next-intl
 jest.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
@@ -153,13 +168,16 @@ describe('RolesV2 Component', () => {
 
   // Main mock fetch implementation
   const createMockFetch = () => (url: string, options?: RequestInit) => {
+    // Extract base URL without query params for comparison
+    const baseUrl = url.split('?')[0];
+    
     // Handle policies endpoint
-    if (url === GUARDIAN_ROUTES.policies) {
+    if (baseUrl === GUARDIAN_ROUTES.policies || url.startsWith(GUARDIAN_ROUTES.policies)) {
       return Promise.resolve(createResponse(mockPolicies));
     }
 
-    // Handle roles endpoint
-    if (url === GUARDIAN_ROUTES.roles) {
+    // Handle roles endpoint (with or without query params like ?limit=1000)
+    if (baseUrl === GUARDIAN_ROUTES.roles || url.startsWith(GUARDIAN_ROUTES.roles + '?')) {
       if (options?.method === 'POST') {
         const body = JSON.parse(options.body as string);
         return Promise.resolve(createResponse({ id: 3, ...body }, 201));

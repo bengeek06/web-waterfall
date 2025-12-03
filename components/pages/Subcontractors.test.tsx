@@ -14,6 +14,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Subcontractors from './Subcontractors';
 
+// Mock next/navigation - required for GenericDataTable which uses useRouter
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  back: jest.fn(),
+  forward: jest.fn(),
+  refresh: jest.fn(),
+  prefetch: jest.fn(),
+};
+jest.mock("next/navigation", () => ({
+  useRouter: () => mockRouter,
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/test",
+}));
+
 // Mock useTableCrud hook
 jest.mock('@/lib/hooks/useTableCrud', () => ({
   useTableCrud: jest.fn(() => ({
@@ -68,6 +83,8 @@ jest.mock('@/lib/hooks/useZodForm', () => ({
 const mockDictionary = {
   page_title: "Subcontractors",
   create_button: "Create Subcontractor",
+  table_logo: "Logo",
+  logo_create_info: "Logo can be added after creation",
   table_name: "Name",
   table_email: "Email",
   table_contact: "Contact",
@@ -108,6 +125,21 @@ const mockCommonTable = {
   save: "Save",
 };
 
+const mockLogoUpload = {
+  upload_button: "Upload",
+  remove_button: "Remove",
+  drag_drop: "Drag and drop",
+  uploading: "Uploading...",
+  max_size: "Max 2MB",
+  formats: "PNG, JPG",
+  error_size: "File too large",
+  error_format: "Invalid format",
+  success_upload: "Uploaded",
+  success_remove: "Removed",
+  error_upload: "Upload failed",
+  error_remove: "Remove failed",
+};
+
 describe('Subcontractors Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -115,20 +147,20 @@ describe('Subcontractors Component', () => {
 
   describe('Basic Rendering', () => {
     it('should render with page title', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('Subcontractors')).toBeInTheDocument();
     });
 
     it('should display subcontractors data', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('Tech Builders')).toBeInTheDocument();
       expect(screen.getByText('Pro Services')).toBeInTheDocument();
     });
 
     it('should render table column headers', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('Name')).toBeInTheDocument();
       expect(screen.getByText('Email')).toBeInTheDocument();
@@ -139,7 +171,7 @@ describe('Subcontractors Component', () => {
     });
 
     it('should render create button', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByTestId('generic-table-create-button')).toBeInTheDocument();
     });
@@ -147,13 +179,13 @@ describe('Subcontractors Component', () => {
 
   describe('Column Definitions', () => {
     it('should display email or dash if empty', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('contact@techbuilders.com')).toBeInTheDocument();
     });
 
     it('should display contact person or dash if empty', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('Alice Johnson')).toBeInTheDocument();
     });
@@ -172,7 +204,7 @@ describe('Subcontractors Component', () => {
         remove: jest.fn(),
       });
 
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       const descriptionText = screen.getByText(/This is a very long description/);
       expect(descriptionText.textContent).toContain('...');
@@ -182,7 +214,7 @@ describe('Subcontractors Component', () => {
 
   describe('Form Fields', () => {
     it('should render all form fields when create dialog opened', async () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       const createButton = screen.getByTestId('generic-table-create-button');
       fireEvent.click(createButton);
@@ -198,7 +230,7 @@ describe('Subcontractors Component', () => {
     });
 
     it('should have correct labels for form fields', async () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       const createButton = screen.getByTestId('generic-table-create-button');
       fireEvent.click(createButton);
@@ -215,7 +247,7 @@ describe('Subcontractors Component', () => {
     });
 
     it('should have email input with type email', async () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       const createButton = screen.getByTestId('generic-table-create-button');
       fireEvent.click(createButton);
@@ -229,14 +261,14 @@ describe('Subcontractors Component', () => {
 
   describe('Import/Export', () => {
     it('should have import and export enabled', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       expect(screen.getByText('Import')).toBeInTheDocument();
       expect(screen.getByText('Export')).toBeInTheDocument();
     });
 
     it('should log import action when import clicked', async () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       // Verify import button exists
       const importButton = screen.getByTestId('generic-table-import-button');
@@ -248,7 +280,7 @@ describe('Subcontractors Component', () => {
     });
 
     it('should log export action when export clicked', async () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       // Verify export button exists
       const exportButton = screen.getByTestId('generic-table-export-button');
@@ -258,7 +290,7 @@ describe('Subcontractors Component', () => {
 
   describe('Row Selection', () => {
     it('should have row selection enabled', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       const checkboxes = screen.getAllByRole('checkbox');
       expect(checkboxes.length).toBeGreaterThan(0);
@@ -267,7 +299,7 @@ describe('Subcontractors Component', () => {
 
   describe('Actions Column', () => {
     it('should render edit and delete buttons for each row', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
       // Verify table structure with checkboxes (implies rows with actions)
       const checkboxes = screen.getAllByRole('checkbox');
@@ -275,18 +307,18 @@ describe('Subcontractors Component', () => {
     });
   });
 
-  describe('Integration with GenericCrudTable', () => {
-    it('should use GenericCrudTable with correct service and path', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+  describe('Integration with GenericAssociationTable', () => {
+    it('should use GenericAssociationTable with correct service and path', () => {
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
-      // Verify GenericCrudTable renders
-      expect(screen.getByTestId('crud-table-container')).toBeInTheDocument();
+      // Verify GenericAssociationTable renders
+      expect(screen.getByTestId('subcontractors-container')).toBeInTheDocument();
     });
 
-    it('should pass dictionaries correctly to GenericCrudTable', () => {
-      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} />);
+    it('should pass dictionaries correctly to GenericAssociationTable', () => {
+      render(<Subcontractors dictionary={mockDictionary} commonTable={mockCommonTable} logoUpload={mockLogoUpload} />);
       
-      // Verify GenericCrudTable uses provided props
+      // Verify GenericAssociationTable uses provided props
       const createButton = screen.getByTestId('generic-table-create-button');
       expect(createButton).toBeInTheDocument();
     });

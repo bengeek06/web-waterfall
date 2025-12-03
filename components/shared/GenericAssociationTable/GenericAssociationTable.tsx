@@ -128,7 +128,9 @@ export function GenericAssociationTable<
   associations = [],
   enableImportExport = false,
   enableRowSelection = false,
-  enableColumnFilters = true,
+  expandable,
+  persistFiltersInUrl = false,
+  fetchOptions,
   toolbarActions,
   emptyState,
   onAfterSave,
@@ -186,9 +188,10 @@ export function GenericAssociationTable<
 
   // ==================== DATA FETCHING ====================
 
-  const { data, isLoading, create, update, remove, refresh } = useTableCrud<T>({
+  const { data, isLoading, create, update, patch, remove, refresh } = useTableCrud<T>({
     service,
     path,
+    expand: fetchOptions?.expand,
   });
 
   // ==================== BASIC-IO IMPORT/EXPORT ====================
@@ -334,8 +337,11 @@ export function GenericAssociationTable<
   }, [fetchAssociationsForItem, onDataEnrich]);
 
   // Fetch associations when data changes or after CRUD operations
-  // Using data.length, data IDs and dataVersion as stable dependencies
-  const dataIds = useMemo(() => data.map(d => d.id).join(","), [data]);
+  // Using a hash of data content to detect any changes (including field updates like is_active)
+  const dataHash = useMemo(() => {
+    // Create a stable hash from data content
+    return JSON.stringify(data.map(d => d));
+  }, [data]);
   
   useEffect(() => {
     // Fetch available items first, then enrich associations
@@ -345,7 +351,7 @@ export function GenericAssociationTable<
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataIds, associations.length, dataVersion, onDataEnrich]);
+  }, [dataHash, associations.length, dataVersion, onDataEnrich]);
 
   // ==================== CRUD HANDLERS ====================
 
@@ -595,8 +601,9 @@ export function GenericAssociationTable<
       onEdit: handleEdit,
       onDelete: handleDelete,
       onAddAssociation: associations.length > 0 ? handleAddAssociation : undefined,
+      onPatch: patch,
     });
-  }, [columns, handleEdit, handleDelete, handleAddAssociation, associations.length]);
+  }, [columns, handleEdit, handleDelete, handleAddAssociation, associations.length, patch]);
 
   // ==================== EXPANSION ====================
 
@@ -660,13 +667,13 @@ export function GenericAssociationTable<
         onCreateClick={handleCreate}
         enableImportExport={enableImportExport}
         enableRowSelection={enableRowSelection}
-        enableColumnFilters={enableColumnFilters}
+        persistFiltersInUrl={persistFiltersInUrl}
         onBulkDelete={enableRowSelection ? handleBulkDelete : undefined}
         onExport={onExport ?? (enableImportExport ? handleDefaultExport : undefined)}
         onImport={onImport ?? (enableImportExport ? handleDefaultImport : undefined)}
         isExporting={isExporting}
         isImporting={isImporting}
-        enableRowExpansion={associations.length > 0 || !!customRenderExpandedRow}
+        enableRowExpansion={(expandable !== false) && (associations.length > 0 || !!customRenderExpandedRow)}
         renderExpandedRow={(associations.length > 0 || customRenderExpandedRow) ? renderExpandedRow : undefined}
         toolbarActions={toolbarActions}
         emptyState={emptyState}

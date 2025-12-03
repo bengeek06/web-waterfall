@@ -43,7 +43,8 @@
  * @typeParam T - The type of data items in the table
  */
 
-import { useState, useEffect, useRef, Fragment } from "react";
+import { useState, useEffect, useRef, Fragment, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 // UI Components
 import {
@@ -61,7 +62,6 @@ import {
 } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -144,11 +144,17 @@ export interface GenericDataTableProps<T> {
   /** Enable row selection (default: false) */
   enableRowSelection?: boolean;
   
-  /** Enable per-column filtering (default: true) */
-  enableColumnFilters?: boolean;
+  /**
+   * Persist column filters in URL query params
+   * When enabled, filters survive page refresh and can be shared via URL
+   */
+  persistFiltersInUrl?: boolean;
   
-  /** Placeholder for filter inputs */
-  filterPlaceholder?: string;
+  /**
+   * Prefix for URL filter params (default: "filter_")
+   * @example "filter_" -> ?filter_name=john&filter_email=test
+   */
+  urlFilterPrefix?: string;
   
   /** Custom empty state component */
   emptyState?: React.ReactNode;
@@ -209,8 +215,8 @@ export function GenericDataTable<T>({
   isExporting = false,
   onBulkDelete,
   enableRowSelection = false,
-  enableColumnFilters = true,
-  filterPlaceholder,
+  persistFiltersInUrl = false,
+  urlFilterPrefix = "filter_",
   emptyState,
   toolbarActions,
   enableRowExpansion = false,
@@ -218,9 +224,26 @@ export function GenericDataTable<T>({
   onRowExpansionChange,
   initialExpanded = {},
 }: Readonly<GenericDataTableProps<T>>) {
+  // ==================== URL PERSISTENCE ====================
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
   // ==================== STATE ====================
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+    // Initialize from URL params if persistence enabled
+    if (!persistFiltersInUrl) return [];
+    
+    const initialFilters: ColumnFiltersState = [];
+    for (const [key, value] of searchParams.entries()) {
+      if (key.startsWith(urlFilterPrefix)) {
+        const columnId = key.slice(urlFilterPrefix.length);
+        initialFilters.push({ id: columnId, value });
+      }
+    }
+    return initialFilters;
+  });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [expanded, setExpanded] = useState<Record<string | number, boolean>>(initialExpanded);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -241,6 +264,39 @@ export function GenericDataTable<T>({
       prevDataLengthRef.current = data.length;
     }
   }, [data.length]);
+
+  // Sync filters to URL when they change (if persistence enabled)
+  useEffect(() => {
+    if (!persistFiltersInUrl) return;
+    
+    const params = new URLSearchParams(searchParams.toString());
+    
+    // Remove all filter params first
+    const keysToDelete = Array.from(params.keys()).filter(key => key.startsWith(urlFilterPrefix));
+    for (const key of keysToDelete) {
+      params.delete(key);
+    }
+    
+    // Add current filters
+    for (const filter of columnFilters) {
+      const value = filter.value;
+      if (value !== undefined && value !== null && value !== "") {
+        if (Array.isArray(value)) {
+          params.set(`${urlFilterPrefix}${filter.id}`, value.join(","));
+        } else {
+          params.set(`${urlFilterPrefix}${filter.id}`, String(value));
+        }
+      }
+    }
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [columnFilters, persistFiltersInUrl, urlFilterPrefix, pathname, router, searchParams]);
+
+  // Handle column filter changes with URL sync
+  const handleColumnFiltersChange = useCallback((updater: ColumnFiltersState | ((old: ColumnFiltersState) => ColumnFiltersState)) => {
+    setColumnFilters(updater);
+  }, []);
 
   // ==================== EXPANSION HANDLERS ====================
   const toggleExpand = (id: string | number) => {
@@ -316,7 +372,7 @@ export function GenericDataTable<T>({
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: handleColumnFiltersChange,
     onRowSelectionChange: setRowSelection,
     onPaginationChange: setPagination,
     enableRowSelection: enableRowSelection,
@@ -512,25 +568,6 @@ export function GenericDataTable<T>({
                     </TableHead>
                   ))}
                 </TableRow>
-                
-                {/* Header Row 2: Column Filters */}
-                {enableColumnFilters && (
-                  <TableRow className="bg-muted/50">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={`filter-${header.id}`}>
-                        {header.column.getCanFilter() ? (
-                          <Input
-                            value={(header.column.getFilterValue() as string) ?? ""}
-                            onChange={(e) => header.column.setFilterValue(e.target.value)}
-                            placeholder={filterPlaceholder || dictionary.filter_placeholder || "Filtrer..."}
-                            className="h-8 text-sm"
-                            {...testId(`${TABLE_TEST_IDS.genericTable.table}-filter-${header.id}`)}
-                          />
-                        ) : null}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                )}
               </Fragment>
             ))}
           </TableHeader>

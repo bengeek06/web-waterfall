@@ -24,9 +24,9 @@
  * - Full test coverage with data-testid attributes
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { FileText, ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from "lucide-react";
+import { FileText, Edit, Trash2, PlusSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,14 +34,10 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { GenericAssociationTable } from "@/components/shared/GenericAssociationTable";
 import type { ColumnHandlers, AssociationTableDictionary } from "@/components/shared/GenericAssociationTable";
 import { roleSchema, type RoleFormData } from "@/lib/validation/guardian.schemas";
-
-// Helper for sort icon rendering
-function SortIcon({ column }: Readonly<{ column: { getIsSorted: () => false | "asc" | "desc" } }>) {
-  const sorted = column.getIsSorted();
-  if (sorted === "asc") return <ArrowUp className="h-4 w-4" />;
-  if (sorted === "desc") return <ArrowDown className="h-4 w-4" />;
-  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
-}
+import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
+import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
+import { ColumnHeader } from "@/components/shared/tables";
+import type { ColumnConfig } from "@/components/shared/tables";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
@@ -119,49 +115,99 @@ type RolesDictionary = {
   remove_association?: string;
 };
 
+// ==================== COLUMN CONFIGS ====================
+
+const createColumnConfigs = (dictionary: RolesDictionary): Record<string, ColumnConfig<Role>> => ({
+  name: {
+    key: "name" as keyof Role,
+    header: dictionary.table_name,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par nom...",
+  },
+  description: {
+    key: "description" as keyof Role,
+    header: dictionary.table_description,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par description...",
+  },
+});
+
 // ==================== COLUMN FACTORY ====================
 
 function createRolesColumns(
   dictionary: RolesDictionary,
-  handlers: ColumnHandlers<Role>
+  handlers: ColumnHandlers<Role>,
+  availablePolicies: Policy[] = []
 ): ColumnDef<Role>[] {
+  const configs = createColumnConfigs(dictionary);
+  
   return [
-    // Name column with sorting
+    // Name column with sorting and filtering
     {
       accessorKey: "name",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.table_name}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<Role>
+          config={configs.name}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="roles"
+        />
       ),
       cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
     },
-    // Description column
+    // Description column with sorting and filtering
     {
       accessorKey: "description",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.table_description}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<Role>
+          config={configs.description}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="roles"
+        />
       ),
       cell: ({ row }) => row.original.description || "-",
     },
-    // Policies count
+    // Policies column with multi-select filter
     {
       accessorKey: "policies",
       enableSorting: false,
-      enableColumnFilter: false,
-      header: dictionary.table_policies,
+      enableColumnFilter: true,
+      filterFn: (row, _columnId, filterValue: string[]) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        const rolePolicies = row.original.policies || [];
+        // Role passes filter if it has at least one of the selected policies
+        return rolePolicies.some(policy => filterValue.includes(String(policy.id)));
+      },
+      header: ({ column }) => (
+        <ColumnHeader<Role>
+          config={{
+            key: "policies",
+            header: dictionary.table_policies,
+            sortable: false,
+            filterable: true,
+            filterType: "multi-select",
+            filterOptions: availablePolicies.map((policy) => ({
+              value: String(policy.id),
+              label: policy.name,
+            })),
+          }}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue()}
+          onFilterChange={(value) => column.setFilterValue(value)}
+          testIdPrefix="roles"
+        />
+      ),
       cell: ({ row }) => `${row.original.policies?.length || 0} politique(s)`,
     },
     // Actions
@@ -248,6 +294,25 @@ const policiesAssociation = {
 // ==================== COMPONENT ====================
 
 export default function RolesV2({ dictionary }: { readonly dictionary: RolesDictionary }) {
+  // ==================== POLICIES STATE (for filter) ====================
+  const [availablePolicies, setAvailablePolicies] = useState<Policy[]>([]);
+
+  // Fetch policies on mount for the filter dropdown
+  useEffect(() => {
+    const fetchPolicies = async () => {
+      try {
+        const res = await fetchWithAuth(GUARDIAN_ROUTES.policies);
+        if (res.ok) {
+          const data = await res.json();
+          setAvailablePolicies(Array.isArray(data) ? data : (data.data || []));
+        }
+      } catch (error) {
+        console.error("Error fetching policies:", error);
+      }
+    };
+    fetchPolicies();
+  }, []);
+
   // Map dictionary to GenericAssociationTable format
   const tableDictionary: AssociationTableDictionary = {
     create: dictionary.create_button,
@@ -304,7 +369,7 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
       entityName="roles"
       pageTitle={dictionary.page_title}
       dictionary={tableDictionary}
-      columns={(handlers) => createRolesColumns(dictionary, handlers)}
+      columns={(handlers) => createRolesColumns(dictionary, handlers, availablePolicies)}
       schema={roleSchema}
       defaultFormValues={{ name: "", description: "" }}
       associations={[policiesAssociation]}

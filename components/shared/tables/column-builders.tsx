@@ -11,6 +11,22 @@
 
 "use client";
 
+/**
+ * Column Builder Utilities
+ * 
+ * Factory functions for creating standardized TanStack Table column definitions.
+ * These builders ensure consistent styling, behavior, and accessibility across all tables.
+ * 
+ * @example
+ * ```tsx
+ * const columns = [
+ *   createFilterableTextColumn('name', 'Name', 'users'),
+ *   createDateColumn('created_at', 'Created', 'fr'),
+ *   createActionColumn({ onEdit, onDelete }, dictionary, 'user'),
+ * ];
+ * ```
+ */
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,8 +36,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Check, X, Edit, Trash2, Eye, ArrowUpDown } from "lucide-react";
+import { Check, X, Edit, Trash2, Eye } from "lucide-react";
+import { SortIcon } from "./sort-icon";
+import { ColumnHeader } from "./column-header";
+import type { ColumnConfig } from "./types";
 import { testId } from "@/lib/test-ids";
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 
@@ -50,6 +70,8 @@ export type Locale = 'fr' | 'en';
 /**
  * Creates a standard actions column with Edit/Delete/View icon buttons with tooltips
  * 
+ * @param callbacks - Object containing onEdit, onDelete, onView handlers
+ * @param dictionary - Localized labels for actions
  * @param entityIdPrefix - Prefix for test IDs (e.g., 'user', 'subcontractor')
  * @example
  * ```tsx
@@ -86,7 +108,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                     onClick={() => callbacks.onView?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-view-${itemId}`) : {})}
                   >
-                    <Eye className="h-4 w-4" />
+                    <Eye className={ICON_SIZES.sm} />
                     <span className="sr-only">{dictionary.view}</span>
                   </Button>
                 </TooltipTrigger>
@@ -105,7 +127,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                     onClick={() => callbacks.onEdit?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-edit-${itemId}`) : {})}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className={ICON_SIZES.sm} />
                     <span className="sr-only">{dictionary.edit}</span>
                   </Button>
                 </TooltipTrigger>
@@ -124,7 +146,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                     onClick={() => callbacks.onDelete?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-delete-${itemId}`) : {})}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className={ICON_SIZES.sm} />
                     <span className="sr-only">{dictionary.delete}</span>
                   </Button>
                 </TooltipTrigger>
@@ -143,6 +165,9 @@ export function createActionColumn<T extends { id?: string | number }>(
 /**
  * Creates a formatted date column using native Intl.DateTimeFormat
  * 
+ * @param accessorKey - The key to access the date value
+ * @param header - Column header label
+ * @param locale - Locale for date formatting ('en' or 'fr')
  * @example
  * ```tsx
  * createDateColumn('created_at', 'Created', 'en')
@@ -172,7 +197,7 @@ export function createDateColumn<T>(
           className="h-8 px-2 lg:px-3"
         >
           {header}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <SortIcon column={column} className="ml-2" />
         </Button>
       );
     },
@@ -196,6 +221,9 @@ export function createDateColumn<T>(
 /**
  * Creates a status badge column
  * 
+ * @param accessorKey - The key to access the status value
+ * @param header - Column header label
+ * @param statusConfig - Configuration for each status value
  * @example
  * ```tsx
  * createStatusColumn('status', 'Status', {
@@ -229,8 +257,10 @@ export function createStatusColumn<T>(
 }
 
 /**
- * Creates a boolean column with checkmark/cross
+ * Creates a boolean column with checkmark/cross icons
  * 
+ * @param accessorKey - The key to access the boolean value
+ * @param header - Column header label
  * @example
  * ```tsx
  * createBooleanColumn('is_active', 'Active')
@@ -248,17 +278,19 @@ export function createBooleanColumn<T>(
       const value = row.getValue(accessorKey);
       
       return value ? (
-        <Check className="h-4 w-4 text-green-600" />
+        <Check className={`${ICON_SIZES.sm} text-green-600`} />
       ) : (
-        <X className="h-4 w-4 text-gray-400" />
+        <X className={`${ICON_SIZES.sm} text-gray-400`} />
       );
     },
   };
 }
 
 /**
- * Creates a sortable text column
+ * Creates a sortable text column (sort only, no filter)
  * 
+ * @param accessorKey - The key to access the text value
+ * @param header - Column header label
  * @example
  * ```tsx
  * createTextColumn('email', 'Email')
@@ -278,7 +310,7 @@ export function createTextColumn<T>(
           className="h-8 px-2 lg:px-3"
         >
           {header}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <SortIcon column={column} className="ml-2" />
         </Button>
       );
     },
@@ -290,8 +322,58 @@ export function createTextColumn<T>(
 }
 
 /**
+ * Creates a sortable AND filterable text column using ColumnHeader
+ * 
+ * @param accessorKey - The key to access the text value
+ * @param header - Column header label
+ * @param testIdPrefix - Prefix for test IDs (optional)
+ * @param filterPlaceholder - Placeholder text for filter input (optional)
+ * @example
+ * ```tsx
+ * createFilterableTextColumn('email', 'Email', 'users', 'Filter by email...')
+ * ```
+ */
+export function createFilterableTextColumn<T>(
+  accessorKey: keyof T & string,
+  header: string,
+  testIdPrefix?: string,
+  filterPlaceholder?: string
+): ColumnDef<T> {
+  const config: ColumnConfig<T> = {
+    key: accessorKey,
+    header,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: filterPlaceholder ?? `Filter ${header}...`,
+  };
+
+  return {
+    accessorKey,
+    enableColumnFilter: true,
+    filterFn: "includesString",
+    header: ({ column }) => (
+      <ColumnHeader<T>
+        config={config}
+        tanstackColumn={column}
+        filterValue={column.getFilterValue() as string}
+        onFilterChange={(v) => column.setFilterValue(v)}
+        testIdPrefix={testIdPrefix}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue(accessorKey);
+      return value ? String(value) : <span className="text-muted-foreground">—</span>;
+    },
+  };
+}
+
+/**
  * Creates a badge list column (for arrays like roles, tags)
  * 
+ * @param accessorKey - The key to access the array value
+ * @param header - Column header label
+ * @param labelExtractor - Function to extract display label from each item
  * @example
  * ```tsx
  * createBadgeListColumn('roles', 'Roles', (role) => role.name)

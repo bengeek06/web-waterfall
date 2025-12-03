@@ -27,9 +27,11 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Shield, ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare, Check, X, ChevronDown } from "lucide-react";
+import { Shield, Edit, Trash2, PlusSquare, ChevronDown } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ColumnHeader } from "@/components/shared/tables";
+import type { ColumnConfig } from "@/components/shared/tables";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -72,6 +74,7 @@ type User = {
   language?: "en" | "fr";
   is_active: boolean;
   is_verified: boolean;
+  has_avatar?: boolean;
   position_id?: string;
   position?: Position;
   roles?: Role[];
@@ -162,21 +165,44 @@ type UsersDictionary = {
   };
 };
 
-// ==================== HELPER: SORT ICON ====================
+// ==================== COLUMN CONFIGS ====================
 
-function SortIcon({ column }: Readonly<{ column: { getIsSorted: () => false | "asc" | "desc" } }>) {
-  const sorted = column.getIsSorted();
-  if (sorted === "asc") return <ArrowUp className="h-4 w-4" />;
-  if (sorted === "desc") return <ArrowDown className="h-4 w-4" />;
-  return <ArrowUpDown className="h-4 w-4 opacity-50" />;
-}
+const createColumnConfigs = (dictionary: UsersDictionary): Record<string, ColumnConfig<User>> => ({
+  email: {
+    key: "email" as keyof User,
+    header: dictionary.columns.email,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par email...",
+  },
+  first_name: {
+    key: "first_name" as keyof User,
+    header: dictionary.columns.first_name,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par prénom...",
+  },
+  last_name: {
+    key: "last_name" as keyof User,
+    header: dictionary.columns.last_name,
+    sortable: true,
+    filterable: true,
+    filterType: "text",
+    filterPlaceholder: "Filtrer par nom...",
+  },
+});
 
 // ==================== COLUMN FACTORY ====================
 
 function createUsersColumns(
   dictionary: UsersDictionary,
-  handlers: ColumnHandlers<User>
+  handlers: ColumnHandlers<User>,
+  availableRoles: Role[] = []
 ): ColumnDef<User>[] {
+  const configs = createColumnConfigs(dictionary);
+  
   return [
     // Avatar column
     {
@@ -203,57 +229,88 @@ function createUsersColumns(
         );
       },
     },
-    // Email column with sorting
+    // Email column with sorting and filtering
     {
       accessorKey: "email",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.columns.email}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<User>
+          config={configs.email}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="users"
+        />
       ),
       cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
     },
-    // First Name
+    // First Name with sorting and filtering
     {
       accessorKey: "first_name",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.columns.first_name}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<User>
+          config={configs.first_name}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="users"
+        />
       ),
       cell: ({ row }) => row.original.first_name || "-",
     },
-    // Last Name
+    // Last Name with sorting and filtering
     {
       accessorKey: "last_name",
       enableColumnFilter: true,
+      filterFn: "includesString",
       header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="flex items-center gap-2 hover:text-foreground"
-        >
-          {dictionary.columns.last_name}
-          <SortIcon column={column} />
-        </button>
+        <ColumnHeader<User>
+          config={configs.last_name}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue() as string}
+          onFilterChange={(v) => column.setFilterValue(v)}
+          testIdPrefix="users"
+        />
       ),
       cell: ({ row }) => row.original.last_name || "-",
     },
-    // Roles count
+    // Roles column with multi-select filter
     {
       accessorKey: "roles",
       enableSorting: false,
-      enableColumnFilter: false,
-      header: dictionary.columns.roles,
+      enableColumnFilter: true,
+      filterFn: (row, _columnId, filterValue: string[]) => {
+        if (!filterValue || filterValue.length === 0) return true;
+        const userRoles = row.original.roles || [];
+        // UserRoles are junction objects: { id: junction_id, user_id, role_id, role: { id, name } }
+        // We need to compare with role_id or role.id, not the junction id
+        return userRoles.some(userRole => {
+          const roleId = (userRole as { role_id?: string | number; role?: { id: string | number } }).role_id 
+            ?? (userRole as { role?: { id: string | number } }).role?.id;
+          return filterValue.includes(String(roleId));
+        });
+      },
+      header: ({ column }) => (
+        <ColumnHeader<User>
+          config={{
+            key: "roles",
+            header: dictionary.columns.roles,
+            sortable: false,
+            filterable: true,
+            filterType: "multi-select",
+            filterOptions: availableRoles.map((role) => ({
+              value: String(role.id),
+              label: role.name,
+            })),
+          }}
+          tanstackColumn={column}
+          filterValue={column.getFilterValue()}
+          onFilterChange={(value) => column.setFilterValue(value)}
+        />
+      ),
       cell: ({ row }) => `${row.original.roles?.length || 0} rôle(s)`,
     },
     // Position
@@ -264,17 +321,25 @@ function createUsersColumns(
       header: dictionary.columns.positions,
       cell: ({ row }) => row.original.position?.title || "-",
     },
-    // Is Active
+    // Is Active - Inline toggle
     {
       accessorKey: "is_active",
       enableSorting: true,
       enableColumnFilter: false,
       header: dictionary.columns.is_active,
-      cell: ({ row }) => (
-        row.original.is_active 
-          ? <Check className={`${ICON_SIZES.sm} text-green-600`} />
-          : <X className={`${ICON_SIZES.sm} text-red-500`} />
-      ),
+      cell: ({ row }) => {
+        const user = row.original;
+        return (
+          <Switch
+            checked={user.is_active}
+            onCheckedChange={(checked) => {
+              handlers.onPatch?.(user.id, { is_active: checked });
+            }}
+            disabled={!handlers.onPatch}
+            {...testId(ADMIN_TEST_IDS.users.isActiveToggle(user.id.toString()))}
+          />
+        );
+      },
     },
     // Actions
     {
@@ -462,7 +527,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
   // ==================== FORM TRANSFORM ====================
   
   // Transform User to form data (for editing)
-  const transformItemToForm = useCallback((user: User): CreateUserFormData => {
+  const transformItemToForm = useCallback((user: User): UserFormData => {
     // Set the position for the select
     setSelectedPositionId(user.position_id || "");
     // Set selected roles from user's current roles
@@ -501,7 +566,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
 
 
   // Transform form data to API payload (add position_id)
-  const transformFormData = (data: CreateUserFormData): Partial<User> => {
+  const transformFormData = (data: UserFormData): Partial<User> => {
     const payload: Partial<User> = {
       email: data.email,
       first_name: data.first_name || undefined,
@@ -651,8 +716,9 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       entityName="users"
       pageTitle={dictionary.page_title}
       dictionary={tableDictionary}
-      columns={(handlers) => createUsersColumns(dictionary, handlers)}
+      columns={(handlers) => createUsersColumns(dictionary, handlers, availableRoles)}
       schema={userFormSchema}
+      expandable={false}
       defaultFormValues={{
         email: "",
         password: "",

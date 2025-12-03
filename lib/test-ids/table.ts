@@ -31,7 +31,60 @@ export const TABLE_TEST_IDS = {
     emptyRow: 'generic-table-empty-row',
     resultsCount: 'generic-table-results-count',
   },
+  
+  /** 
+   * Column filter test IDs
+   * Use with prefix: `${prefix}-col-${columnKey}-filter`
+   */
+  filters: {
+    /** Text filter input */
+    textInput: 'filter-text-input',
+    /** Text filter clear button */
+    textClear: 'filter-text-clear',
+    /** Select filter dropdown */
+    selectTrigger: 'filter-select-trigger',
+    /** Multi-select filter dropdown */
+    multiSelectTrigger: 'filter-multi-select-trigger',
+    /** Boolean filter dropdown */
+    booleanTrigger: 'filter-boolean-trigger',
+    /** Clear all filters button */
+    clearAll: 'filter-clear-all',
+  },
+  
+  /**
+   * Column header test IDs
+   * Use with prefix: `${prefix}-col-${columnKey}`
+   */
+  columnHeader: {
+    /** Sort button */
+    sortButton: 'sort-button',
+    /** Filter button (opens popover) */
+    filterButton: 'filter-btn',
+    /** Filter popover content */
+    filterPopover: 'filter-popover',
+  },
 } as const;
+
+/**
+ * Helper to generate column-specific test IDs
+ * 
+ * @example
+ * ```tsx
+ * const ids = getColumnTestIds('users', 'email');
+ * // ids.sort => 'users-col-email-sort'
+ * // ids.filterBtn => 'users-col-email-filter-btn'
+ * // ids.filter => 'users-col-email-filter'
+ * ```
+ */
+export function getColumnTestIds(prefix: string, columnKey: string) {
+  const base = `${prefix}-col-${columnKey}`;
+  return {
+    sort: `${base}-sort`,
+    filterBtn: `${base}-filter-btn`,
+    filter: `${base}-filter`,
+    filterClear: `${base}-filter-clear`,
+  };
+}
 
 // Type exports
 export type TableTestIds = typeof TABLE_TEST_IDS;
