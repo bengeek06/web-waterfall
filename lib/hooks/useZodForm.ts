@@ -44,7 +44,6 @@ export function useZodForm<T extends FieldValues>({
 }: UseZodFormProps<T>): UseFormReturn<T> {
   return useForm<T>({
     ...formConfig,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
   }) as UseFormReturn<T>;
 }

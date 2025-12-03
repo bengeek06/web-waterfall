@@ -1,0 +1,494 @@
+/**
+ * Copyright (c) 2025 Waterfall
+ * 
+ * This source code is dual-licensed under:
+ * - GNU Affero General Public License v3.0 (AGPLv3) for open source use
+ * - Commercial License for proprietary use
+ * 
+ * See LICENSE and LICENSE.md files in the root directory for full license text.
+ * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
+ */
+
+import type { ColumnDef } from "@tanstack/react-table";
+import type { LucideIcon } from "lucide-react";
+import type { ZodType } from "zod";
+import type { UseFormReturn, FieldValues, DefaultValues } from "react-hook-form";
+
+// ==================== BASE TYPES ====================
+
+/**
+ * Base type for items with an ID
+ */
+export type BaseItem = {
+  id: string | number;
+  name?: string;
+  [key: string]: unknown;
+};
+
+/**
+ * Association type - defines the relationship
+ */
+export type AssociationType = "many-to-many" | "one-to-many";
+
+// ==================== ASSOCIATION CONFIG ====================
+
+/**
+ * Configuration for a single association (N-N or 1-N relationship)
+ * 
+ * @example Many-to-Many (User <-> Roles via user_roles junction table)
+ * ```tsx
+ * {
+ *   type: "many-to-many",
+ *   name: "roles",
+ *   label: "Rôles",
+ *   service: "guardian",
+ *   path: "/roles",
+ *   junctionEndpoint: "/users/{id}/roles",
+ *   displayField: "name",
+ *   icon: Shield,
+ * }
+ * ```
+ * 
+ * @example One-to-Many (Company <- Users, FK on users)
+ * ```tsx
+ * {
+ *   type: "one-to-many",
+ *   name: "users",
+ *   label: "Utilisateurs",
+ *   service: "identity",
+ *   path: "/users",
+ *   foreignKey: "company_id",
+ *   displayField: "email",
+ *   icon: Users,
+ * }
+ * ```
+ */
+export type AssociationConfig<TAssociated extends BaseItem = BaseItem> = {
+  /** Type of relationship */
+  type: AssociationType;
+  
+  /** Name of the association (used as key in data and for i18n lookup) */
+  name: string;
+  
+  /** Human-readable label for the association */
+  label?: string;
+  
+  /** 
+   * API service for the junction endpoint (where to POST/DELETE associations)
+   * @example "identity" for /users/{id}/roles endpoint
+   */
+  service: string;
+  
+  /**
+   * API service for fetching available items (optional, defaults to service)
+   * Use when items are in a different service than the junction endpoint
+   * @example "guardian" to fetch /roles from guardian while junction is in identity
+   */
+  itemsService?: string;
+  
+  /** API endpoint path for the associated entity (e.g., /roles, /policies) */
+  path: string;
+  
+  /** 
+   * Junction endpoint pattern for M2M associations
+   * Use {id} placeholder for parent entity ID
+   * @example "/users/{id}/roles" 
+   */
+  junctionEndpoint?: string;
+  
+  /**
+   * Query parameter name for M2M associations (alternative to path param)
+   * Use when junction endpoint uses query params instead of path params
+   * @example "user_id" for GET /user-roles?user_id={id}
+   */
+  junctionQueryParam?: string;
+  
+  /**
+   * Foreign key field name for 1-N associations
+   * @example "company_id"
+   */
+  foreignKey?: string;
+  
+  /** Field to display in UI (default: "name") */
+  displayField?: keyof TAssociated | string;
+  
+  /** Secondary field to display (optional) */
+  secondaryField?: keyof TAssociated | string;
+  
+  /** Icon component for the association */
+  icon?: LucideIcon;
+  
+  /** Custom columns for the association items in expansion (optional) */
+  columns?: ColumnDef<TAssociated>[];
+  
+  /** 
+   * Field to use for add request body 
+   * For M2M: the field name to send when adding association
+   * @example "role_id" for POST /users/{id}/roles with { role_id: 123 }
+   * @default "<association_name>_id" (e.g., "role_id" for association "roles")
+   */
+  addBodyField?: string;
+  
+  /**
+   * Field to use for delete URL (default: "id")
+   * Use this when the delete endpoint needs a different ID than the item's id field.
+   * @example For junction tables that return { id: junction_id, role_id: actual_role_id }
+   *          If backend DELETE expects /users/{user_id}/roles/{junction_id}, use "id" (default)
+   *          If backend DELETE expects /users/{user_id}/roles/{role_id}, use "role_id"
+   * @default "id"
+   */
+  deleteIdField?: string;
+  
+  /**
+   * Grouping configuration for associations (like Policies grouping by service/resource)
+   */
+  groupBy?: {
+    /** Fields to group by */
+    fields: string[];
+    /** Render function for group header */
+    renderGroupHeader?: (_group: { key: string; items: TAssociated[] }) => React.ReactNode;
+  };
+  
+  /**
+   * Exclude this association from basic-io export
+   * Useful when the associated entity doesn't have a unique lookup field
+   * @default false
+   */
+  excludeFromExport?: boolean;
+};
+
+// ==================== DICTIONARY ====================
+
+/**
+ * Dictionary for GenericAssociationTable i18n
+ */
+export type AssociationTableDictionary = {
+  // Table strings
+  create?: string;
+  filter_placeholder?: string;
+  no_results?: string;
+  loading?: string;
+  export?: string;
+  import?: string;
+  delete_selected?: string;
+  showing_results?: string;
+  rows_per_page?: string;
+  previous?: string;
+  next?: string;
+  
+  // Modal strings
+  modal_create_title?: string;
+  modal_edit_title?: string;
+  modal_create_description?: string;
+  modal_edit_description?: string;
+  
+  // Delete confirmation
+  delete_confirm_title?: string;
+  delete_confirm_message?: string;
+  cancel?: string;
+  save?: string;
+  delete?: string;
+  
+  // Association expansion
+  no_associations?: string;
+  add_association?: string;
+  remove_association?: string;
+  
+  // Association dialog
+  association_dialog_title?: string;
+  association_dialog_description?: string;
+  associated_items?: string;
+  available_items?: string;
+  no_available_items?: string;
+  add_selected?: string;
+  selected_count?: string;
+  select_all?: string;
+  clear_selection?: string;
+  search_placeholder?: string;
+  
+  // Import/Export report
+  import_report_title?: string;
+  import_report_total?: string;
+  import_report_success?: string;
+  import_report_failed?: string;
+  import_report_errors?: string;
+  import_report_warnings?: string;
+  import_report_close?: string;
+  
+  // Generic error messages
+  errors?: {
+    fetch?: string;
+    create?: string;
+    update?: string;
+    delete?: string;
+    add_association?: string;
+    remove_association?: string;
+  };
+};
+
+// ==================== COMPONENT PROPS ====================
+
+/**
+ * Handler functions passed to column factory
+ */
+export type ColumnHandlers<T extends BaseItem> = {
+  onEdit: (_item: T) => void;
+  onDelete: (_id: string | number) => void | Promise<void>;
+  onAddAssociation?: (_item: T, _associationName: string) => void;
+  /** Optional inline patch handler for quick field updates (e.g., toggle is_active) */
+  onPatch?: (_id: string | number, _data: Partial<T>) => Promise<T>;
+};
+
+/**
+ * Props for GenericAssociationTable component
+ * 
+ * @typeParam T - The main entity type (must have id field)
+ * @typeParam TForm - The form data type for create/edit (defaults to T & FieldValues)
+ */
+export type GenericAssociationTableProps<
+  T extends BaseItem,
+  TForm extends FieldValues = T & FieldValues
+> = {
+  // ==================== API CONFIG ====================
+  
+  /** API service name (identity, guardian, project, storage) */
+  service: string;
+  
+  /** API endpoint path (e.g., /users, /policies) */
+  path: string;
+  
+  /** Entity name for export filename (defaults to path without leading slash) */
+  entityName?: string;
+  
+  // ==================== TABLE CONFIG ====================
+  
+  /** 
+   * Column definitions factory
+   * Receives handlers for edit, delete, and optionally add association
+   */
+  columns: (_handlers: ColumnHandlers<T>) => ColumnDef<T>[];
+  
+  /** Page title */
+  pageTitle: string;
+  
+  /** Dictionary for i18n */
+  dictionary: AssociationTableDictionary;
+  
+  // ==================== FORM CONFIG ====================
+  
+  /** Zod schema for form validation */
+  schema: ZodType<TForm>;
+  
+  /** Default form values */
+  defaultFormValues: DefaultValues<TForm>;
+  
+  /** 
+   * Render form fields
+   * @param form - React Hook Form instance
+   * @param dictionary - i18n dictionary
+   * @param editingItem - Item being edited (null for create)
+   * @param refresh - Function to refresh data
+   */
+  renderFormFields: (
+    _form: UseFormReturn<TForm>,
+    _dictionary: AssociationTableDictionary,
+    _editingItem?: T | null,
+    _refresh?: () => Promise<void>
+  ) => React.ReactNode;
+  
+  /** Transform form data to API payload (optional) */
+  transformFormData?: (_data: TForm) => Partial<T>;
+  
+  /** Transform API item to form data (optional) */
+  transformItemToForm?: (_item: T) => TForm;
+  
+  // ==================== ASSOCIATIONS CONFIG ====================
+  
+  /** 
+   * Association configurations
+   * Define N-N or 1-N relationships to manage in expansion rows
+   */
+  associations?: AssociationConfig[];
+  
+  // ==================== FEATURES ====================
+  
+  /** Enable import/export (default: false) */
+  enableImportExport?: boolean;
+  
+  /** Enable row selection (default: false) */
+  enableRowSelection?: boolean;
+  
+  /** 
+   * Enable row expansion (default: true if associations exist)
+   * Set to false to disable row expansion even if associations are defined
+   */
+  expandable?: boolean;
+  
+  /**
+   * Persist filter state in URL query params
+   * Filters will survive page refresh and can be shared via URL
+   */
+  persistFiltersInUrl?: boolean;
+  
+  /**
+   * Fetch options for server-side features
+   */
+  fetchOptions?: {
+    /** 
+     * Relations to expand via ?expand= query parameter
+     * @example ['roles', 'position'] -> ?expand=roles,position
+     */
+    expand?: string[];
+  };
+  
+  /** Custom toolbar actions */
+  toolbarActions?: React.ReactNode;
+  
+  /** Custom empty state component */
+  emptyState?: React.ReactNode;
+  
+  // ==================== HANDLERS (OPTIONAL OVERRIDES) ====================
+  
+  /** 
+   * Callback after successful create or update
+   * @param item - The saved item (with ID)
+   * @param isNew - Whether this was a create (true) or update (false)
+   */
+  onAfterSave?: (_item: T, _isNew: boolean) => void | Promise<void>;
+  
+  /**
+   * Callback to enrich data after fetching (e.g., resolve foreign keys)
+   * Use this to add related data that isn't fetched automatically
+   * @param items - The fetched items
+   * @returns The enriched items
+   */
+  onDataEnrich?: (_items: T[]) => Promise<T[]> | T[];
+  
+  /** Custom import handler (overrides default basic-io import) */
+  onImport?: (_format: 'json' | 'csv', _file?: File) => void | Promise<void>;
+  
+  /** Custom export handler (overrides default basic-io export) */
+  onExport?: (_data: T[], _format: 'json' | 'csv') => void;
+  
+  // ==================== CUSTOM RENDERING ====================
+  
+  /** 
+   * Custom render function for expanded rows
+   * If provided, overrides the default AssociationExpansion component
+   * Useful for complex association displays (e.g., grouped permissions)
+   */
+  renderExpandedRow?: (_item: T) => React.ReactNode;
+  
+  // ==================== TEST ====================
+  
+  /** Test ID prefix for data-testid attributes */
+  testIdPrefix?: string;
+};
+
+// ==================== ASSOCIATION DIALOG PROPS ====================
+
+/**
+ * Props for AssociationDialog component
+ */
+export type AssociationDialogProps<TAssociated extends BaseItem = BaseItem> = {
+  /** Whether the dialog is open */
+  open: boolean;
+  
+  /** Callback to change open state */
+  onOpenChange: (_open: boolean) => void;
+  
+  /** Parent entity name (for title) */
+  parentName: string;
+  
+  /** Association configuration */
+  config: AssociationConfig<TAssociated>;
+  
+  /** Currently associated items */
+  associatedItems: TAssociated[];
+  
+  /** All available items (will filter out already associated) */
+  availableItems: TAssociated[];
+  
+  /** Callback when items are selected to add */
+  onAdd: (_itemIds: (string | number)[]) => void | Promise<void>;
+  
+  /** Whether add operation is loading */
+  isLoading?: boolean;
+  
+  /** Dictionary for i18n */
+  dictionary: AssociationTableDictionary;
+  
+  /** Initial filter values (optional) */
+  initialFilters?: Record<string, string>;
+};
+
+// ==================== ASSOCIATION EXPANSION PROPS ====================
+
+/**
+ * Props for AssociationExpansion component
+ */
+export type AssociationExpansionProps<
+  T extends BaseItem,
+  TAssociated extends BaseItem = BaseItem
+> = {
+  /** Parent item */
+  item: T;
+  
+  /** Association configurations */
+  associations: AssociationConfig<TAssociated>[];
+  
+  /** Callback to add association */
+  onAdd: (_item: T, _associationName: string) => void;
+  
+  /** Callback to remove association */
+  onRemove: (
+    _item: T,
+    _associationName: string,
+    _associatedItem: TAssociated
+  ) => void | Promise<void>;
+  
+  /** Dictionary for i18n */
+  dictionary: AssociationTableDictionary;
+};
+
+// ==================== USE ASSOCIATIONS HOOK ====================
+
+/**
+ * Options for useAssociations hook
+ */
+export type UseAssociationsOptions<TAssociated extends BaseItem = BaseItem> = {
+  /** Association configuration */
+  config: AssociationConfig<TAssociated>;
+  
+  /** Parent entity ID */
+  parentId: string | number | null;
+  
+  /** Whether to fetch on mount */
+  enabled?: boolean;
+};
+
+/**
+ * Return type for useAssociations hook
+ */
+export type UseAssociationsReturn<TAssociated extends BaseItem = BaseItem> = {
+  /** Associated items */
+  associatedItems: TAssociated[];
+  
+  /** All available items */
+  allItems: TAssociated[];
+  
+  /** Loading state */
+  isLoading: boolean;
+  
+  /** Error state */
+  error: Error | null;
+  
+  /** Add associations */
+  addAssociations: (_itemIds: (string | number)[]) => Promise<void>;
+  
+  /** Remove association */
+  removeAssociation: (_itemId: string | number) => Promise<void>;
+  
+  /** Refresh data */
+  refresh: () => Promise<void>;
+};

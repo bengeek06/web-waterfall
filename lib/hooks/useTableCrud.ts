@@ -30,6 +30,12 @@ export interface CrudConfig {
   path: string;
   
   /**
+   * Relations to expand via ?expand= query parameter
+   * @example ['roles', 'position'] -> ?expand=roles,position
+   */
+  expand?: string[];
+  
+  /**
    * Revalidate when window regains focus
    * @default false
    */
@@ -68,8 +74,11 @@ export interface CrudResult<T> {
   /** Create a new item */
   create: (_item: Partial<T>) => Promise<T>;
   
-  /** Update an existing item */
-  update: (_id: string, _item: Partial<T>) => Promise<T>;
+  /** Update an existing item (PUT - requires all fields) */
+  update: (_id: string | number, _item: Partial<T>) => Promise<T>;
+  
+  /** Patch an existing item (PATCH - partial update) */
+  patch: (_id: string | number, _item: Partial<T>) => Promise<T>;
   
   /** Delete an item */
   remove: (_id: string) => Promise<void>;
@@ -103,6 +112,7 @@ export function useTableCrud<T extends { id?: string | number }>(
   const {
     service,
     path,
+    expand,
     revalidateOnFocus = false,
     revalidateOnMount = true,
     errorMessages,
@@ -121,8 +131,15 @@ export function useTableCrud<T extends { id?: string | number }>(
     },
   });
 
-  // Construct the full API URL
-  const apiUrl = `/api/${service}${path}`;
+  // Construct the full API URL with optional expand parameter
+  // Note: limit=1000 ensures we fetch all items (backend defaults to 50)
+  const baseUrl = `/api/${service}${path}`;
+  const params = new URLSearchParams();
+  params.set('limit', '1000');
+  if (expand && expand.length > 0) {
+    params.set('expand', expand.join(','));
+  }
+  const apiUrl = `${baseUrl}?${params.toString()}`;
 
   // SWR fetcher
   const fetcher = async (url: string) => {
@@ -147,7 +164,7 @@ export function useTableCrud<T extends { id?: string | number }>(
   };
 
   // Fetch data with SWR
-  const { data, error, mutate, isValidating } = useSWR<T[]>(
+  const { data, error, mutate, isValidating, isLoading: swrIsLoading } = useSWR<T[]>(
     apiUrl,
     fetcher,
     {
@@ -164,7 +181,7 @@ export function useTableCrud<T extends { id?: string | number }>(
     async (item: Partial<T>): Promise<T> => {
       setIsMutating(true);
       try {
-        const response = await fetchWithAuth(apiUrl, {
+        const response = await fetchWithAuth(baseUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(item),
@@ -189,15 +206,15 @@ export function useTableCrud<T extends { id?: string | number }>(
         setIsMutating(false);
       }
     },
-    [apiUrl, mutate, errorMessages?.create, handleError]
+    [baseUrl, mutate, errorMessages?.create, handleError]
   );
 
   // Update operation
   const update = useCallback(
-    async (id: string, item: Partial<T>): Promise<T> => {
+    async (id: string | number, item: Partial<T>): Promise<T> => {
       setIsMutating(true);
       try {
-        const response = await fetchWithAuth(`${apiUrl}/${id}`, {
+        const response = await fetchWithAuth(`${baseUrl}/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(item),
@@ -222,7 +239,40 @@ export function useTableCrud<T extends { id?: string | number }>(
         setIsMutating(false);
       }
     },
-    [apiUrl, mutate, errorMessages?.update, handleError]
+    [baseUrl, mutate, errorMessages?.update, handleError]
+  );
+
+  // Patch operation (partial update)
+  const patch = useCallback(
+    async (id: string | number, item: Partial<T>): Promise<T> => {
+      setIsMutating(true);
+      try {
+        const response = await fetchWithAuth(`${baseUrl}/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          const error = new Error(
+            errorData.message || errorMessages?.update || 'Patch failed'
+          );
+          handleError(error);
+          throw error;
+        }
+
+        const updated = await response.json();
+        
+        // Optimistic update
+        await mutate();
+        
+        return updated;
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [baseUrl, mutate, errorMessages?.update, handleError]
   );
 
   // Delete operation
@@ -230,7 +280,7 @@ export function useTableCrud<T extends { id?: string | number }>(
     async (id: string): Promise<void> => {
       setIsMutating(true);
       try {
-        const response = await fetchWithAuth(`${apiUrl}/${id}`, {
+        const response = await fetchWithAuth(`${baseUrl}/${id}`, {
           method: 'DELETE',
         });
 
@@ -249,7 +299,7 @@ export function useTableCrud<T extends { id?: string | number }>(
         setIsMutating(false);
       }
     },
-    [apiUrl, mutate, errorMessages?.delete, handleError]
+    [baseUrl, mutate, errorMessages?.delete, handleError]
   );
 
   // Manual refresh
@@ -258,12 +308,14 @@ export function useTableCrud<T extends { id?: string | number }>(
   }, [mutate]);
 
   return {
-    data: data || [],
+    data: data ?? [],
     error,
-    isLoading: (!error && !data) || isMutating,
+    // isLoading: true when initial fetch (no data yet) or during mutations
+    isLoading: swrIsLoading || isMutating || data === undefined,
     isValidating,
     create,
     update,
+    patch,
     remove,
     refresh,
   };

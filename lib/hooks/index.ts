@@ -17,3 +17,7 @@ export { useZodForm } from './useZodForm';
 export { usePermissions } from './usePermissions';
 export { useAvailablePermissions } from './useAvailablePermissions';
 export { useAuthVerification } from './useAuthVerification';
+
+// Table hooks (Phase 1 - Issue #63)
+export { useDictionaryMapping } from './useDictionaryMapping';
+export { useTableFilters } from './useTableFilters';

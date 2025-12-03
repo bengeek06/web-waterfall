@@ -148,6 +148,47 @@ export const DASHBOARD_TEST_IDS = {
     // Error Message
     errorMessage: 'customer-error-message',
   },
+  
+  /**
+   * GenericAssociationTable test IDs
+   * Reusable test IDs for tables with association management
+   */
+  associationTable: {
+    // Container
+    container: (prefix: string) => `${prefix}-container`,
+    
+    // Table
+    table: (prefix: string) => `${prefix}-table`,
+    
+    // Form dialog
+    formDialog: (prefix: string) => `${prefix}-form-dialog`,
+    formTitle: (prefix: string) => `${prefix}-form-title`,
+    cancelButton: (prefix: string) => `${prefix}-cancel-button`,
+    submitButton: (prefix: string) => `${prefix}-submit-button`,
+    
+    // Delete dialog
+    deleteDialog: (prefix: string) => `${prefix}-delete-dialog`,
+    deleteCancel: (prefix: string) => `${prefix}-delete-cancel`,
+    deleteConfirm: (prefix: string) => `${prefix}-delete-confirm`,
+    
+    // Expansion
+    expansionContent: (itemId: string | number) => `expansion-${itemId}-content`,
+    associationSection: (itemId: string | number, assocName: string) => `expansion-${itemId}-association-${assocName}`,
+    addAssociationButton: (itemId: string | number, assocName: string) => `expansion-${itemId}-add-${assocName}-button`,
+    associationItem: (itemId: string | number, assocName: string, assocItemId: string | number) => `expansion-${itemId}-${assocName}-item-${assocItemId}`,
+    removeAssociationButton: (itemId: string | number, assocName: string, assocItemId: string | number) => `expansion-${itemId}-remove-${assocName}-${assocItemId}`,
+    
+    // Association dialog
+    associationDialog: (assocName: string) => `association-dialog-${assocName}`,
+    associationDialogSearch: (assocName: string) => `association-dialog-${assocName}-search`,
+    associationDialogFilter: (assocName: string, field: string) => `association-dialog-${assocName}-filter-${field}`,
+    associationDialogSelectAll: (assocName: string) => `association-dialog-${assocName}-select-all`,
+    associationDialogClearSelection: (assocName: string) => `association-dialog-${assocName}-clear-selection`,
+    associationDialogCancel: (assocName: string) => `association-dialog-${assocName}-cancel`,
+    associationDialogAdd: (assocName: string) => `association-dialog-${assocName}-add`,
+    associationDialogAssociatedItem: (assocName: string, itemId: string | number) => `association-dialog-${assocName}-associated-${itemId}`,
+    associationDialogAvailableItem: (assocName: string, itemId: string | number) => `association-dialog-${assocName}-available-${itemId}`,
+  },
 } as const;
 
 // Type exports

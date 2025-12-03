@@ -111,7 +111,10 @@ export async function proxyRequest(
     );
   }
 
-  const fullUrl = `${serviceUrl}${path}`;
+  // Preserve incoming query parameters when forwarding upstream
+  // Only append req.nextUrl.search if path doesn't already contain query params
+  const search = path.includes('?') ? '' : (req.nextUrl?.search || '');
+  const fullUrl = `${serviceUrl}${path}${search}`;
   logger.debug(`Environment ${service}: ${serviceUrl}`);
   logger.debug(`Request headers received from client: ${JSON.stringify(serializeHeaders(req.headers))}`);
   logger.debug(`Forwarding ${req.url} to ${fullUrl}`);

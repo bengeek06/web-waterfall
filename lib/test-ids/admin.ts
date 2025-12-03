@@ -25,6 +25,7 @@ export const ADMIN_TEST_IDS = {
     tableRow: (id: string) => `admin-users-table-row-${id}`,
     editButton: (id: string) => `admin-users-edit-button-${id}`,
     deleteButton: (id: string) => `admin-users-delete-button-${id}`,
+    isActiveToggle: (id: string) => `admin-users-is-active-toggle-${id}`,
     
     // Create/Edit Modal
     modal: 'admin-users-modal',
@@ -36,6 +37,8 @@ export const ADMIN_TEST_IDS = {
     phoneInput: 'admin-users-phone-input',
     avatarUrlInput: 'admin-users-avatar-url-input',
     languageSelect: 'admin-users-language-select',
+    rolesDropdown: 'admin-users-roles-dropdown',
+    positionSelect: 'admin-users-position-select',
     isActiveSwitch: 'admin-users-is-active-switch',
     isVerifiedSwitch: 'admin-users-is-verified-switch',
     cancelButton: 'admin-users-cancel-button',

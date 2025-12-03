@@ -23,3 +23,39 @@ export async function GET(
     method: 'GET',
   });
 }
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ user_id: string }> }
+) {
+  const { user_id } = await params;
+  return proxyRequest(req, {
+    service: 'IDENTITY_SERVICE_URL',
+    path: `/users/${user_id}/avatar`,
+    method: 'POST',
+  });
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ user_id: string }> }
+) {
+  const { user_id } = await params;
+  return proxyRequest(req, {
+    service: 'IDENTITY_SERVICE_URL',
+    path: `/users/${user_id}/avatar`,
+    method: 'PUT',
+  });
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ user_id: string }> }
+) {
+  const { user_id } = await params;
+  return proxyRequest(req, {
+    service: 'IDENTITY_SERVICE_URL',
+    path: `/users/${user_id}/avatar`,
+    method: 'DELETE',
+  });
+}

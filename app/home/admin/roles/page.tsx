@@ -1,5 +1,5 @@
-import Roles from "@/components/pages/Roles";
-import Policies from "@/components/pages/Policies";
+import Roles from "@/components/pages/RolesV2";
+import Policies from "@/components/pages/PoliciesV2";
 import {
   Breadcrumb,
   BreadcrumbList,

@@ -5,7 +5,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { UserManagement } from "@/components/admin/UserManagement";
+import UsersV2 from "@/components/pages/UsersV2";
 import { getDictionary } from "@/lib/utils/dictionaries";
 import { getUserLanguage } from "@/lib/utils/locale";
 
@@ -32,7 +32,7 @@ export default async function AdminUsersPage() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <UserManagement dictionary={dictionary.admin_users} />
+      <UsersV2 dictionary={dictionary.admin_users} />
     </div>
   );
 }

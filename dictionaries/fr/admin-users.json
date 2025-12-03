@@ -1,6 +1,6 @@
 {
   "page_title": "Gestion des utilisateurs",
-  "create_button": "Créer un utilisateur",
+  "create_button": "Créer",
   "import_button": "Importer",
   "export_button": "Exporter",
   "import_json": "Importer depuis JSON",
