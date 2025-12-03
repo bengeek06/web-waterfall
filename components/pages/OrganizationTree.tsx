@@ -125,6 +125,7 @@ type OrganizationTreeProps = {
     positions: {
       title: string;
       no_positions: string;
+      select_unit_prompt: string;
       add_position: string;
       edit: string;
       delete: string;
@@ -971,7 +972,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
               </>
             ) : (
               <div className="text-center py-12 text-muted-foreground text-sm">
-                Sélectionnez une unité pour voir ses positions
+                {dictionary.positions.select_unit_prompt}
               </div>
             )}
           </div>

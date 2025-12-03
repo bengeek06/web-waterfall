@@ -32,6 +32,7 @@ type SettingsDictionary = {
   subcontractors_title?: string;
   subcontractors_description?: string;
   subcontractors_button?: string;
+  access?: string;
 };
 
 export default function SettingsCards({ dictionary }: { readonly dictionary: SettingsDictionary }) {
@@ -52,7 +53,7 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           <CardContent>
             <Link href="/home/settings/company" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access || "Access"}
               </Button>
             </Link>
           </CardContent>
@@ -74,7 +75,7 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           <CardContent>
             <Link href="/home/settings/organization" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access || "Access"}
               </Button>
             </Link>
           </CardContent>
@@ -96,7 +97,7 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           <CardContent>
             <Link href="/home/settings/customers" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access || "Access"}
               </Button>
             </Link>
           </CardContent>
@@ -118,7 +119,7 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           <CardContent>
             <Link href="/home/settings/subcontractors" className="w-full mt-2">
               <Button variant="outline" className="w-full">
-                Accéder
+                {dictionary.access || "Access"}
               </Button>
             </Link>
           </CardContent>
