@@ -1,7 +1,7 @@
 # Waterfall Developer Guide
 
 > **Complete guide for building components in the Waterfall project**  
-> Last Updated: 2025-11-24
+> Last Updated: 2025-06-10
 
 This guide consolidates all essential information for developing components in this Next.js application, including architecture patterns, i18n, authentication, error handling, permissions, and validation.
 
@@ -16,11 +16,12 @@ This guide consolidates all essential information for developing components in t
 5. [Error Handling](#error-handling)
 6. [Permissions System](#permissions-system)
 7. [Form Validation](#form-validation)
-8. [Component Development](#component-development)
-9. [Testing](#testing)
-10. [Styling](#styling)
-11. [API Integration](#api-integration)
-12. [TypeScript Conventions](#typescript-conventions)
+8. [Generic Table System](#generic-table-system)
+9. [Component Development](#component-development)
+10. [Testing](#testing)
+11. [Styling](#styling)
+12. [API Integration](#api-integration)
+13. [TypeScript Conventions](#typescript-conventions)
 
 ---
 
@@ -875,6 +876,211 @@ const schema = z.object({
   message: 'Company name is required',
   path: ['companyName'],
 });
+```
+
+---
+
+## 📊 Generic Table System
+
+The project uses a centralized table system for CRUD operations with M2M (Many-to-Many) associations.
+
+### Architecture Overview
+
+```
+components/shared/
+├── GenericDataTable.tsx            # Core table with filters, pagination
+├── GenericAssociationTable/        # M2M associations support
+│   ├── GenericAssociationTable.tsx
+│   ├── AssociationExpansion.tsx
+│   ├── AssociationDialog.tsx
+│   └── types.ts
+└── tables/                         # Table utilities
+    ├── column-builders.tsx         # Column factory functions
+    ├── filters/                    # Filter components
+    │   ├── ColumnHeader.tsx
+    │   ├── MultiSelectFilter.tsx
+    │   ├── TextFilter.tsx
+    │   └── ...
+    └── index.ts
+```
+
+### Using GenericAssociationTable
+
+For entity management pages with CRUD operations:
+
+```typescript
+import { GenericAssociationTable } from "@/components/shared/GenericAssociationTable";
+import { createFilterableTextColumn, createActionColumn } from "@/components/shared/tables";
+
+export default function UsersPage({ dictionary, commonTable }) {
+  return (
+    <GenericAssociationTable<User, UserFormData>
+      service="identity"
+      path="/users"
+      entityName="users"
+      columns={(handlers) => [
+        createFilterableTextColumn<User>("name", "Name", "users"),
+        createFilterableTextColumn<User>("email", "Email", "users"),
+        createActionColumn<User>(
+          { onEdit: handlers.onEdit, onDelete: (item) => handlers.onDelete(item.id) },
+          { actions: "Actions", edit: "Edit", delete: "Delete", view: "View" },
+          "user"
+        ),
+      ]}
+      schema={userSchema}
+      defaultFormValues={{ name: "", email: "" }}
+      pageTitle={dictionary.page_title}
+      dictionary={tableDictionary}
+      expandable={false}
+      enableImportExport={true}
+      enableRowSelection={true}
+      testIdPrefix="users"
+      renderFormFields={(form, dict, editingItem) => (
+        <>
+          <Label>{dict.form_name}</Label>
+          <Input {...form.register("name")} />
+        </>
+      )}
+    />
+  );
+}
+```
+
+### Column Builders
+
+Factory functions to create consistent columns across tables:
+
+```typescript
+import { 
+  createFilterableTextColumn, 
+  createActionColumn,
+  createBadgeColumn,
+  createToggleColumn 
+} from "@/components/shared/tables";
+
+// Text column with filter
+createFilterableTextColumn<User>("name", "Name", "users")
+// → Column with header, text filter, sorting
+
+// Badge column (e.g., boolean status)
+createBadgeColumn<User>(
+  "is_active",
+  "Status",
+  (row) => row.is_active,
+  { true: "Active", false: "Inactive" },
+  { true: "default", false: "secondary" }
+)
+
+// Toggle column with inline PATCH
+createToggleColumn<User>(
+  "is_active",
+  "Active",
+  (row) => row.is_active,
+  (item, checked) => handlers.onPatch(item.id, { is_active: checked }),
+  { ariaLabel: (row) => `Toggle ${row.name} active status` }
+)
+
+// Actions column
+createActionColumn<User>(
+  { onEdit, onDelete },
+  { actions: "Actions", edit: "Edit", delete: "Delete", view: "View" },
+  "user"
+)
+```
+
+### Filter System
+
+Filters use Popover + Icon pattern for a clean UI:
+
+```typescript
+import { ColumnHeader } from "@/components/shared/tables/filters/ColumnHeader";
+import { MultiSelectFilter } from "@/components/shared/tables/filters/MultiSelectFilter";
+
+// Multi-select filter (e.g., roles)
+{
+  accessorKey: "roles",
+  header: ({ column }) => (
+    <ColumnHeader column={column} title="Roles" testIdBase="users-roles" />
+  ),
+  filterFn: (row, _columnId, filterValue: string[]) => {
+    const roleIds = row.original.roles.map((r) => r.role_id);
+    return filterValue.some((id) => roleIds.includes(id));
+  },
+  meta: {
+    filterComponent: (props) => (
+      <MultiSelectFilter
+        {...props}
+        testIdBase="users-roles"
+        getOptions={() => allRoles.map((r) => ({ label: r.name, value: r.id }))}
+      />
+    ),
+  },
+}
+```
+
+### PATCH Support (Inline Edits)
+
+For inline toggles or edits, use the `patch` method from `useTableCrud`:
+
+```typescript
+const { data, patch, refresh } = useTableCrud<User>({
+  service: "identity",
+  path: "/users",
+});
+
+// Toggle handler
+const handleToggle = async (userId: string, checked: boolean) => {
+  await patch(userId, { is_active: checked });
+  await refresh();
+};
+
+// In column definition
+createToggleColumn<User>(
+  "is_active",
+  "Active",
+  (row) => row.is_active,
+  (item, checked) => handleToggle(item.id, checked),
+  { ariaLabel: (row) => `Toggle ${row.name}` }
+)
+```
+
+### M2M Associations
+
+For entities with associations (e.g., Users → Roles):
+
+```typescript
+import { AssociationConfig } from "@/components/shared/GenericAssociationTable";
+
+const rolesAssociation: AssociationConfig<Role> = {
+  type: "many-to-many",
+  name: "roles",
+  label: "Roles",
+  service: "guardian",
+  path: "/roles",
+  junctionEndpoint: "/users/{id}/roles",
+  displayField: "name",
+  icon: Shield,
+};
+
+<GenericAssociationTable
+  associations={[rolesAssociation]}
+  expandable={true}
+  // ... other props
+/>
+```
+
+### Test IDs for Tables
+
+Use centralized test IDs with the helper:
+
+```typescript
+import { TABLE_TEST_IDS, testId } from "@/lib/test-ids";
+
+// In filter component
+<Input {...testId(TABLE_TEST_IDS.filter.input("users-name"))} />
+
+// In column header
+<Button {...testId(TABLE_TEST_IDS.column.filterButton("users-roles"))} />
 ```
 
 ---

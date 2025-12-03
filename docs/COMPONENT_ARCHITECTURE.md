@@ -2,6 +2,8 @@
 
 This document explains the industrialized component architecture implemented in this project.
 
+> Last Updated: 2025-06-10
+
 ## 📁 Structure Overview
 
 ```
@@ -10,7 +12,17 @@ lib/
 ├── design-tokens/       # Design system tokens
 └── test-ids/           # E2E test identifiers
 
-e2e/                    # Playwright E2E tests (optional)
+components/shared/
+├── GenericDataTable.tsx           # Core table with filters, pagination
+├── GenericAssociationTable/       # CRUD tables with M2M support
+│   ├── GenericAssociationTable.tsx
+│   ├── AssociationExpansion.tsx
+│   ├── AssociationDialog.tsx
+│   └── types.ts
+└── tables/                        # Table utilities
+    ├── column-builders.tsx        # Column factory functions
+    ├── filters/                   # Filter components
+    └── index.ts
 ```
 
 ---
@@ -147,6 +159,112 @@ SPACING = {
 ✅ Theming: Change tokens, update whole app  
 ✅ Maintainability: No magic values scattered  
 ✅ Design system: Easy to enforce standards
+
+---
+
+## 📊 Table System (`components/shared/`)
+
+The project uses a centralized table system for CRUD operations.
+
+### Core Components
+
+| Component | Purpose |
+|-----------|---------|
+| `GenericDataTable` | Base table with filtering, pagination, sorting |
+| `GenericAssociationTable` | CRUD wrapper with M2M associations support |
+| `column-builders.tsx` | Factory functions for common column types |
+| `filters/` | Reusable filter components |
+
+### Column Builders
+
+Located in `components/shared/tables/column-builders.tsx`:
+
+```typescript
+import { 
+  createFilterableTextColumn,
+  createActionColumn,
+  createBadgeColumn,
+  createToggleColumn 
+} from "@/components/shared/tables";
+
+// Text column with sorting and filtering
+const nameColumn = createFilterableTextColumn<User>("name", "Name", "users");
+
+// Boolean badge column
+const statusColumn = createBadgeColumn<User>(
+  "is_active", "Status",
+  (row) => row.is_active,
+  { true: "Active", false: "Inactive" }
+);
+
+// Toggle column with PATCH
+const activeColumn = createToggleColumn<User>(
+  "is_active", "Active",
+  (row) => row.is_active,
+  (item, checked) => onPatch(item.id, { is_active: checked })
+);
+
+// Action buttons column
+const actionsColumn = createActionColumn<User>(
+  { onEdit, onDelete },
+  { actions: "Actions", edit: "Edit", delete: "Delete" },
+  "user"
+);
+```
+
+### Filter Components
+
+Located in `components/shared/tables/filters/`:
+
+| Component | Usage |
+|-----------|-------|
+| `ColumnHeader` | Header with filter icon popover trigger |
+| `TextFilter` | Simple text search filter |
+| `MultiSelectFilter` | Checkbox-based multi-select (e.g., roles) |
+
+```typescript
+import { ColumnHeader, MultiSelectFilter } from "@/components/shared/tables/filters";
+
+// In column definition
+{
+  accessorKey: "roles",
+  header: ({ column }) => (
+    <ColumnHeader column={column} title="Roles" testIdBase="users-roles" />
+  ),
+  meta: {
+    filterComponent: (props) => (
+      <MultiSelectFilter
+        {...props}
+        testIdBase="users-roles"
+        getOptions={() => roles.map(r => ({ label: r.name, value: r.id }))}
+      />
+    ),
+  },
+}
+```
+
+### useTableCrud Hook
+
+Located in `lib/hooks/useTableCrud.ts`:
+
+```typescript
+const { data, isLoading, create, update, patch, remove, refresh } = useTableCrud<User>({
+  service: "identity",
+  path: "/users",
+  params: { limit: 1000 },
+});
+
+// PATCH for inline updates (toggles)
+await patch(userId, { is_active: true });
+await refresh();
+```
+
+### Benefits
+✅ DRY: No code duplication across tables  
+✅ Consistent UX: Same filters/actions everywhere  
+✅ Type-safe: Full TypeScript support  
+✅ Testable: Centralized test IDs  
+✅ Extensible: Easy to add new column types
 
 ---
 
