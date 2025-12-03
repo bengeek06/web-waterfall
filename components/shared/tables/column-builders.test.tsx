@@ -49,6 +49,7 @@ function TableRenderer<T extends { id: string }>({
   data: T[]; 
   columns: ReturnType<typeof createActionColumn<T>>[];
 }) {
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,

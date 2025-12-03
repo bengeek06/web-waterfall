@@ -294,7 +294,7 @@ export function GenericDataTable<T>({
   }, [columnFilters, persistFiltersInUrl, urlFilterPrefix, pathname, router, searchParams]);
 
   // Handle column filter changes with URL sync
-  const handleColumnFiltersChange = useCallback((updater: ColumnFiltersState | ((old: ColumnFiltersState) => ColumnFiltersState)) => {
+  const handleColumnFiltersChange = useCallback((updater: ColumnFiltersState | ((_old: ColumnFiltersState) => ColumnFiltersState)) => {
     setColumnFilters(updater);
   }, []);
 
