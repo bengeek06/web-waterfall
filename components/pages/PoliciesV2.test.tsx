@@ -10,28 +10,32 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import PoliciesV2 from './PoliciesV2';
 import { DASHBOARD_TEST_IDS } from '@/lib/test-ids';
 import { GUARDIAN_ROUTES } from '@/lib/api-routes';
 
-// Mock SWR to avoid async issues
-jest.mock('swr', () => {
-  const mockData = [
-    { id: '1', name: 'Admin Policy', description: 'Full admin access' },
-    { id: '2', name: 'Read Only', description: 'Read only access' },
-  ];
-  
-  return jest.fn(() => ({
-    data: mockData,
-    error: undefined,
+// Mock useTableCrud hook
+const mockCreate = jest.fn();
+const mockUpdate = jest.fn();
+const mockRemove = jest.fn();
+const mockRefresh = jest.fn();
+
+jest.mock('@/lib/hooks/useTableCrud', () => ({
+  useTableCrud: jest.fn(() => ({
+    data: [
+      { id: '1', name: 'Admin Policy', description: 'Full admin access', permissions: [] },
+      { id: '2', name: 'Read Only', description: 'Read only access', permissions: [] },
+    ],
     isLoading: false,
-    isValidating: false,
-    mutate: jest.fn(),
-  }));
-});
+    create: mockCreate,
+    update: mockUpdate,
+    remove: mockRemove,
+    refresh: mockRefresh,
+  })),
+}));
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -333,6 +337,125 @@ describe('PoliciesV2 Component', () => {
       
       await waitFor(() => {
         expect(screen.getByText('Nom')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Create Policy Dialog', () => {
+    it('should open create dialog when create button is clicked', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      const createButton = screen.getByTestId('generic-table-create-button');
+      await user.click(createButton);
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText('Create Policy')).toBeInTheDocument();
+      });
+    });
+
+    it('should have form fields in create dialog', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      const createButton = screen.getByTestId('generic-table-create-button');
+      await user.click(createButton);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.nameInput)).toBeInTheDocument();
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.descriptionInput)).toBeInTheDocument();
+      });
+    });
+
+    it('should close dialog when cancel is clicked', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      const createButton = screen.getByTestId('generic-table-create-button');
+      await user.click(createButton);
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+      });
+      
+      const cancelButton = screen.getByText('Cancel');
+      await user.click(cancelButton);
+      
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Edit Policy Dialog', () => {
+    it('should open edit dialog when edit button is clicked', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.editButton('1'))).toBeInTheDocument();
+      });
+      
+      const editButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.editButton('1'));
+      await user.click(editButton);
+      
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByText('Edit Policy')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Delete Policy', () => {
+    it('should show delete confirmation when delete button is clicked', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        expect(screen.getByTestId(DASHBOARD_TEST_IDS.policies.deleteButton('1'))).toBeInTheDocument();
+      });
+      
+      const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.policies.deleteButton('1'));
+      await user.click(deleteButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Are you sure you want to delete this policy?')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Import/Export', () => {
+    it('should render import button', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Import')).toBeInTheDocument();
+      });
+    });
+
+    it('should render export button', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Export')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Row Selection', () => {
+    it('should have checkboxes for row selection', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        const checkboxes = screen.getAllByRole('checkbox');
+        expect(checkboxes.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('Permissions Count', () => {
+    it('should display permission count in table', async () => {
+      render(<PoliciesV2 dictionary={mockDictionary} />);
+      
+      await waitFor(() => {
+        // Mock data has empty permissions array, so count should be 0
+        expect(screen.getAllByText('0 permission(s)').length).toBeGreaterThan(0);
       });
     });
   });
