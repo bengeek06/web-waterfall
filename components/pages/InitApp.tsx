@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 
 // Validation
-import { useZodForm } from "@/lib/hooks";
+import { useZodForm, useErrorHandler } from "@/lib/hooks";
 import { initAppSchema, InitAppFormData } from "@/lib/validation";
 
 // Constants
@@ -47,6 +47,15 @@ interface InitAppDictionary {
   error_company: string;
   error_user: string;
   loading: string;
+  errors: {
+    network: string;
+    unauthorized: string;
+    forbidden: string;
+    notFound: string;
+    serverError: string;
+    clientError: string;
+    unknown: string;
+  };
 }
 
 // ==================== CONSTANTS ====================
@@ -79,13 +88,14 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
   // Router
   const router = useRouter();
   
+  // Error handler
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
+  
   // State
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   // ==================== HANDLERS ====================
   const handleSubmit = async (data: InitAppFormData) => {
-    setError(null);
     setSuccess(false);
     
     try {
@@ -119,7 +129,7 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
       setSuccess(true);
       router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      handleError(err);
     }
   };
 
@@ -309,16 +319,6 @@ export default function InitApp({ dictionary }: { readonly dictionary: InitAppDi
             >
               {form.formState.isSubmitting ? dictionary.loading : dictionary.submit}
             </Button>
-            
-            {/* General Error */}
-            {error && (
-              <div 
-                className="bg-[#f8d7da] border border-[#f5c6cb] text-[#721c24] px-4 py-3 rounded text-sm mt-4"
-                {...testId(AUTH_TEST_IDS.initApp.errorMessage)}
-              >
-                {error}
-              </div>
-            )}
             
             {/* Success Message */}
             {success && (
