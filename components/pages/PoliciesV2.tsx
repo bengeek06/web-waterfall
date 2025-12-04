@@ -284,7 +284,7 @@ export default function PoliciesV2({ dictionary }: { readonly dictionary: Polici
           setAllPermissions(permissions);
         }
       } catch (err) {
-        console.error("Error fetching permissions:", err);
+        handleError(err);
       }
     };
     fetchPermissions();

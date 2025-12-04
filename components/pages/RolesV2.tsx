@@ -38,6 +38,7 @@ import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ColumnHeader } from "@/components/shared/tables";
 import type { ColumnConfig } from "@/components/shared/tables";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 
@@ -113,6 +114,15 @@ type RolesDictionary = {
   search_placeholder?: string;
   add_association?: string;
   remove_association?: string;
+  errors: {
+    network: string;
+    unauthorized: string;
+    forbidden: string;
+    notFound: string;
+    serverError: string;
+    clientError: string;
+    unknown: string;
+  };
 };
 
 // ==================== COLUMN CONFIGS ====================
