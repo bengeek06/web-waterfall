@@ -69,14 +69,21 @@
     "confirm": "Supprimer"
   },
   "errors": {
-    "email_required": "Email requis.",
-    "password_required": "Mot de passe requis pour la création.",
-    "save_failed": "Erreur lors de l'enregistrement.",
-    "unknown_field": "Champ inconnu",
-    "validation_error": "Erreur de validation",
-    "field_required": "Ce champ est requis",
-    "invalid_format": "Format invalide",
-    "roles_fetch_failed": "Erreur lors du chargement des rôles",
-    "positions_fetch_failed": "Erreur lors du chargement des positions"
-  }
+    "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "forbidden": "L'accès à cette ressource est interdit.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "serverError": "Une erreur serveur s'est produite. Veuillez réessayer plus tard.",
+    "clientError": "Une erreur s'est produite. Veuillez vérifier vos données et réessayer.",
+    "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer."
+  },
+  "email_required": "Email requis.",
+  "password_required": "Mot de passe requis pour la création.",
+  "save_failed": "Erreur lors de l'enregistrement.",
+  "unknown_field": "Champ inconnu",
+  "validation_error": "Erreur de validation",
+  "field_required": "Ce champ est requis",
+  "invalid_format": "Format invalide",
+  "roles_fetch_failed": "Erreur lors du chargement des rôles",
+  "positions_fetch_failed": "Erreur lors du chargement des positions"
 }

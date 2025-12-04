@@ -26,6 +26,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { ColumnDef } from "@tanstack/react-table";
 import { Shield, Edit, Trash2, PlusSquare, ChevronDown } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -153,16 +154,24 @@ type UsersDictionary = {
     confirm: string;
   };
   errors: {
-    email_required: string;
-    password_required: string;
-    save_failed: string;
-    unknown_field?: string;
-    validation_error?: string;
-    field_required?: string;
-    invalid_format?: string;
-    roles_fetch_failed?: string;
-    positions_fetch_failed?: string;
+    network: string;
+    unauthorized: string;
+    forbidden: string;
+    notFound: string;
+    serverError: string;
+    clientError: string;
+    unknown: string;
   };
+  // Component-specific errors remain in dictionary
+  email_required?: string;
+  password_required?: string;
+  save_failed?: string;
+  unknown_field?: string;
+  validation_error?: string;
+  field_required?: string;
+  invalid_format?: string;
+  roles_fetch_failed?: string;
+  positions_fetch_failed?: string;
 };
 
 // ==================== COLUMN CONFIGS ====================
@@ -431,6 +440,8 @@ const rolesAssociation = {
 // ==================== COMPONENT ====================
 
 export default function UsersV2({ dictionary }: { readonly dictionary: UsersDictionary }) {
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
+  
   // ==================== POSITIONS STATE ====================
   const [positions, setPositions] = useState<Position[]>([]);
   const [isLoadingPositions, setIsLoadingPositions] = useState(true);
@@ -455,7 +466,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
           setPositions(Array.isArray(data) ? data : (data.data || []));
         }
       } catch (error) {
-        console.error("Error fetching positions:", error);
+        handleError(error);
       } finally {
         setIsLoadingPositions(false);
       }
@@ -473,7 +484,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
           setAvailableRoles(Array.isArray(data) ? data : (data.data || []));
         }
       } catch (error) {
-        console.error("Error fetching roles:", error);
+        handleError(error);
       } finally {
         setIsLoadingRoles(false);
       }
@@ -517,10 +528,10 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     import_report_warnings: dictionary.import_report_warnings,
     import_report_close: dictionary.import_report_close,
     errors: {
-      fetch: dictionary.errors.save_failed,
-      create: dictionary.errors.save_failed,
-      update: dictionary.errors.save_failed,
-      delete: dictionary.errors.save_failed,
+      fetch: dictionary.save_failed,
+      create: dictionary.save_failed,
+      update: dictionary.save_failed,
+      delete: dictionary.save_failed,
     },
   }), [dictionary]);
 
@@ -602,10 +613,10 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       );
       // Ignore 409 Conflict - role already assigned
       if (!response.ok && response.status !== 409) {
-        console.error(`Error adding role ${roleId} to user ${userId}: ${response.status}`);
+        handleError(new Error(`Error adding role ${roleId} to user ${userId}: ${response.status}`));
       }
     } catch (error) {
-      console.error(`Error adding role ${roleId} to user ${userId}:`, error);
+      handleError(error);
     }
   }, []);
 
@@ -620,7 +631,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
         return roles.map((r: { role_id?: string; id?: string }) => String(r.role_id));
       }
     } catch (error) {
-      console.error("Error fetching current roles:", error);
+      handleError(error);
     }
     return [];
   }, []);
@@ -650,12 +661,12 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
               { method: "DELETE" }
             );
           } catch (error) {
-            console.error(`Error removing role ${roleIdToRemove} from user ${userId}:`, error);
+            handleError(error);
           }
         }
       }
     } catch (error) {
-      console.error("Error fetching roles for removal:", error);
+      handleError(error);
     }
   }, []);
 
