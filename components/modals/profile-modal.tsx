@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { IDENTITY_ROUTES } from "@/lib/api-routes/identity";
+import { testId, PROFILE_TEST_IDS } from '@/lib/test-ids';
 
 interface ProfileDictionary {
   modal_title: string;
@@ -52,7 +53,6 @@ interface ProfileDictionary {
 interface ProfileModalProps {
   children: React.ReactNode;
   className?: string;
-  testId?: string;
   dictionary?: ProfileDictionary;
   userInfo?: {
     id?: string;
@@ -67,7 +67,7 @@ interface ProfileModalProps {
   };
 }
 
-export default function ProfileModal({ children, className, testId, dictionary, userInfo }: ProfileModalProps) {
+export default function ProfileModal({ children, className, dictionary, userInfo }: ProfileModalProps) {
   const { handleError } = useErrorHandler({ messages: dictionary?.errors || {} as ErrorMessages });
   const [open, setOpen] = useState(false);
   const [isLoading, setSaving] = useState(false);
@@ -202,23 +202,23 @@ export default function ProfileModal({ children, className, testId, dictionary, 
       <DialogTrigger asChild>
         <button 
           className={className}
-          {...(testId && { 'data-testid': testId })}
+          {...testId(PROFILE_TEST_IDS.trigger)}
         >
           {children}
         </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" {...testId(PROFILE_TEST_IDS.dialog)}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2" {...testId(PROFILE_TEST_IDS.title)}>
             <User size={20} />
             {dictionary?.modal_title || 'Edit Your Profile'}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {/* Avatar Section */}
-          <div className="flex flex-col items-center space-y-3 pb-4 border-b">
+          <div className="flex flex-col items-center space-y-3 pb-4 border-b" {...testId(PROFILE_TEST_IDS.avatarContainer)}>
             <div className="relative">
-              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center" {...testId(PROFILE_TEST_IDS.avatarPreview)}>
                 {avatarPreview ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -235,6 +235,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
                 onClick={triggerAvatarUpload}
                 className="absolute -bottom-1 -right-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 shadow-md transition-colors"
                 disabled={isLoading}
+                {...testId(PROFILE_TEST_IDS.avatarCameraButton)}
               >
                 <Camera size={14} />
               </button>
@@ -245,6 +246,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
               onClick={triggerAvatarUpload}
               disabled={isLoading}
               className="flex items-center gap-2"
+              {...testId(PROFILE_TEST_IDS.avatarUploadButton)}
             >
               <Upload size={16} />
               {dictionary?.profile_avatar || 'Change Avatar'}
@@ -255,8 +257,9 @@ export default function ProfileModal({ children, className, testId, dictionary, 
               accept="image/*"
               onChange={handleAvatarChange}
               className="hidden"
+              {...testId(PROFILE_TEST_IDS.avatarFileInput)}
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500" {...testId(PROFILE_TEST_IDS.avatarHint)}>
               {dictionary?.modal_avatar_hint || 'JPG, PNG or GIF. Max 5MB.'}
             </p>
           </div>
@@ -265,7 +268,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-medium">
+                <Label htmlFor="firstName" className="text-sm font-medium" {...testId(PROFILE_TEST_IDS.firstNameLabel)}>
                   {dictionary?.profile_first_name || 'First Name'}
                 </Label>
                 <Input
@@ -273,10 +276,11 @@ export default function ProfileModal({ children, className, testId, dictionary, 
                   value={formData.firstName}
                   onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
                   placeholder={dictionary?.modal_enter_first_name || 'Enter first name'}
+                  {...testId(PROFILE_TEST_IDS.firstNameInput)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium">
+                <Label htmlFor="lastName" className="text-sm font-medium" {...testId(PROFILE_TEST_IDS.lastNameLabel)}>
                   {dictionary?.profile_last_name || 'Last Name'}
                 </Label>
                 <Input
@@ -284,6 +288,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
                   value={formData.lastName}
                   onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                   placeholder={dictionary?.modal_enter_last_name || 'Enter last name'}
+                  {...testId(PROFILE_TEST_IDS.lastNameInput)}
                 />
               </div>
             </div>

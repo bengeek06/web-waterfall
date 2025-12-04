@@ -24,6 +24,7 @@ export const TABLE_TEST_IDS = {
     exportButton: 'generic-table-export-button',
     importInput: 'generic-table-import-input',
     searchInput: 'generic-table-search-input',
+    bulkDeleteButton: 'generic-table-bulk-delete-button',
     table: 'generic-table-table',
     tableHeader: 'generic-table-header',
     tableBody: 'generic-table-body',

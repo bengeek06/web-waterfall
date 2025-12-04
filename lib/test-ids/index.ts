@@ -27,6 +27,7 @@ export * from './company';
 export * from './settings';
 export * from './file-explorer';
 export * from './organization-tree';
+export * from './profile';
 
 // Re-export helper function
 export { testId } from './auth';
@@ -45,6 +46,7 @@ import { COMPANY_TEST_IDS } from './company';
 import { SETTINGS_TEST_IDS } from './settings';
 import { FILE_EXPLORER_TEST_IDS } from './file-explorer';
 import { ORGANIZATION_TREE_TEST_IDS } from './organization-tree';
+import { PROFILE_TEST_IDS } from './profile';
 
 export const TEST_IDS = {
   auth: AUTH_TEST_IDS,
@@ -60,4 +62,5 @@ export const TEST_IDS = {
   settings: SETTINGS_TEST_IDS,
   fileExplorer: FILE_EXPLORER_TEST_IDS,
   organizationTree: ORGANIZATION_TREE_TEST_IDS,
+  profile: PROFILE_TEST_IDS,
 } as const;

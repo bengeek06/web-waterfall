@@ -13,7 +13,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import TopBar from './TopBar';
-import { COMMON_TEST_IDS } from '@/lib/test-ids';
+import { COMMON_TEST_IDS, PROFILE_TEST_IDS } from '@/lib/test-ids';
 
 // Mock next/image
 jest.mock('next/image', () => ({
@@ -176,7 +176,7 @@ describe('TopBar Component', () => {
       const Component = await TopBar();
       render(Component);
       
-      const profileButton = screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink);
+      const profileButton = screen.getByTestId(PROFILE_TEST_IDS.trigger);
       expect(profileButton).toBeInTheDocument();
       // ProfileModal est maintenant un bouton, pas un lien
       expect(profileButton.tagName).not.toBe('A');
@@ -200,7 +200,7 @@ describe('TopBar Component', () => {
       
       // Dropdown
       expect(screen.getByTestId(COMMON_TEST_IDS.topBar.dropdownContent)).toBeInTheDocument();
-      expect(screen.getByTestId(COMMON_TEST_IDS.topBar.profileLink)).toBeInTheDocument();
+      expect(screen.getByTestId(PROFILE_TEST_IDS.trigger)).toBeInTheDocument();
     });
   });
 
