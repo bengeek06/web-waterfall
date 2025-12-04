@@ -13,6 +13,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 
 // UI Components
 import {
@@ -72,6 +74,7 @@ type PositionModalProps = {
       error_create: string;
       error_update: string;
     };
+    errors: ErrorMessages;
   };
 };
 
@@ -84,6 +87,7 @@ export default function PositionModal({
   dictionary,
 }: PositionModalProps) {
   const router = useRouter();
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
   // Initialize state from props - will reset when component remounts (via key)
   const [title, setTitle] = useState(position?.title || "");
   const [description, setDescription] = useState(position?.description || "");
@@ -148,7 +152,7 @@ export default function PositionModal({
       if (!res.ok) {
         const errorText = await res.text();
         setError(isEditing ? dictionary.messages.error_update : dictionary.messages.error_create);
-        console.error("API Error:", errorText);
+        handleError(new Error(errorText));
         setIsLoading(false);
         return;
       }
@@ -164,7 +168,7 @@ export default function PositionModal({
         onClose();
       }, 1000);
     } catch (err) {
-      console.error("Error saving position:", err);
+      handleError(err);
       setError(isEditing ? dictionary.messages.error_update : dictionary.messages.error_create);
       setIsLoading(false);
     }
