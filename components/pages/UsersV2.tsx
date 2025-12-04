@@ -472,7 +472,8 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       }
     };
     fetchPositions();
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch roles on mount
   useEffect(() => {
@@ -490,7 +491,8 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       }
     };
     fetchRoles();
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ==================== DICTIONARY MAPPING ====================
   const tableDictionary: AssociationTableDictionary = useMemo(() => ({
@@ -618,7 +620,8 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     } catch (error) {
       handleError(error);
     }
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper: Fetch current role IDs for a user
   const fetchUserRoleIds = useCallback(async (userId: string): Promise<string[]> => {
@@ -634,6 +637,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       handleError(error);
     }
     return [];
+    // handleError is stable from useErrorHandler
   }, [handleError]);
 
   // Helper: Remove roles from a user using junction IDs
@@ -668,7 +672,8 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     } catch (error) {
       handleError(error);
     }
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle role assignment and avatar upload after user save
   const handleAfterSave = useCallback(async (savedUser: User, isNew: boolean) => {

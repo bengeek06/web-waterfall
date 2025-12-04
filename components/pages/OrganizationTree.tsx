@@ -502,7 +502,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     };
 
     loadUnits();
-  }, [companyId, router, dictionary.error_loading, handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, router]);
 
   // Load positions when a unit is selected
   useEffect(() => {
@@ -535,7 +536,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     };
 
     loadPositions();
-  }, [selectedUnit, handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedUnit]);
 
   // Reload units from API
   const reloadUnits = async () => {

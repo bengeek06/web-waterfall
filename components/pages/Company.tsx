@@ -167,7 +167,8 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
     };
 
     loadCompany();
-  }, [companyId, router, dictionary.messages.load_error, handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, router]);
 
   const handleEdit = () => {
     setIsEditing(true);

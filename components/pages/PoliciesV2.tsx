@@ -288,7 +288,8 @@ export default function PoliciesV2({ dictionary }: { readonly dictionary: Polici
       }
     };
     fetchPermissions();
-  }, [handleError]); // Fetch once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Fetch once on mount
 
   // ==================== PERMISSION HANDLERS ====================
   

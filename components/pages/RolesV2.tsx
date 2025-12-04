@@ -323,7 +323,8 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
       }
     };
     fetchPolicies();
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Map dictionary to GenericAssociationTable format
   const tableDictionary: AssociationTableDictionary = {

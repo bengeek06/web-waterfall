@@ -168,7 +168,8 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
       }
     };
     fetchUserId();
-  }, [handleError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch files
   const fetchFiles = useCallback(async () => {
