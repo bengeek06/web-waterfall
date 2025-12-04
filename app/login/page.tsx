@@ -44,7 +44,7 @@ export default async function Home() {
         </p>
       </div>
       <div className="w-full max-w-2xl mx-auto">
-        <Login dictionary={dictionary.login_component} />
+        <Login dictionary={{ ...dictionary.login_component, errors: dictionary.errors }} />
       </div>
     </div>
   );

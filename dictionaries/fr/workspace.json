@@ -40,5 +40,14 @@
   "modified": "Modifié",
   "type": "Type",
   "name": "Nom",
-  "actions": "Actions"
+  "actions": "Actions",
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "forbidden": "L'accès à cette ressource est interdit.",
+    "notFound": "La ressource demandée est introuvable.",
+    "serverError": "Une erreur serveur s'est produite. Veuillez réessayer plus tard.",
+    "clientError": "Une erreur s'est produite. Veuillez vérifier votre saisie et réessayer.",
+    "unknown": "Une erreur inconnue s'est produite. Veuillez réessayer."
+  }
 }

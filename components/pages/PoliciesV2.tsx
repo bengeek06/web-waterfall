@@ -284,11 +284,12 @@ export default function PoliciesV2({ dictionary }: { readonly dictionary: Polici
           setAllPermissions(permissions);
         }
       } catch (err) {
-        console.error("Error fetching permissions:", err);
+        handleError(err);
       }
     };
     fetchPermissions();
-  }, []); // No dependencies - only fetch once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Fetch once on mount
 
   // ==================== PERMISSION HANDLERS ====================
   

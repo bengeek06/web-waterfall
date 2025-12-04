@@ -7,5 +7,14 @@
   "saving": "Saving...",
   "edit": "Edit",
   "access": "Access",
-  "select_unit_prompt": "Select a unit to view its positions"
+  "select_unit_prompt": "Select a unit to view its positions",
+  "errors": {
+    "network": "Network error. Please check your connection.",
+    "unauthorized": "You are not authorized. Please log in.",
+    "forbidden": "You do not have permission to perform this action.",
+    "notFound": "Resource not found.",
+    "serverError": "Server error. Please try again later.",
+    "clientError": "Invalid request. Please check your input.",
+    "unknown": "An unexpected error occurred."
+  }
 }

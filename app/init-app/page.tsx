@@ -41,7 +41,7 @@ export default async function InitAppPage() {
         </p>
       </div>
       <div className="w-full max-w-2xl mx-auto">
-        <InitApp dictionary={dictionary.init_app} />
+        <InitApp dictionary={{ ...dictionary.init_app, errors: dictionary.errors }} />
       </div>
     </div>
   );

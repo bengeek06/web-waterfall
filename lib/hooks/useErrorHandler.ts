@@ -11,6 +11,7 @@
 
 "use client";
 
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { HttpError, HttpErrorType } from '@/lib/client/retryWithBackoff';
 
@@ -54,7 +55,7 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
   /**
    * Récupère le message d'erreur traduit selon le type
    */
-  function getErrorMessage(error: HttpError): string {
+  const getErrorMessage = useCallback((error: HttpError): string => {
     switch (error.type) {
       case HttpErrorType.NETWORK:
         return messages.network;
@@ -71,12 +72,12 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
       default:
         return messages.unknown;
     }
-  }
+  }, [messages]);
 
   /**
    * Gère une erreur HTTP avec toast et actions personnalisées
    */
-  function handleError(error: unknown): void {
+  const handleError = useCallback((error: unknown): void => {
     // Si ce n'est pas une HttpError, la convertir
     let httpError: HttpError;
     
@@ -122,7 +123,7 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
     if (onError) {
       onError(httpError);
     }
-  }
+  }, [showToast, duration, onError, getErrorMessage]);
 
   return {
     handleError,

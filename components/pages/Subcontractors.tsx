@@ -35,6 +35,7 @@ import { subcontractorSchema, SubcontractorFormData } from "@/lib/validation/ide
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogoUpload } from "@/components/shared/LogoUpload";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 
 // Icons
 import { Building2 } from "lucide-react";
@@ -267,6 +268,7 @@ export default function Subcontractors({
     success_remove: string;
     error_upload: string;
     error_remove: string;
+    errors: ErrorMessages;
   };
 }) {
   // Map dictionaries to GenericAssociationTable format

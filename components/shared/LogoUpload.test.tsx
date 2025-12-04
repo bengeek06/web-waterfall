@@ -56,6 +56,15 @@ describe("LogoUpload", () => {
     success_remove: "{entity} removed successfully",
     error_upload: "Failed to upload {entity}",
     error_remove: "Failed to remove {entity}",
+    errors: {
+      network: 'Network error',
+      unauthorized: 'Unauthorized',
+      forbidden: 'Forbidden',
+      notFound: 'Not found',
+      serverError: 'Server error',
+      clientError: 'Client error',
+      unknown: 'Unknown error',
+    },
   };
   
   const defaultProps = {

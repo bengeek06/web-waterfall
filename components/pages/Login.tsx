@@ -11,7 +11,6 @@
 
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, KeyRound } from "lucide-react";
 
@@ -26,7 +25,7 @@ import { AUTH_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 
 // Validation
-import { useZodForm } from "@/lib/hooks";
+import { useZodForm, useErrorHandler } from "@/lib/hooks";
 import { loginSchema, LoginFormData } from "@/lib/validation";
 
 // Token refresh scheduler
@@ -39,8 +38,15 @@ interface LoginProps {
 		email: string;
 		password: string;
 		submit: string;
-		invalid_email: string;
-		login_failed: string;
+		errors: {
+			network: string;
+			unauthorized: string;
+			forbidden: string;
+			notFound: string;
+			serverError: string;
+			clientError: string;
+			unknown: string;
+		};
 	};
 }
 
@@ -56,8 +62,8 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 	// Router
 	const router = useRouter();
 
-	// State
-	const [error, setError] = useState<string | null>(null);
+	// Error handler
+	const { handleError } = useErrorHandler({ messages: dictionary.errors });
 
 	// Form with Zod validation
 	const {
@@ -74,8 +80,6 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 
 	// ==================== HANDLERS ====================
 	const onSubmit = async (data: LoginFormData) => {
-		setError(null);
-
 		try {
 			const res = await fetch(AUTH_ROUTES.login, {
 				method: "POST",
@@ -83,15 +87,14 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 				body: JSON.stringify(data),
 			});
 
-			if (!res.ok) throw new Error(dictionary.login_failed);
+			if (!res.ok) throw new Error("Login failed");
 
 			// Initialiser le refresh automatique du token après connexion réussie
 			await initTokenRefresh();
 
 			router.push("/home");
 		} catch (err) {
-			setError(dictionary.login_failed);
-			console.error(err);
+			handleError(err);
 		}
 	};
 
@@ -174,16 +177,6 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 							{isSubmitting ? "Loading..." : dictionary.submit}
 						</Button>
 					</form>
-
-					{/* Error Message */}
-					{error && (
-						<div 
-							className={`${COLOR_CLASSES.bg.destructive} ${COLOR_CLASSES.border.destructive} ${COLOR_CLASSES.text.destructive} px-4 py-3 rounded text-sm text-center mt-4`}
-							{...testId(AUTH_TEST_IDS.login.errorMessage)}
-						>
-							{error}
-						</div>
-					)}
 				</CardContent>
 		</Card>
 	);

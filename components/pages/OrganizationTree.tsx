@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { ChevronRight, ChevronDown, Building2, Plus, Edit, Trash2, Download, Upload, Image as ImageIcon } from "lucide-react";
 
 // UI Components
@@ -164,6 +165,15 @@ type OrganizationTreeProps = {
       error_delete: string;
       confirm_delete_unit: string;
       confirm_delete_position: string;
+    };
+    errors: {
+      network: string;
+      unauthorized: string;
+      forbidden: string;
+      notFound: string;
+      serverError: string;
+      clientError: string;
+      unknown: string;
     };
   };
 };
@@ -397,6 +407,7 @@ function TreeNode({
 
 // Main Component
 export default function OrganizationTree({ companyId, dictionary }: OrganizationTreeProps) {
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
   const router = useRouter();
   const [treeData, setTreeData] = useState<OrganizationUnit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<OrganizationUnit | null>(null);
@@ -483,7 +494,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         const unitsList = Array.isArray(data) ? data : (data.data || []);
         setTreeData(buildTree(unitsList));
       } catch (err) {
-        console.error("Error loading organization units:", err);
+        handleError(err instanceof Error ? err : new Error(dictionary.error_loading));
         setError(dictionary.error_loading);
       } finally {
         setIsLoading(false);
@@ -491,7 +502,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     };
 
     loadUnits();
-  }, [companyId, router, dictionary.error_loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId, router]);
 
   // Load positions when a unit is selected
   useEffect(() => {
@@ -516,7 +528,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           setPositions([]);
         }
       } catch (err) {
-        console.error("Error loading positions:", err);
+        handleError(err instanceof Error ? err : new Error("Error loading positions"));
         setPositions([]);
       } finally {
         setIsLoadingPositions(false);
@@ -524,6 +536,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
     };
 
     loadPositions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUnit]);
 
   // Reload units from API
@@ -537,7 +550,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         setTreeData(buildTree(unitsList));
       }
     } catch (err) {
-      console.error("Error reloading units:", err);
+      handleError(err instanceof Error ? err : new Error("Error reloading units"));
     }
   };
 
@@ -555,7 +568,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         setPositions(Array.isArray(data) ? data : (data.data || []));
       }
     } catch (err) {
-      console.error("Error reloading positions:", err);
+      handleError(err instanceof Error ? err : new Error("Error reloading positions"));
     }
   };
 
@@ -594,7 +607,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         }
       }
     } catch (err) {
-      console.error("Error deleting unit:", err);
+      handleError(err instanceof Error ? err : new Error("Error deleting unit"));
     }
   };
 
@@ -623,7 +636,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         await reloadPositions();
       }
     } catch (err) {
-      console.error("Error deleting position:", err);
+      handleError(err instanceof Error ? err : new Error("Error deleting position"));
     }
   };
 
@@ -665,16 +678,14 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("Error moving unit:", errorText);
-        alert("Erreur lors du déplacement de l'unité");
+        handleError(new Error(`Error moving unit: ${errorText}`));
         return;
       }
 
       // Reload the tree
       await reloadUnits();
     } catch (err) {
-      console.error("Error moving unit:", err);
-      alert("Erreur lors du déplacement de l'unité");
+      handleError(err instanceof Error ? err : new Error("Error moving unit"));
     }
   };
 
@@ -714,7 +725,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
       a.remove();
       globalThis.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Export error:', err);
+      handleError(err instanceof Error ? err : new Error(dictionary.error_export));
       setError(dictionary.error_export);
     } finally {
       setIsExporting(false);
@@ -743,7 +754,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       return await res.text();
     } catch (err) {
-      console.error('Mermaid export error:', err);
+      handleError(err instanceof Error ? err : new Error('Mermaid export error'));
       throw err;
     }
   };
@@ -791,7 +802,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         // Reload tree after import
         await reloadUnits();
       } catch (err) {
-        console.error('Import error:', err);
+        handleError(err instanceof Error ? err : new Error(dictionary.error_import));
         setError(dictionary.error_import);
       } finally {
         setIsImporting(false);

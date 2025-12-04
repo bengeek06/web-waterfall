@@ -33,8 +33,8 @@ export default async function RolesAdminPage() {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <Roles dictionary={dictionary.roles} />
-      <Policies dictionary={dictionary.policies} />
+      <Roles dictionary={{ ...dictionary.roles, errors: dictionary.errors }} />
+      <Policies dictionary={{ ...dictionary.policies, errors: dictionary.errors }} />
     </div>
   );
 }

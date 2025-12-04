@@ -12,6 +12,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 import {
   Folder,
   File,
@@ -69,7 +71,8 @@ interface FileItem {
 }
 
 interface FileExplorerProps {
-  dictionary: Record<string, string>;
+  readonly dictionary: Record<string, string>;
+  readonly errors: ErrorMessages;
 }
 
 interface ClipboardItem {
@@ -129,7 +132,10 @@ const getFileName = (logicalPath: string): string => {
 
 // ==================== COMPONENT ====================
 
-export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
+export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>) {
+  // Error handler
+  const { handleError } = useErrorHandler({ messages: errors });
+  
   // State
   const [currentPath, setCurrentPath] = useState("/");
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -158,10 +164,11 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
           setUserId(data.user_id);
         }
       } catch (error) {
-        console.error("Failed to fetch user_id:", error);
+        handleError(error);
       }
     };
     fetchUserId();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch files
@@ -243,12 +250,11 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       
       setFiles([...Array.from(folders.values()), ...regularFiles]);
     } catch (error) {
-      console.error("Error fetching files:", error);
-      alert(dictionary.loading_error || "Failed to load files");
+      handleError(error);
     } finally {
       setIsLoading(false);
     }
-  }, [currentPath, dictionary, userId]);
+  }, [currentPath, userId, handleError]);
 
   useEffect(() => {
     fetchFiles();
@@ -293,8 +299,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
 
         // Success - silent or could show alert
       } catch (error) {
-        console.error("Upload error:", error);
-        alert(`${dictionary.upload_error}: ${file.name}`);
+        handleError(error);
       }
     }
     
@@ -319,8 +324,8 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.error("Create folder failed:", errorData);
+        const _errorData = await res.json().catch(() => ({}));
+        handleError(new Error("Failed to create folder"));
         throw new Error("Failed to create folder");
       }
       
@@ -331,8 +336,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       setNewFolderName("");
       fetchFiles();
     } catch (error) {
-      console.error("Create folder error:", error);
-      alert(dictionary.folder_error);
+      handleError(error);
     }
   };
 
@@ -350,8 +354,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       // Use the file_id from the item, or the id field
       const fileId = item.file_id || item.id;
       if (!fileId) {
-        console.error("No file_id found for item:", item);
-        alert("Cannot delete: missing file ID");
+        handleError(new Error("Cannot delete: missing file ID"));
         return;
       }
 
@@ -368,8 +371,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
 
       fetchFiles();
     } catch (error) {
-      console.error("Delete error:", error);
-      alert(dictionary.delete_error);
+      handleError(error);
     }
   };
 
@@ -409,8 +411,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       setSelectedItem(null);
       fetchFiles();
     } catch (error) {
-      console.error("Rename error:", error);
-      alert(dictionary.rename_error);
+      handleError(error);
     }
   };
 
@@ -458,8 +459,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       setClipboard(null);
       fetchFiles();
     } catch (error) {
-      console.error("Paste error:", error);
-      alert(dictionary.paste_error);
+      handleError(error);
     }
   };
 
@@ -485,8 +485,7 @@ export function FileExplorer({ dictionary }: Readonly<FileExplorerProps>) {
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download error:", error);
-      alert("Download failed");
+      handleError(error);
     }
   };
 

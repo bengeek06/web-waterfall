@@ -14,6 +14,7 @@ import { getDictionary } from "@/lib/utils/dictionaries";
 
 export default async function WorkspacePage() {
   const dict = await getDictionary("fr");
+  const { errors, ...workspaceDict } = dict.workspace;
 
   return (
     <div className="container mx-auto p-6">
@@ -22,7 +23,7 @@ export default async function WorkspacePage() {
         <p className="text-muted-foreground mt-2">{dict.workspace.workspace_description}</p>
       </div>
 
-      <FileExplorer dictionary={dict.workspace} />
+      <FileExplorer dictionary={workspaceDict} errors={errors} />
     </div>
   );
 }

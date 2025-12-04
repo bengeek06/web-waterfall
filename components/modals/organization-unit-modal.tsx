@@ -13,6 +13,8 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 
 // UI Components
 import {
@@ -68,6 +70,7 @@ type OrganizationUnitModalProps = {
       error_create: string;
       error_update: string;
     };
+    errors: ErrorMessages;
   };
 };
 
@@ -80,6 +83,7 @@ export default function OrganizationUnitModal({
   dictionary,
 }: OrganizationUnitModalProps) {
   const router = useRouter();
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
   const isEditing = !!unit;
   const isCreatingChild = !!parentUnit;
   
@@ -152,7 +156,7 @@ export default function OrganizationUnitModal({
       if (!res.ok) {
         const errorText = await res.text();
         setError(isEditing ? dictionary.messages.error_update : dictionary.messages.error_create);
-        console.error("API Error:", errorText);
+        handleError(new Error(errorText));
         setIsLoading(false);
         return;
       }
@@ -166,7 +170,7 @@ export default function OrganizationUnitModal({
         onClose();
       }, 1000);
     } catch (err) {
-      console.error("Error saving organization unit:", err);
+      handleError(err);
       setError(isEditing ? dictionary.messages.error_update : dictionary.messages.error_create);
       setIsLoading(false);
     }

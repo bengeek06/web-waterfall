@@ -12,6 +12,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 import mermaid from "mermaid";
 import {
   Dialog,
@@ -46,6 +48,7 @@ type MermaidPreviewModalProps = {
     mermaid_download: string;
     mermaid_loading: string;
     mermaid_error: string;
+    errors: ErrorMessages;
   };
 };
 
@@ -55,6 +58,7 @@ export default function MermaidPreviewModal({
   onGenerate,
   dictionary,
 }: Readonly<MermaidPreviewModalProps>) {
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
   const [diagramType, setDiagramType] = useState<DiagramType>("flowchart");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -181,7 +185,7 @@ export default function MermaidPreviewModal({
         // Reset position - autoscale will be triggered by useEffect
         setPosition({ x: 0, y: 0 });
       } catch (err) {
-        console.error("Error generating mermaid diagram:", err);
+        handleError(err);
         setError(dictionary.mermaid_error);
       } finally {
         setIsLoading(false);
@@ -195,7 +199,7 @@ export default function MermaidPreviewModal({
       setSvgContent("");
       setError(null);
     }
-  }, [isOpen, diagramType, onGenerate, dictionary.mermaid_error, autoScale]);
+  }, [isOpen, diagramType, onGenerate, dictionary.mermaid_error, autoScale, handleError]);
 
   // Auto-scale when SVG content changes
   useEffect(() => {
@@ -343,7 +347,7 @@ export default function MermaidPreviewModal({
       }, "image/png");
 
     } catch (err) {
-      console.error("Error downloading PNG:", err);
+      handleError(err);
       setError(`Error downloading image: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };

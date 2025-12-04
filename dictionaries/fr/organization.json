@@ -76,5 +76,14 @@
     "error_delete": "Erreur de suppression",
     "confirm_delete_unit": "Êtes-vous sûr de vouloir supprimer cette unité ?",
     "confirm_delete_position": "Êtes-vous sûr de vouloir supprimer cette position ?"
+  },
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "forbidden": "L'accès à cette ressource est interdit.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "serverError": "Une erreur serveur s'est produite. Veuillez réessayer plus tard.",
+    "clientError": "Une erreur s'est produite. Veuillez vérifier vos données et réessayer.",
+    "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer."
   }
 }

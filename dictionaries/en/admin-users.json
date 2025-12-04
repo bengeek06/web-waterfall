@@ -69,14 +69,21 @@
     "confirm": "Delete"
   },
   "errors": {
-    "email_required": "Email required.",
-    "password_required": "Password required for creation.",
-    "save_failed": "Error saving.",
-    "unknown_field": "Unknown field",
-    "validation_error": "Validation error",
-    "field_required": "This field is required",
-    "invalid_format": "Invalid format",
-    "roles_fetch_failed": "Error loading roles",
-    "positions_fetch_failed": "Error loading positions"
-  }
+    "network": "Network error occurred. Please check your connection and try again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "Access to this resource is forbidden.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "A server error occurred. Please try again later.",
+    "clientError": "An error occurred. Please check your input and try again.",
+    "unknown": "An unexpected error occurred. Please try again."
+  },
+  "email_required": "Email required.",
+  "password_required": "Password required for creation.",
+  "save_failed": "Error saving.",
+  "unknown_field": "Unknown field",
+  "validation_error": "Validation error",
+  "field_required": "This field is required",
+  "invalid_format": "Invalid format",
+  "roles_fetch_failed": "Error loading roles",
+  "positions_fetch_failed": "Error loading positions"
 }

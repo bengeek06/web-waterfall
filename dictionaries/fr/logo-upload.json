@@ -10,5 +10,14 @@
   "success_upload": "{entity} téléversé avec succès",
   "success_remove": "{entity} supprimé avec succès",
   "error_upload": "Échec du téléversement de {entity}",
-  "error_remove": "Échec de la suppression de {entity}"
+  "error_remove": "Échec de la suppression de {entity}",
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion et réessayer.",
+    "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+    "forbidden": "L'accès à cette ressource est interdit.",
+    "notFound": "La ressource demandée n'a pas été trouvée.",
+    "serverError": "Une erreur serveur s'est produite. Veuillez réessayer plus tard.",
+    "clientError": "Une erreur s'est produite. Veuillez vérifier vos données et réessayer.",
+    "unknown": "Une erreur inattendue s'est produite. Veuillez réessayer."
+  }
 }

@@ -12,6 +12,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import Login from './Login';
 
 // Mock next/navigation
@@ -21,6 +22,15 @@ jest.mock('next/navigation', () => ({
 
 // Mock fetch
 global.fetch = jest.fn();
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+  },
+}));
 
 // Mock next/image
 jest.mock('next/image', () => ({
@@ -55,6 +65,15 @@ const mockDictionary = {
   submit: 'Se connecter',
   invalid_email: 'Format d\'email invalide',
   login_failed: 'Échec de la connexion',
+  errors: {
+    network: 'Network error',
+    unauthorized: 'Unauthorized',
+    forbidden: 'Forbidden',
+    notFound: 'Not found',
+    serverError: 'Server error',
+    clientError: 'Client error',
+    unknown: 'Unknown error',
+  },
 };
 
 describe('Login Component', () => {
@@ -209,8 +228,7 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('login-error-message')).toBeInTheDocument();
-        expect(screen.getByTestId('login-error-message')).toHaveTextContent(mockDictionary.login_failed);
+        expect(toast.error).toHaveBeenCalled();
       });
 
       expect(mockPush).not.toHaveBeenCalled();
@@ -234,8 +252,7 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('login-error-message')).toBeInTheDocument();
-        expect(screen.getByTestId('login-error-message')).toHaveTextContent(mockDictionary.login_failed);
+        expect(toast.error).toHaveBeenCalled();
       });
 
       expect(mockPush).not.toHaveBeenCalled();
@@ -361,7 +378,11 @@ describe('Login Component', () => {
   });
 
   describe('Error Handling', () => {
-    it('should clear previous errors on new submission', async () => {
+    beforeEach(() => {
+      (toast.error as jest.Mock).mockClear();
+    });
+
+    it('should call toast.error on login failure', async () => {
       const user = userEvent.setup();
       render(<Login dictionary={mockDictionary} />);
 
@@ -369,9 +390,8 @@ describe('Login Component', () => {
       const passwordInput = screen.getByTestId('login-password-input');
       const submitButton = screen.getByTestId('login-submit-button');
 
-      // First attempt with API error
       await user.type(emailInput, 'admin@test.com');
-      await user.type(passwordInput, 'validpassword');
+      await user.type(passwordInput, 'wrongpassword');
 
       (global.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
@@ -381,29 +401,11 @@ describe('Login Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId('login-error-message')).toBeInTheDocument();
-      });
-
-      // Second attempt with success
-      await user.clear(emailInput);
-      await user.clear(passwordInput);
-      await user.type(emailInput, 'admin@test.com');
-      await user.type(passwordInput, 'Admin123!');
-
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve({ success: true })
-      });
-
-      await user.click(submitButton);
-
-      // Error should be cleared
-      await waitFor(() => {
-        expect(screen.queryByTestId('login-error-message')).not.toBeInTheDocument();
+        expect(toast.error).toHaveBeenCalled();
       });
     });
 
-    it('should display API error messages when login fails', async () => {
+    it('should call toast.error on network error', async () => {
       const user = userEvent.setup();
       render(<Login dictionary={mockDictionary} />);
 
@@ -413,19 +415,13 @@ describe('Login Component', () => {
       await user.type(emailInput, 'admin@test.com');
       await user.type(passwordInput, 'validpassword');
 
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: () => Promise.resolve({ error: 'Invalid credentials' })
-      });
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
       const submitButton = screen.getByTestId('login-submit-button');
       await user.click(submitButton);
 
       await waitFor(() => {
-        const errorMessage = screen.getByTestId('login-error-message');
-        expect(errorMessage).toBeInTheDocument();
-        expect(errorMessage).toHaveTextContent(mockDictionary.login_failed);
+        expect(toast.error).toHaveBeenCalled();
       });
     });
   });
