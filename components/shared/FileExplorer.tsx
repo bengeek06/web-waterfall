@@ -57,6 +57,7 @@ import { Label } from "@/components/ui/label";
 
 import { STORAGE_ROUTES } from "@/lib/api-routes/storage";
 import { ICON_SIZES } from "@/lib/design-tokens";
+import { FILE_EXPLORER_TEST_IDS, testId } from "@/lib/test-ids";
 
 // ==================== TYPES ====================
 
@@ -493,9 +494,9 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
   const pathParts = currentPath.split("/").filter(Boolean);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" {...testId(FILE_EXPLORER_TEST_IDS.container)}>
       {/* Toolbar */}
-      <Card className="p-4">
+      <Card className="p-4" {...testId(FILE_EXPLORER_TEST_IDS.toolbar)}>
         <div className="flex items-center justify-between">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 flex-1">
@@ -503,6 +504,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
               variant="ghost"
               size="sm"
               onClick={() => setCurrentPath("/")}
+              {...testId(FILE_EXPLORER_TEST_IDS.breadcrumbHome)}
             >
               <Home className={ICON_SIZES.sm} />
             </Button>
@@ -516,6 +518,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                     const newPath = "/" + pathParts.slice(0, index + 1).join("/");
                     setCurrentPath(newPath);
                   }}
+                  {...testId(`${FILE_EXPLORER_TEST_IDS.breadcrumbPart}-${index}`)}
                 >
                   {part}
                 </Button>
@@ -526,7 +529,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
           {/* Actions */}
           <div className="flex items-center gap-2">
             {clipboard && (
-              <Button variant="outline" size="sm" onClick={handlePaste}>
+              <Button variant="outline" size="sm" onClick={handlePaste} {...testId(FILE_EXPLORER_TEST_IDS.pasteButton)}>
                 <ClipboardPaste className={`${ICON_SIZES.sm} mr-2`} />
                 {dictionary.paste}
               </Button>
@@ -536,6 +539,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
               variant="outline"
               size="sm"
               onClick={() => setShowCreateFolderDialog(true)}
+              {...testId(FILE_EXPLORER_TEST_IDS.createFolderButton)}
             >
               <FolderPlus className={`${ICON_SIZES.sm} mr-2`} />
               {dictionary.create_folder}
@@ -545,6 +549,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
+              {...testId(FILE_EXPLORER_TEST_IDS.uploadButton)}
             >
               <Upload className={`${ICON_SIZES.sm} mr-2`} />
               {dictionary.upload_files}
@@ -555,6 +560,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
               multiple
               className="hidden"
               onChange={handleFileSelect}
+              {...testId(FILE_EXPLORER_TEST_IDS.fileInput)}
             />
           </div>
         </div>
@@ -569,18 +575,19 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
+        {...testId(FILE_EXPLORER_TEST_IDS.fileList)}
       >
         {isLoading && (
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-64" {...testId(FILE_EXPLORER_TEST_IDS.loadingSpinner)}>
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         )}
         
         {!isLoading && files.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-            <Folder className="h-16 w-16 mb-4 opacity-50" />
-            <p>{dictionary.empty_folder}</p>
-            <p className="text-sm mt-2">{dictionary.drag_drop_hint}</p>
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground" {...testId(FILE_EXPLORER_TEST_IDS.emptyState)}>
+            <Folder className="h-16 w-16 mb-4 opacity-50" {...testId(FILE_EXPLORER_TEST_IDS.emptyStateIcon)} />
+            <p {...testId(FILE_EXPLORER_TEST_IDS.emptyStateText)}>{dictionary.empty_folder}</p>
+            <p className="text-sm mt-2" {...testId(FILE_EXPLORER_TEST_IDS.emptyStateHint)}>{dictionary.drag_drop_hint}</p>
           </div>
         )}
         
@@ -590,6 +597,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
               <div
                 key={file.logical_path}
                 className="flex items-center justify-between p-3 rounded-lg hover:bg-accent group"
+                {...testId(`${FILE_EXPLORER_TEST_IDS.fileItem}-${getFileName(file.logical_path)}`)}
               >
                 <span
                   role="button"
@@ -607,10 +615,12 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                     }
                   }}
                 >
-                  {getFileIcon(file.mime_type, file.is_folder || false)}
+                  <span {...testId(FILE_EXPLORER_TEST_IDS.fileItemIcon)}>
+                    {getFileIcon(file.mime_type, file.is_folder || false)}
+                  </span>
                   <div>
-                    <div className="font-medium">{getFileName(file.logical_path)}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="font-medium" {...testId(FILE_EXPLORER_TEST_IDS.fileItemName)}>{getFileName(file.logical_path)}</div>
+                    <div className="text-sm text-muted-foreground" {...testId(FILE_EXPLORER_TEST_IDS.fileItemDetails)}>
                       {formatFileSize(file.size)} • {formatDate(file.updated_at)}
                     </div>
                   </div>
@@ -618,13 +628,13 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group-hover:bg-accent">
+                    <Button variant="ghost" size="icon" className="group-hover:bg-accent" {...testId(FILE_EXPLORER_TEST_IDS.contextMenuTrigger)}>
                       <MoreVertical className={ICON_SIZES.sm} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {!file.is_folder && (
-                      <DropdownMenuItem onClick={() => handleDownload(file)}>
+                      <DropdownMenuItem onClick={() => handleDownload(file)} {...testId(FILE_EXPLORER_TEST_IDS.contextMenuDownload)}>
                         <Download className={`${ICON_SIZES.sm} mr-2`} />
                         {dictionary.download}
                       </DropdownMenuItem>
@@ -635,15 +645,16 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                         setNewItemName(getFileName(file.logical_path));
                         setShowRenameDialog(true);
                       }}
+                      {...testId(FILE_EXPLORER_TEST_IDS.contextMenuRename)}
                     >
                       <Edit className={`${ICON_SIZES.sm} mr-2`} />
                       {dictionary.rename}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleCopy(file)}>
+                    <DropdownMenuItem onClick={() => handleCopy(file)} {...testId(FILE_EXPLORER_TEST_IDS.contextMenuCopy)}>
                       <Copy className={`${ICON_SIZES.sm} mr-2`} />
                       {dictionary.copy}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleCut(file)}>
+                    <DropdownMenuItem onClick={() => handleCut(file)} {...testId(FILE_EXPLORER_TEST_IDS.contextMenuCut)}>
                       <Scissors className={`${ICON_SIZES.sm} mr-2`} />
                       {dictionary.cut}
                     </DropdownMenuItem>
@@ -651,6 +662,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                     <DropdownMenuItem
                       onClick={() => handleDelete(file)}
                       className="text-destructive"
+                      {...testId(FILE_EXPLORER_TEST_IDS.contextMenuDelete)}
                     >
                       <Trash2 className={`${ICON_SIZES.sm} mr-2`} />
                       {dictionary.delete}
@@ -665,9 +677,9 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
 
       {/* Create Folder Dialog */}
       <Dialog open={showCreateFolderDialog} onOpenChange={setShowCreateFolderDialog}>
-        <DialogContent>
+        <DialogContent {...testId(FILE_EXPLORER_TEST_IDS.createFolderDialog)}>
           <DialogHeader>
-            <DialogTitle>{dictionary.create_folder}</DialogTitle>
+            <DialogTitle {...testId(FILE_EXPLORER_TEST_IDS.createFolderDialogTitle)}>{dictionary.create_folder}</DialogTitle>
             <DialogDescription>{dictionary.folder_name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -683,23 +695,24 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                     handleCreateFolder();
                   }
                 }}
+                {...testId(FILE_EXPLORER_TEST_IDS.createFolderNameInput)}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateFolderDialog(false)}>
+            <Button variant="outline" onClick={() => setShowCreateFolderDialog(false)} {...testId(FILE_EXPLORER_TEST_IDS.createFolderCancelButton)}>
               {dictionary.cancel}
             </Button>
-            <Button onClick={handleCreateFolder}>{dictionary.create}</Button>
+            <Button onClick={handleCreateFolder} {...testId(FILE_EXPLORER_TEST_IDS.createFolderSubmitButton)}>{dictionary.create}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Rename Dialog */}
       <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
-        <DialogContent>
+        <DialogContent {...testId(FILE_EXPLORER_TEST_IDS.renameDialog)}>
           <DialogHeader>
-            <DialogTitle>{dictionary.rename}</DialogTitle>
+            <DialogTitle {...testId(FILE_EXPLORER_TEST_IDS.renameDialogTitle)}>{dictionary.rename}</DialogTitle>
             <DialogDescription>{dictionary.new_name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -715,14 +728,15 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
                     handleRename();
                   }
                 }}
+                {...testId(FILE_EXPLORER_TEST_IDS.renameInput)}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowRenameDialog(false)}>
+            <Button variant="outline" onClick={() => setShowRenameDialog(false)} {...testId(FILE_EXPLORER_TEST_IDS.renameCancelButton)}>
               {dictionary.cancel}
             </Button>
-            <Button onClick={handleRename}>{dictionary.rename}</Button>
+            <Button onClick={handleRename} {...testId(FILE_EXPLORER_TEST_IDS.renameSubmitButton)}>{dictionary.rename}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
