@@ -43,7 +43,7 @@ import type { CreateUserFormData } from "@/lib/validation/identity.schemas";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes/guardian";
 import { ADMIN_TEST_IDS, testId } from "@/lib/test-ids";
-import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+import { COLOR_CLASSES, SPACING, ICON_SIZES } from "@/lib/design-tokens";
 
 // Utils
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
@@ -662,7 +662,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
                       ? "Sélectionner des rôles"
                       : `${selectedRoleIds.length} rôle(s) sélectionné(s)`}
                   </span>
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <ChevronDown className={`ml-2 ${ICON_SIZES.sm} shrink-0 opacity-50`} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="max-h-60 overflow-y-auto" style={{ width: 'var(--radix-dropdown-menu-trigger-width)' }}>

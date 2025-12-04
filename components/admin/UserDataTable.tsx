@@ -120,11 +120,11 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
           >
             {dictionary.columns.email}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -150,11 +150,11 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
           >
             {dictionary.columns.first_name}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -180,11 +180,11 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
           >
             {dictionary.columns.last_name}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -242,11 +242,11 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
           >
             {dictionary.columns.last_login_at}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -302,11 +302,11 @@ export default function UserDataTable({ users, onEdit, onDelete, onToggleActive,
           >
             {dictionary.columns.created_at}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );

@@ -41,7 +41,7 @@ import MermaidPreviewModal from "@/components/modals/mermaid-preview-modal";
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
-import { COLOR_CLASSES } from "@/lib/design-tokens";
+import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ORGANIZATION_TREE_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
@@ -306,9 +306,9 @@ function TreeNode({
               {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeExpandButton)}
             >
               {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className={`${ICON_SIZES.sm}`} />
               ) : (
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className={`${ICON_SIZES.sm}`} />
               )}
             </button>
           ) : (
@@ -851,7 +851,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isImporting} {...testId(ORGANIZATION_TREE_TEST_IDS.importDropdownTrigger)}>
-                  <Upload className="h-4 w-4 mr-2" />
+                  <Upload className={`${ICON_SIZES.sm} mr-2`} />
                   {dictionary.import_button}
                 </Button>
               </DropdownMenuTrigger>
@@ -869,7 +869,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isExporting} {...testId(ORGANIZATION_TREE_TEST_IDS.exportDropdownTrigger)}>
-                  <Download className="h-4 w-4 mr-2" />
+                  <Download className={`${ICON_SIZES.sm} mr-2`} />
                   {dictionary.export_button}
                 </Button>
               </DropdownMenuTrigger>
@@ -881,7 +881,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                   {dictionary.export_csv}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setIsMermaidModalOpen(true)} {...testId(ORGANIZATION_TREE_TEST_IDS.exportMermaidButton)}>
-                  <ImageIcon className="h-4 w-4 mr-2" />
+                  <ImageIcon className={`${ICON_SIZES.sm} mr-2`} />
                   {dictionary.export_mermaid}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -889,7 +889,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
             {/* Add Root Button */}
             <Button onClick={handleAddRoot} size="sm" {...testId(ORGANIZATION_TREE_TEST_IDS.addRootButton)}>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className={`${ICON_SIZES.sm} mr-2`} />
               {dictionary.actions.add_root}
             </Button>
           </div>

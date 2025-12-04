@@ -104,7 +104,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8"
+                    className={`${ICON_SIZES.xl}`}
                     onClick={() => callbacks.onView?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-view-${itemId}`) : {})}
                   >
@@ -123,7 +123,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8"
+                    className={`${ICON_SIZES.xl}`}
                     onClick={() => callbacks.onEdit?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-edit-${itemId}`) : {})}
                   >
@@ -142,7 +142,7 @@ export function createActionColumn<T extends { id?: string | number }>(
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                     onClick={() => callbacks.onDelete?.(item)}
                     {...(entityIdPrefix && itemId ? testId(`${entityIdPrefix}-delete-${itemId}`) : {})}
                   >

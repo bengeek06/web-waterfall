@@ -91,6 +91,7 @@ import { testId } from "@/lib/test-ids";
 
 // Types
 import type { BaseItem, AssociationConfig, GenericAssociationTableProps } from "./types";
+import { ICON_SIZES } from '@/lib/design-tokens';
 
 // ==================== HELPER FUNCTIONS ====================
 
@@ -721,7 +722,7 @@ export function GenericAssociationTable<
         <DialogContent {...testId(`${testIdPrefix}-delete-dialog`)}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className={`${ICON_SIZES.md} text-destructive`} />
               {dictionary.delete_confirm_title || "Confirmer la suppression"}
             </DialogTitle>
             <DialogDescription>

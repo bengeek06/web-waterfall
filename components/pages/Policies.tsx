@@ -24,7 +24,7 @@ import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { GUARDIAN_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
-import { COLOR_CLASSES } from "@/lib/design-tokens";
+import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { useZodForm } from "@/lib/hooks";
 import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { policySchema, type PolicyFormData } from "@/lib/validation";
@@ -779,7 +779,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
         <DialogContent aria-describedby={void 0} aria-label="delete-policy-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className={`${ICON_SIZES.md} text-destructive`} />
               {dictionary.delete_confirm_title}
             </DialogTitle>
             <DialogDescription>

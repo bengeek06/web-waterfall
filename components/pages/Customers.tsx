@@ -42,6 +42,7 @@ import { Building2 } from "lucide-react";
 
 // Test IDs
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES } from '@/lib/design-tokens';
 
 
 // ==================== TYPE DEFINITIONS ====================
@@ -147,7 +148,7 @@ function createCustomerColumns(
           />
         ) : (
           <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-            <Building2 className="h-6 w-6 text-muted-foreground" />
+            <Building2 className={`${ICON_SIZES.lg} text-muted-foreground`} />
           </div>
         )
       ),

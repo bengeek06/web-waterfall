@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ImportReport } from "@/lib/hooks/useBasicIO";
+import { ICON_SIZES } from '@/lib/design-tokens';
 
 // ==================== TYPES ====================
 
@@ -112,7 +113,7 @@ export function ImportReportModal({
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <FileJson className="h-5 w-5" />
+            <FileJson className={`${ICON_SIZES.md}`} />
             {dictionary.title}
             {isSuccess && (
               <Badge variant="default" className="ml-2 bg-green-600">
@@ -163,7 +164,7 @@ export function ImportReportModal({
                 onClick={() => setShowResolution(!showResolution)}
               >
                 <span className="font-medium flex items-center gap-2">
-                  {showResolution ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  {showResolution ? <ChevronDown className={`${ICON_SIZES.sm}`} /> : <ChevronRight className={`${ICON_SIZES.sm}`} />}
                   {dictionary.resolution_report}
                 </span>
                 <div className="flex gap-2">
@@ -188,10 +189,10 @@ export function ImportReportModal({
                 <div className="border-t p-3 space-y-2 max-h-40 overflow-y-auto">
                   {resolution_report.details.map((detail) => (
                     <div key={`${detail.field}-${detail.status}-${detail.lookup_value || ''}`} className="flex items-center gap-2 text-sm">
-                      {detail.status === 'resolved' && <CheckCircle2 className="h-4 w-4 text-green-600" />}
-                      {detail.status === 'ambiguous' && <AlertTriangle className="h-4 w-4 text-yellow-600" />}
-                      {detail.status === 'missing' && <XCircle className="h-4 w-4 text-red-600" />}
-                      {detail.status === 'error' && <XCircle className="h-4 w-4 text-red-600" />}
+                      {detail.status === 'resolved' && <CheckCircle2 className={`${ICON_SIZES.sm} text-green-600`} />}
+                      {detail.status === 'ambiguous' && <AlertTriangle className={`${ICON_SIZES.sm} text-yellow-600`} />}
+                      {detail.status === 'missing' && <XCircle className={`${ICON_SIZES.sm} text-red-600`} />}
+                      {detail.status === 'error' && <XCircle className={`${ICON_SIZES.sm} text-red-600`} />}
                       <span className="font-mono">{detail.field}</span>
                       {detail.lookup_value && (
                         <span className="text-muted-foreground">→ {detail.lookup_value}</span>
@@ -214,8 +215,8 @@ export function ImportReportModal({
                 onClick={() => setShowErrors(!showErrors)}
               >
                 <span className="font-medium flex items-center gap-2 text-red-600">
-                  {showErrors ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                  <XCircle className="h-4 w-4" />
+                  {showErrors ? <ChevronDown className={`${ICON_SIZES.sm}`} /> : <ChevronRight className={`${ICON_SIZES.sm}`} />}
+                  <XCircle className={`${ICON_SIZES.sm}`} />
                   {dictionary.errors} ({import_report.errors!.length})
                 </span>
               </button>
@@ -256,7 +257,7 @@ export function ImportReportModal({
                 onClick={() => setShowIdMapping(!showIdMapping)}
               >
                 <span className="font-medium flex items-center gap-2">
-                  {showIdMapping ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  {showIdMapping ? <ChevronDown className={`${ICON_SIZES.sm}`} /> : <ChevronRight className={`${ICON_SIZES.sm}`} />}
                   {dictionary.id_mapping} ({Object.keys(import_report.id_mapping).length})
                 </span>
               </button>
@@ -288,7 +289,7 @@ export function ImportReportModal({
           {/* No errors message */}
           {!hasErrors && import_report.success > 0 && (
             <div className="flex items-center gap-2 text-green-600 p-3 rounded-lg bg-green-50 dark:bg-green-950/20">
-              <CheckCircle2 className="h-5 w-5" />
+              <CheckCircle2 className={`${ICON_SIZES.md}`} />
               <span>{dictionary.no_errors}</span>
             </div>
           )}

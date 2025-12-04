@@ -15,6 +15,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from 'lucid
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { DASHBOARD_TEST_IDS, testId } from '@/lib/test-ids';
+import { ICON_SIZES } from '@/lib/design-tokens';
 
 // ==================== TYPES ====================
 export type Permission = {
@@ -100,11 +101,11 @@ export function createPoliciesColumns({
           >
             {dictionary.table_name}
             {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -133,11 +134,11 @@ export function createPoliciesColumns({
           >
             {dictionary.table_description}
             {column.getIsSorted() === 'asc' ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === 'desc' ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -168,11 +169,11 @@ export function createPoliciesColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => onAddPermission(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(row.original.id.toString()))}
                 >
-                  <PlusSquare className="h-4 w-4" />
+                  <PlusSquare className={`${ICON_SIZES.sm}`} />
                   <span className="sr-only">{dictionary.add_permission_tooltip}</span>
                 </Button>
               </TooltipTrigger>
@@ -187,11 +188,11 @@ export function createPoliciesColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => onEdit(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.policies.editButton(row.original.id.toString()))}
                 >
-                  <Edit className="h-4 w-4" />
+                  <Edit className={`${ICON_SIZES.sm}`} />
                   <span className="sr-only">{dictionary.edit_tooltip}</span>
                 </Button>
               </TooltipTrigger>
@@ -206,11 +207,11 @@ export function createPoliciesColumns({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                   onClick={() => onDelete(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(row.original.id.toString()))}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className={`${ICON_SIZES.sm}`} />
                   <span className="sr-only">{dictionary.delete_tooltip}</span>
                 </Button>
               </TooltipTrigger>

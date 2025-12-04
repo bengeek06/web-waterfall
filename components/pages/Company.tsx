@@ -35,7 +35,7 @@ import { ArrowLeft } from "lucide-react";
 
 // Constants
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
-import { COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
+import { COLOR_CLASSES, SPACING, ICON_SIZES } from "@/lib/design-tokens";
 import { COMPANY_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
@@ -325,7 +325,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               aria-label={dictionary.form.back}
               {...testId(COMPANY_TEST_IDS.backButtonHeader)}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className={`${ICON_SIZES.md}`} />
             </Button>
             <div>
               <CardTitle>{dictionary.title}</CardTitle>
@@ -490,7 +490,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
               onClick={handleBack}
               {...testId(COMPANY_TEST_IDS.backButton)}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className={`${ICON_SIZES.sm} mr-2`} />
               {dictionary.form.back}
             </Button>
             <div className="flex gap-2">

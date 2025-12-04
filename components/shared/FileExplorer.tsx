@@ -57,7 +57,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { STORAGE_ROUTES } from "@/lib/api-routes/storage";
-import { ICON_SIZES } from "@/lib/design-tokens";
 import { FILE_EXPLORER_TEST_IDS, testId } from "@/lib/test-ids";
 
 // ==================== TYPES ====================
