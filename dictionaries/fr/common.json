@@ -7,5 +7,14 @@
   "saving": "Enregistrement...",
   "edit": "Modifier",
   "access": "Accéder",
-  "select_unit_prompt": "Sélectionnez une unité pour voir ses positions"
+  "select_unit_prompt": "Sélectionnez une unité pour voir ses positions",
+  "errors": {
+    "network": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "unauthorized": "Vous n'êtes pas autorisé. Veuillez vous connecter.",
+    "forbidden": "Vous n'avez pas la permission d'effectuer cette action.",
+    "notFound": "Ressource introuvable.",
+    "serverError": "Erreur serveur. Veuillez réessayer plus tard.",
+    "clientError": "Requête invalide. Veuillez vérifier votre saisie.",
+    "unknown": "Une erreur inattendue s'est produite."
+  }
 }
