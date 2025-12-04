@@ -236,7 +236,7 @@ function createRolesColumns(
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className={`${ICON_SIZES.xl}`}
                     onClick={() => handlers.onAddAssociation?.(row.original, "policies")}
                     {...testId(DASHBOARD_TEST_IDS.roles.addPolicyButton(row.original.id.toString()))}
                   >
@@ -253,7 +253,7 @@ function createRolesColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => handlers.onEdit(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.roles.editButton(row.original.id.toString()))}
                 >
@@ -269,7 +269,7 @@ function createRolesColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                   onClick={() => handlers.onDelete(row.original.id)}
                   {...testId(DASHBOARD_TEST_IDS.roles.deleteButton(row.original.id.toString()))}
                 >

@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Loader2 } from "lucide-react";
+import { ICON_SIZES } from '@/lib/design-tokens';
 
 type DiagramType = "flowchart" | "graph" | "mindmap";
 
@@ -451,7 +452,7 @@ export default function MermaidPreviewModal({
             {isLoading && (
               <div className="flex items-center justify-center h-full min-h-[400px]">
                 <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <Loader2 className={`${ICON_SIZES.xl} animate-spin text-primary`} />
                   <p className="text-sm text-muted-foreground">
                     {dictionary.mermaid_loading}
                   </p>
@@ -578,7 +579,7 @@ export default function MermaidPreviewModal({
               onClick={handleDownload}
               disabled={!svgContent || isLoading}
             >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className={`${ICON_SIZES.sm} mr-2`} />
               {dictionary.mermaid_download}
             </Button>
           </div>

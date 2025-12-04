@@ -208,7 +208,7 @@ function createPoliciesColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => handlers.onAddPermission(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.policies.addPermissionButton(row.original.id.toString()))}
                 >
@@ -224,7 +224,7 @@ function createPoliciesColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => handlers.onEdit(row.original)}
                   {...testId(DASHBOARD_TEST_IDS.policies.editButton(row.original.id.toString()))}
                 >
@@ -240,7 +240,7 @@ function createPoliciesColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                   onClick={() => handlers.onDelete(row.original.id)}
                   {...testId(DASHBOARD_TEST_IDS.policies.deleteButton(row.original.id.toString()))}
                 >

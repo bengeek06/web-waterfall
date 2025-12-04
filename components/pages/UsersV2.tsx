@@ -366,7 +366,7 @@ function createUsersColumns(
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className={`${ICON_SIZES.xl}`}
                     onClick={() => handlers.onAddAssociation?.(row.original, "roles")}
                     {...testId(ADMIN_TEST_IDS.users.editButton(row.original.id.toString()) + "-add-role")}
                   >
@@ -383,7 +383,7 @@ function createUsersColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  className={`${ICON_SIZES.xl}`}
                   onClick={() => handlers.onEdit(row.original)}
                   {...testId(ADMIN_TEST_IDS.users.editButton(row.original.id.toString()))}
                 >
@@ -399,7 +399,7 @@ function createUsersColumns(
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                   onClick={() => handlers.onDelete(row.original.id)}
                   {...testId(ADMIN_TEST_IDS.users.deleteButton(row.original.id.toString()))}
                 >
@@ -870,7 +870,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
                     {...testId(ADMIN_TEST_IDS.users.rolesDropdown)}
                   >
                     {getRolesDropdownLabel()}
-                    <ChevronDown className="ml-2 h-4 w-4" />
+                    <ChevronDown className={`ml-2 ${ICON_SIZES.sm}`} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-full min-w-[200px]">

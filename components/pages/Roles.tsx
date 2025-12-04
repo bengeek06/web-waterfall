@@ -668,11 +668,11 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           >
             {dictionary.table_name}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -699,11 +699,11 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           >
             {dictionary.table_description}
             {column.getIsSorted() === "asc" ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUp className={`${ICON_SIZES.sm}`} />
             ) : column.getIsSorted() === "desc" ? (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDown className={`${ICON_SIZES.sm}`} />
             ) : (
-              <ArrowUpDown className="h-4 w-4 opacity-50" />
+              <ArrowUpDown className={`${ICON_SIZES.sm} opacity-50`} />
             )}
           </button>
         );
@@ -788,7 +788,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" disabled={isImporting}>
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className={`${ICON_SIZES.sm} mr-2`} />
                 {dictionary.import_button}
               </Button>
             </DropdownMenuTrigger>
@@ -805,7 +805,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" disabled={isExporting || roles.length === 0}>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className={`${ICON_SIZES.sm} mr-2`} />
                 {dictionary.export_button}
               </Button>
             </DropdownMenuTrigger>
@@ -823,7 +823,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
             onClick={openCreateRoleDialog}
             {...testId(DASHBOARD_TEST_IDS.roles.addButton)}
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className={`${ICON_SIZES.sm} mr-2`} />
             {dictionary.create_button}
           </Button>
         </div>

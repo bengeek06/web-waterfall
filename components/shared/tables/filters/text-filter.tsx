@@ -74,7 +74,7 @@ export function TextFilter({
         <Button
           variant="ghost"
           size="sm"
-          className="absolute right-0 top-0 h-8 w-8 p-0"
+          className={`absolute right-0 top-0 ${ICON_SIZES.xl} p-0`}
           onClick={() => onChange("")}
           {...(testId ? makeTestId(`${testId}-clear`) : {})}
         >

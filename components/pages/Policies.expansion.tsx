@@ -234,7 +234,7 @@ export function PolicyExpansion({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className={`${ICON_SIZES.xl}`}
                         onClick={() =>
                           onEditPermissionGroup(
                             policy,
@@ -250,7 +250,7 @@ export function PolicyExpansion({
                           )
                         )}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className={`${ICON_SIZES.sm}`} />
                         <span className="sr-only">{dictionary.edit_operations_tooltip || 'Éditer les opérations'}</span>
                       </Button>
                     </TooltipTrigger>
@@ -265,7 +265,7 @@ export function PolicyExpansion({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                         onClick={() =>
                           onDeletePermissionGroup(policy.id, group.perms)
                         }
@@ -276,7 +276,7 @@ export function PolicyExpansion({
                           )
                         )}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className={`${ICON_SIZES.sm}`} />
                         <span className="sr-only">{dictionary.delete_permission_group_tooltip || 'Supprimer toutes les permissions de ce groupe'}</span>
                       </Button>
                     </TooltipTrigger>

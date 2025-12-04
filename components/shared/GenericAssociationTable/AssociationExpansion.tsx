@@ -141,7 +141,7 @@ function renderGroupedItems<T extends BaseItem>(
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className={`${ICON_SIZES.xl} text-destructive hover:text-destructive hover:bg-destructive/10`}
                       onClick={() => {
                         for (const item of items) {
                           onRemove(item);
@@ -149,7 +149,7 @@ function renderGroupedItems<T extends BaseItem>(
                       }}
                       {...testId(`${testIdPrefix}-remove-${config.name}-group-${safeGroupKey}`)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className={`${ICON_SIZES.sm}`} />
                       <span className="sr-only">{dictionary.remove_association}</span>
                     </Button>
                   </TooltipTrigger>
