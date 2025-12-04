@@ -167,7 +167,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
     };
 
     loadCompany();
-  }, [companyId, router, dictionary.messages.load_error]);
+  }, [companyId, router, dictionary.messages.load_error, handleError]);
 
   const handleEdit = () => {
     setIsEditing(true);

@@ -288,7 +288,7 @@ export default function PoliciesV2({ dictionary }: { readonly dictionary: Polici
       }
     };
     fetchPermissions();
-  }, []); // No dependencies - only fetch once on mount
+  }, [handleError]); // Fetch once on mount
 
   // ==================== PERMISSION HANDLERS ====================
   

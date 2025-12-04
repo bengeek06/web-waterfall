@@ -168,7 +168,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
       }
     };
     fetchUserId();
-  }, []);
+  }, [handleError]);
 
   // Fetch files
   const fetchFiles = useCallback(async () => {
@@ -253,7 +253,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
     } finally {
       setIsLoading(false);
     }
-  }, [currentPath, dictionary, userId]);
+  }, [currentPath, userId, handleError]);
 
   useEffect(() => {
     fetchFiles();
@@ -323,7 +323,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
       });
 
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
+        const _errorData = await res.json().catch(() => ({}));
         handleError(new Error("Failed to create folder"));
         throw new Error("Failed to create folder");
       }

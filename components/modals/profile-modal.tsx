@@ -157,7 +157,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           // Refresh the page to update the UI
           globalThis.window.location.reload();
         } else {
-          const errorData = await response.text();
+          const _errorData = await response.text();
           handleError(new Error(`Failed to update profile: ${response.status}`));
         }
       } else {
@@ -186,7 +186,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           // Refresh the page to update the UI
           globalThis.window.location.reload();
         } else {
-          const errorData = await response.text();
+          const _errorData = await response.text();
           handleError(new Error(`Failed to update profile: ${response.status}`));
         }
       }

@@ -323,7 +323,7 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
       }
     };
     fetchPolicies();
-  }, []);
+  }, [handleError]);
 
   // Map dictionary to GenericAssociationTable format
   const tableDictionary: AssociationTableDictionary = {

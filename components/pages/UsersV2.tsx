@@ -472,7 +472,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       }
     };
     fetchPositions();
-  }, []);
+  }, [handleError]);
 
   // Fetch roles on mount
   useEffect(() => {
@@ -490,7 +490,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       }
     };
     fetchRoles();
-  }, []);
+  }, [handleError]);
 
   // ==================== DICTIONARY MAPPING ====================
   const tableDictionary: AssociationTableDictionary = useMemo(() => ({
@@ -618,7 +618,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     } catch (error) {
       handleError(error);
     }
-  }, []);
+  }, [handleError]);
 
   // Helper: Fetch current role IDs for a user
   const fetchUserRoleIds = useCallback(async (userId: string): Promise<string[]> => {
@@ -634,7 +634,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
       handleError(error);
     }
     return [];
-  }, []);
+  }, [handleError]);
 
   // Helper: Remove roles from a user using junction IDs
   const removeRolesFromUser = useCallback(async (userId: string, roleIdsToRemove: string[]): Promise<void> => {
@@ -668,7 +668,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     } catch (error) {
       handleError(error);
     }
-  }, []);
+  }, [handleError]);
 
   // Handle role assignment and avatar upload after user save
   const handleAfterSave = useCallback(async (savedUser: User, isNew: boolean) => {

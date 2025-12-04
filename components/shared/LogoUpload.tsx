@@ -182,7 +182,7 @@ export function LogoUpload({
         setIsUploading(false);
       }
     },
-    [onUpload, maxSize, acceptedFormats, entityName, currentLogoUrl, dictionary]
+    [onUpload, maxSize, acceptedFormats, entityName, currentLogoUrl, dictionary, handleError]
   );
 
   const handleInputChange = useCallback(
@@ -230,7 +230,7 @@ export function LogoUpload({
     } finally {
       setIsUploading(false);
     }
-  }, [onRemove, entityName, dictionary]);
+  }, [onRemove, entityName, dictionary, handleError]);
 
   const handleButtonClick = useCallback(() => {
     fileInputRef.current?.click();

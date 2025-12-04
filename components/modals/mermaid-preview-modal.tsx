@@ -199,7 +199,7 @@ export default function MermaidPreviewModal({
       setSvgContent("");
       setError(null);
     }
-  }, [isOpen, diagramType, onGenerate, dictionary.mermaid_error, autoScale]);
+  }, [isOpen, diagramType, onGenerate, dictionary.mermaid_error, autoScale, handleError]);
 
   // Auto-scale when SVG content changes
   useEffect(() => {
