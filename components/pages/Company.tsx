@@ -13,6 +13,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -93,17 +95,18 @@ type CompanyProps = {
     validation: {
       name_required: string;
     };
+    errors: ErrorMessages;
   };
 };
 
 // ==================== COMPONENT ====================
 export default function Company({ companyId, dictionary }: CompanyProps) {
   const router = useRouter();
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
@@ -127,7 +130,6 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   useEffect(() => {
     const loadCompany = async () => {
       setIsLoading(true);
-      setError(null);
 
       try {
         const res = await fetchWithAuth(IDENTITY_ROUTES.company(companyId));
@@ -138,7 +140,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
         }
 
         if (!res.ok) {
-          setError(dictionary.messages.load_error);
+          handleError(new Error(dictionary.messages.load_error));
           setIsLoading(false);
           return;
         }
@@ -158,8 +160,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
           vat_number: data.vat_number || "",
         });
       } catch (err) {
-        console.error("Error loading company:", err);
-        setError(dictionary.messages.load_error);
+        handleError(err);
       } finally {
         setIsLoading(false);
       }
@@ -170,7 +171,6 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
 
   const handleEdit = () => {
     setIsEditing(true);
-    setError(null);
     setSuccessMessage(null);
   };
 
@@ -207,7 +207,6 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
   const handleCancel = () => {
     setIsEditing(false);
     setErrors({});
-    setError(null);
     setSuccessMessage(null);
     // Reset form data to current company data
     if (company) {
@@ -249,9 +248,8 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setSuccessMessage(null);
 
     if (!validate()) {
@@ -282,7 +280,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        setError(errorData.message || dictionary.messages.save_error);
+        handleError(new Error(errorData.message || dictionary.messages.save_error));
         setIsSaving(false);
         return;
       }
@@ -295,8 +293,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      console.error("Error saving company:", err);
-      setError(dictionary.messages.save_error);
+      handleError(err);
     } finally {
       setIsSaving(false);
     }
@@ -310,12 +307,8 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
     );
   }
 
-  if (error && !company) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <p className={COLOR_CLASSES.text.destructive}>{error}</p>
-      </div>
-    );
+  if (!company) {
+    return null;
   }
 
   return (
@@ -340,7 +333,7 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
           </div>
         </CardHeader>
         <CardContent>
-        <form onSubmit={handleSave} className={SPACING.component.md}>
+        <form onSubmit={handleSubmit} className={SPACING.component.md}>
           {/* Success Message */}
           {successMessage && (
             <div 
@@ -352,15 +345,6 @@ export default function Company({ companyId, dictionary }: CompanyProps) {
           )}
 
           {/* Error Message */}
-          {error && (
-            <div 
-              className="p-3 mb-4 bg-red-50 border border-red-200 rounded-md"
-              {...testId(COMPANY_TEST_IDS.errorMessage)}
-            >
-              <p className="text-sm text-red-800">{error}</p>
-            </div>
-          )}
-
           {/* Company Name */}
           <div className={SPACING.component.xs}>
             <Label htmlFor="name">{dictionary.form.name} *</Label>

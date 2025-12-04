@@ -32,5 +32,14 @@
   },
   "validation": {
     "name_required": "Company name is required."
+  },
+  "errors": {
+    "network": "Network error occurred. Please check your connection and try again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "Access to this resource is forbidden.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "A server error occurred. Please try again later.",
+    "clientError": "An error occurred. Please check your input and try again.",
+    "unknown": "An unexpected error occurred. Please try again."
   }
 }
