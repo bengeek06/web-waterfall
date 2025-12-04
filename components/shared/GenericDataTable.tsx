@@ -701,7 +701,7 @@ export function GenericDataTable<T>({
                     disabled={!table.getCanPreviousPage()}
                     className="gap-1 text-xs text-muted-foreground hover:text-foreground"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <ChevronLeft className={ICON_SIZES.sm} />
                     <span className="hidden sm:inline">{dictionary.previous || "Previous"}</span>
                   </Button>
                 </PaginationItem>
@@ -775,7 +775,7 @@ export function GenericDataTable<T>({
                     className="gap-1 text-xs text-muted-foreground hover:text-foreground"
                   >
                     <span className="hidden sm:inline">{dictionary.next || "Next"}</span>
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className={ICON_SIZES.sm} />
                   </Button>
                 </PaginationItem>
               </PaginationContent>
@@ -789,7 +789,7 @@ export function GenericDataTable<T>({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTriangle className={`${ICON_SIZES.md} text-destructive`} />
               Confirm Deletion
             </DialogTitle>
             <DialogDescription>
