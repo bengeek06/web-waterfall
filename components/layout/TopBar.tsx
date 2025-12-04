@@ -105,7 +105,6 @@ export default async function TopBar() {
               <DropdownMenuItem asChild>
                 <ProfileModal
                   className="flex items-center gap-3 w-full text-left cursor-pointer px-3 py-2"
-                  testId={COMMON_TEST_IDS.topBar.profileLink}
                   dictionary={dictionary}
                   userInfo={userData ? {
                     id: userData.id,

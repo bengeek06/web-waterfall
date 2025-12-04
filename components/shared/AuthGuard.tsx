@@ -14,6 +14,7 @@
 import React, { useEffect } from "react";
 import { useAuthVerification } from "@/lib/hooks";
 import { initTokenRefresh, cancelTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
+import { SHARED_TEST_IDS, testId } from "@/lib/test-ids";
 
 interface AuthGuardProps {
   readonly children: React.ReactNode;
@@ -46,10 +47,21 @@ export default function AuthGuard({ children, dictionary }: Readonly<AuthGuardPr
   // Afficher un loader pendant la vérification
   if (isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white">
+      <div 
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white"
+        {...testId(SHARED_TEST_IDS.authGuard.verifyingContainer)}
+      >
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--waterfall-primary-dark)] mx-auto mb-4"></div>
-          <p className="text-gray-600">{dictionary?.verifying || "Verifying authentication..."}</p>
+          <div 
+            className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--waterfall-primary-dark)] mx-auto mb-4"
+            {...testId(SHARED_TEST_IDS.authGuard.verifyingSpinner)}
+          ></div>
+          <p 
+            className="text-gray-600"
+            {...testId(SHARED_TEST_IDS.authGuard.verifyingText)}
+          >
+            {dictionary?.verifying || "Verifying authentication..."}
+          </p>
         </div>
       </div>
     );
@@ -62,8 +74,16 @@ export default function AuthGuard({ children, dictionary }: Readonly<AuthGuardPr
 
   // Si non authentifié, le hook redirige automatiquement vers /login
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white">
-      <p className="text-gray-600">{dictionary?.redirecting || "Redirecting to login page..."}</p>
+    <div 
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[var(--waterfall-bg-light)] to-white"
+      {...testId(SHARED_TEST_IDS.authGuard.redirectingContainer)}
+    >
+      <p 
+        className="text-gray-600"
+        {...testId(SHARED_TEST_IDS.authGuard.redirectingText)}
+      >
+        {dictionary?.redirecting || "Redirecting to login page..."}
+      </p>
     </div>
   );
 }

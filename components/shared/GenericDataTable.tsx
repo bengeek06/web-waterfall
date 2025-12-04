@@ -451,11 +451,11 @@ export function GenericDataTable<T>({
           
           {/* Bulk Delete Button */}
           {enableRowSelection && selectedCount > 0 && onBulkDelete && (
-            <Button 
+            <Button
               variant="destructive"
               size="sm"
               onClick={handleBulkDelete}
-              data-testid="generic-table-bulk-delete-button"
+              {...testId(TABLE_TEST_IDS.genericTable.bulkDeleteButton)}
             >
               <Trash2 className={`${SPACING.iconMargin.right} ${ICON_SIZES.sm}`} />
               {dictionary.delete_selected || "Delete"} ({selectedCount})

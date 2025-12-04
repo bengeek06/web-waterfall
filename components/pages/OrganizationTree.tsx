@@ -42,6 +42,7 @@ import MermaidPreviewModal from "@/components/modals/mermaid-preview-modal";
 import { IDENTITY_ROUTES } from "@/lib/api-routes";
 import { BASIC_IO_ROUTES } from "@/lib/api-routes/basic_io";
 import { COLOR_CLASSES } from "@/lib/design-tokens";
+import { ORGANIZATION_TREE_TEST_IDS, testId } from "@/lib/test-ids";
 
 // Utils
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
@@ -302,6 +303,7 @@ function TreeNode({
                 setIsExpanded(!isExpanded);
               }}
               className="hover:bg-accent-foreground/10 rounded p-0.5"
+              {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeExpandButton)}
             >
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4" />
@@ -321,6 +323,7 @@ function TreeNode({
           onDragEnd={handleDragEnd}
           className="cursor-move"
           title="Glisser pour déplacer l'unité"
+          {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeIcon)}
         >
           <Building2 
             className={`h-4 w-4 flex-shrink-0 transition-colors ${
@@ -334,9 +337,9 @@ function TreeNode({
           className="flex-1 min-w-0"
           onClick={() => onSelect(unit)}
         >
-          <div className="font-medium truncate">{unit.name}</div>
+          <div className="font-medium truncate" {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeName)}>{unit.name}</div>
           {unit.description && (
-            <div className="text-sm text-muted-foreground truncate">
+            <div className="text-sm text-muted-foreground truncate" {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeDescription)}>
               {unit.description}
             </div>
           )}
@@ -353,6 +356,7 @@ function TreeNode({
             }}
             className="h-7 w-7 p-0"
             title="Ajouter une sous-unité"
+            {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeAddChildButton)}
           >
             <Plus className="h-3.5 w-3.5" />
           </Button>
@@ -365,6 +369,7 @@ function TreeNode({
             }}
             className="h-7 w-7 p-0"
             title="Modifier"
+            {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeEditButton)}
           >
             <Edit className="h-3.5 w-3.5" />
           </Button>
@@ -377,6 +382,7 @@ function TreeNode({
             }}
             className="h-7 w-7 p-0 text-destructive hover:text-destructive"
             title="Supprimer"
+            {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeDeleteButton)}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
@@ -814,8 +820,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex justify-center items-center min-h-[400px]">
+      <Card {...testId(ORGANIZATION_TREE_TEST_IDS.card)}>
+        <CardContent className="flex justify-center items-center min-h-[400px]" {...testId(ORGANIZATION_TREE_TEST_IDS.loadingState)}>
           <p className="text-muted-foreground">{dictionary.loading}</p>
         </CardContent>
       </Card>
@@ -824,8 +830,8 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="flex justify-center items-center min-h-[400px]">
+      <Card {...testId(ORGANIZATION_TREE_TEST_IDS.card)}>
+        <CardContent className="flex justify-center items-center min-h-[400px]" {...testId(ORGANIZATION_TREE_TEST_IDS.errorState)}>
           <p className={COLOR_CLASSES.text.destructive}>{error}</p>
         </CardContent>
       </Card>
@@ -833,27 +839,27 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card {...testId(ORGANIZATION_TREE_TEST_IDS.card)}>
+      <CardHeader {...testId(ORGANIZATION_TREE_TEST_IDS.cardHeader)}>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>{dictionary.title}</CardTitle>
-            <CardDescription>{dictionary.description}</CardDescription>
+            <CardTitle {...testId(ORGANIZATION_TREE_TEST_IDS.cardTitle)}>{dictionary.title}</CardTitle>
+            <CardDescription {...testId(ORGANIZATION_TREE_TEST_IDS.cardDescription)}>{dictionary.description}</CardDescription>
           </div>
           <div className="flex gap-2">
             {/* Import Button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isImporting}>
+                <Button variant="outline" size="sm" disabled={isImporting} {...testId(ORGANIZATION_TREE_TEST_IDS.importDropdownTrigger)}>
                   <Upload className="h-4 w-4 mr-2" />
                   {dictionary.import_button}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleImport('json')}>
+                <DropdownMenuItem onClick={() => handleImport('json')} {...testId(ORGANIZATION_TREE_TEST_IDS.importJsonButton)}>
                   {dictionary.import_json}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleImport('csv')}>
+                <DropdownMenuItem onClick={() => handleImport('csv')} {...testId(ORGANIZATION_TREE_TEST_IDS.importCsvButton)}>
                   {dictionary.import_csv}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -862,19 +868,19 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             {/* Export Button */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={isExporting}>
+                <Button variant="outline" size="sm" disabled={isExporting} {...testId(ORGANIZATION_TREE_TEST_IDS.exportDropdownTrigger)}>
                   <Download className="h-4 w-4 mr-2" />
                   {dictionary.export_button}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => handleExport('json')}>
+                <DropdownMenuItem onClick={() => handleExport('json')} {...testId(ORGANIZATION_TREE_TEST_IDS.exportJsonButton)}>
                   {dictionary.export_json}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                <DropdownMenuItem onClick={() => handleExport('csv')} {...testId(ORGANIZATION_TREE_TEST_IDS.exportCsvButton)}>
                   {dictionary.export_csv}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsMermaidModalOpen(true)}>
+                <DropdownMenuItem onClick={() => setIsMermaidModalOpen(true)} {...testId(ORGANIZATION_TREE_TEST_IDS.exportMermaidButton)}>
                   <ImageIcon className="h-4 w-4 mr-2" />
                   {dictionary.export_mermaid}
                 </DropdownMenuItem>
@@ -882,7 +888,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             </DropdownMenu>
 
             {/* Add Root Button */}
-            <Button onClick={handleAddRoot} size="sm">
+            <Button onClick={handleAddRoot} size="sm" {...testId(ORGANIZATION_TREE_TEST_IDS.addRootButton)}>
               <Plus className="h-4 w-4 mr-2" />
               {dictionary.actions.add_root}
             </Button>
@@ -893,13 +899,13 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tree View */}
           <div className="lg:col-span-2">
-            <div className="border rounded-md p-2 max-h-[600px] overflow-y-auto">
+            <div className="border rounded-md p-2 max-h-[600px] overflow-y-auto" {...testId(ORGANIZATION_TREE_TEST_IDS.treeContainer)}>
               {treeData.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12 text-muted-foreground" {...testId(ORGANIZATION_TREE_TEST_IDS.emptyState)}>
                   {dictionary.no_units}
                 </div>
               ) : (
-                <div className="space-y-1 group">
+                <div className="space-y-1 group" {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeContainer)}>
                   {treeData.map((unit) => (
                     <TreeNode
                       key={unit.id}
@@ -918,24 +924,24 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           </div>
 
           {/* Positions Panel */}
-          <div className="border rounded-md p-4 max-h-[600px] overflow-y-auto">
+          <div className="border rounded-md p-4 max-h-[600px] overflow-y-auto" {...testId(ORGANIZATION_TREE_TEST_IDS.positionsPanel)}>
             {selectedUnit ? (
               <>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-semibold">{dictionary.positions.title}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedUnit.name}</p>
+                    <h3 className="font-semibold" {...testId(ORGANIZATION_TREE_TEST_IDS.positionsPanelTitle)}>{dictionary.positions.title}</h3>
+                    <p className="text-sm text-muted-foreground" {...testId(ORGANIZATION_TREE_TEST_IDS.positionsPanelUnitName)}>{selectedUnit.name}</p>
                   </div>
-                  <Button size="sm" variant="outline" onClick={handleAddPosition}>
+                  <Button size="sm" variant="outline" onClick={handleAddPosition} {...testId(ORGANIZATION_TREE_TEST_IDS.positionsAddButton)}>
                     <Plus className="h-3.5 w-3.5 mr-1" />
                     {dictionary.positions.add_position}
                   </Button>
                 </div>
 
                 {isLoadingPositions ? (
-                  <p className="text-sm text-muted-foreground">{dictionary.loading}</p>
+                  <p className="text-sm text-muted-foreground" {...testId(ORGANIZATION_TREE_TEST_IDS.positionsLoading)}>{dictionary.loading}</p>
                 ) : positions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
+                  <p className="text-sm text-muted-foreground text-center py-8" {...testId(ORGANIZATION_TREE_TEST_IDS.positionsEmptyState)}>
                     {dictionary.positions.no_positions}
                   </p>
                 ) : (
@@ -944,15 +950,16 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                       <div
                         key={position.id}
                         className="p-3 border rounded-md hover:bg-accent transition-colors"
+                        {...testId(`${ORGANIZATION_TREE_TEST_IDS.positionItem}-${position.id}`)}
                       >
-                        <div className="font-medium text-sm">{position.title}</div>
+                        <div className="font-medium text-sm" {...testId(ORGANIZATION_TREE_TEST_IDS.positionItemTitle)}>{position.title}</div>
                         {position.description && (
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-muted-foreground mt-1" {...testId(ORGANIZATION_TREE_TEST_IDS.positionItemDescription)}>
                             {position.description}
                           </div>
                         )}
                         {position.level !== undefined && (
-                          <div className="text-xs text-muted-foreground mt-1">
+                          <div className="text-xs text-muted-foreground mt-1" {...testId(ORGANIZATION_TREE_TEST_IDS.positionItemLevel)}>
                             Niveau: {position.level}
                           </div>
                         )}
@@ -962,6 +969,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                             variant="ghost"
                             className="h-6 text-xs"
                             onClick={() => handleEditPosition(position)}
+                            {...testId(ORGANIZATION_TREE_TEST_IDS.positionEditButton)}
                           >
                             <Edit className="h-3 w-3 mr-1" />
                             {dictionary.positions.edit}
@@ -971,6 +979,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                             variant="ghost"
                             className="h-6 text-xs text-destructive hover:text-destructive"
                             onClick={() => handleDeletePosition(position.id)}
+                            {...testId(ORGANIZATION_TREE_TEST_IDS.positionDeleteButton)}
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
                             {dictionary.positions.delete}
@@ -1023,10 +1032,10 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
       {/* Import Report Dialog */}
       <Dialog open={!!importReport} onOpenChange={() => setImportReport(null)}>
-        <DialogContent>
+        <DialogContent {...testId(ORGANIZATION_TREE_TEST_IDS.importReportDialog)}>
           <DialogHeader>
-            <DialogTitle>{dictionary.import_report_title}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle {...testId(ORGANIZATION_TREE_TEST_IDS.importReportTitle)}>{dictionary.import_report_title}</DialogTitle>
+            <DialogDescription {...testId(ORGANIZATION_TREE_TEST_IDS.importReportDescription)}>
               {dictionary.import_report_total}: {importReport?.total_records || 0} |{' '}
               {dictionary.import_report_success}: {importReport?.successful_imports || 0} |{' '}
               {dictionary.import_report_failed}: {importReport?.failed_imports || 0}
@@ -1035,7 +1044,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
 
           <div className="space-y-4 max-h-[400px] overflow-y-auto">
             {importReport && importReport.errors.length > 0 && (
-              <div>
+              <div {...testId(ORGANIZATION_TREE_TEST_IDS.importReportErrors)}>
                 <h4 className="font-semibold text-sm mb-2">{dictionary.import_report_errors}</h4>
                 <ul className="space-y-1 text-sm">
                   {importReport.errors.map((err) => (
@@ -1048,7 +1057,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
             )}
 
             {importReport && importReport.warnings.length > 0 && (
-              <div>
+              <div {...testId(ORGANIZATION_TREE_TEST_IDS.importReportWarnings)}>
                 <h4 className="font-semibold text-sm mb-2">{dictionary.import_report_warnings}</h4>
                 <ul className="space-y-1 text-sm">
                   {importReport.warnings.map((warn) => (
@@ -1062,7 +1071,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           </div>
 
           <div className="flex justify-end">
-            <Button onClick={() => setImportReport(null)}>
+            <Button onClick={() => setImportReport(null)} {...testId(ORGANIZATION_TREE_TEST_IDS.importReportCloseButton)}>
               {dictionary.import_report_close}
             </Button>
           </div>

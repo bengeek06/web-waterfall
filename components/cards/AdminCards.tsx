@@ -18,6 +18,7 @@ import Link from "next/link";
 import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { ProtectedCard } from "@/components/shared/ProtectedCard";
 import { PERMISSIONS } from "@/lib/utils/permissions";
+import { testId, ADMIN_TEST_IDS } from "@/lib/test-ids";
 
 interface AdminCardsProps {
   readonly dictionary: {
@@ -37,14 +38,14 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
         requirements={[[PERMISSIONS.IDENTITY_USER_LIST]]}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card {...testId(ADMIN_TEST_IDS.cards.usersCard)} className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
           <CardHeader className="flex flex-row items-center gap-3">
             <Users className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallUser}`} />
-            <CardTitle>{dictionary.users}</CardTitle>
+            <CardTitle {...testId(ADMIN_TEST_IDS.cards.usersCardTitle)}>{dictionary.users}</CardTitle>
           </CardHeader>
           <CardContent>
             <Link href="/home/admin/users" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button {...testId(ADMIN_TEST_IDS.cards.usersCardButton)} variant="outline" className="w-full">
                 {dictionary.access}
               </Button>
             </Link>
@@ -57,14 +58,14 @@ export function AdminCards({ dictionary }: AdminCardsProps) {
         requirements={[[PERMISSIONS.GUARDIAN_ROLE_LIST]]}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card {...testId(ADMIN_TEST_IDS.cards.rolesCard)} className={`border-l-4 ${COLOR_CLASSES.border.waterfallUser} shadow-sm hover:shadow-md transition-shadow`}>
           <CardHeader className="flex flex-row items-center gap-3">
             <KeyRound className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallUser}`} />
-            <CardTitle>{dictionary.roles}</CardTitle>
+            <CardTitle {...testId(ADMIN_TEST_IDS.cards.rolesCardTitle)}>{dictionary.roles}</CardTitle>
           </CardHeader>
           <CardContent>
             <Link href="/home/admin/roles" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button {...testId(ADMIN_TEST_IDS.cards.rolesCardButton)} variant="outline" className="w-full">
                 {dictionary.access}
               </Button>
             </Link>

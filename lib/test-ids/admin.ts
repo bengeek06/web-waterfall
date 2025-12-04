@@ -57,5 +57,15 @@ export const ADMIN_TEST_IDS = {
     page: 'admin-roles-page',
     title: 'admin-roles-title',
   },
+
+  cards: {
+    // AdminCards component
+    usersCard: 'admin-cards-users-card',
+    usersCardTitle: 'admin-cards-users-title',
+    usersCardButton: 'admin-cards-users-button',
+    rolesCard: 'admin-cards-roles-card',
+    rolesCardTitle: 'admin-cards-roles-title',
+    rolesCardButton: 'admin-cards-roles-button',
+  },
 } as const;
 

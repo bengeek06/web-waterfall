@@ -14,6 +14,9 @@
  * Used for E2E testing with Playwright/Selenium
  */
 
+// Helper function for creating test ID props
+export const testId = (id: string) => ({ 'data-testid': id });
+
 export const SHARED_TEST_IDS = {
   logoUpload: {
     container: 'logo-upload-container',
@@ -25,6 +28,13 @@ export const SHARED_TEST_IDS = {
     previewImage: 'logo-upload-preview-image',
     loadingSpinner: 'logo-upload-loading-spinner',
     infoText: 'logo-upload-info-text',
+  },
+  authGuard: {
+    verifyingContainer: 'auth-guard-verifying-container',
+    verifyingSpinner: 'auth-guard-verifying-spinner',
+    verifyingText: 'auth-guard-verifying-text',
+    redirectingContainer: 'auth-guard-redirecting-container',
+    redirectingText: 'auth-guard-redirecting-text',
   },
 } as const;
 

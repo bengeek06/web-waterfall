@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { ProtectedCard } from "@/components/shared/ProtectedCard";
 import { PERMISSION_REQUIREMENTS } from "@/lib/utils/permissions";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
+import { SETTINGS_TEST_IDS, testId } from "@/lib/test-ids";
 
 type SettingsDictionary = {
   company_info_title?: string;
@@ -37,13 +38,19 @@ type SettingsDictionary = {
 
 export default function SettingsCards({ dictionary }: { readonly dictionary: SettingsDictionary }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+    <div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
+      {...testId(SETTINGS_TEST_IDS.cards.container)}
+    >
       {/* Informations de l'entreprise */}
       <ProtectedCard
         requirements={PERMISSION_REQUIREMENTS.COMPANY_INFO}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(SETTINGS_TEST_IDS.cards.companyCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <Building2 className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>
@@ -52,7 +59,11 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           </CardHeader>
           <CardContent>
             <Link href="/home/settings/company" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(SETTINGS_TEST_IDS.cards.companyButton)}
+              >
                 {dictionary.access || "Access"}
               </Button>
             </Link>
@@ -65,7 +76,10 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
         requirements={PERMISSION_REQUIREMENTS.ORGANIZATION_STRUCTURE}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(SETTINGS_TEST_IDS.cards.organizationCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <Network className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>
@@ -74,7 +88,11 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           </CardHeader>
           <CardContent>
             <Link href="/home/settings/organization" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(SETTINGS_TEST_IDS.cards.organizationButton)}
+              >
                 {dictionary.access || "Access"}
               </Button>
             </Link>
@@ -87,7 +105,10 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
         requirements={PERMISSION_REQUIREMENTS.CUSTOMERS_MANAGEMENT}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(SETTINGS_TEST_IDS.cards.customersCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <Users className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>
@@ -96,7 +117,11 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           </CardHeader>
           <CardContent>
             <Link href="/home/settings/customers" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(SETTINGS_TEST_IDS.cards.customersButton)}
+              >
                 {dictionary.access || "Access"}
               </Button>
             </Link>
@@ -109,7 +134,10 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
         requirements={PERMISSION_REQUIREMENTS.SUBCONTRACTORS_MANAGEMENT}
         loadingBehavior="hide"
       >
-        <Card className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}>
+        <Card 
+          className={`border-l-4 ${COLOR_CLASSES.border.waterfallCompany} shadow-sm hover:shadow-md transition-shadow`}
+          {...testId(SETTINGS_TEST_IDS.cards.subcontractorsCard)}
+        >
           <CardHeader className="flex flex-row items-center gap-3">
             <Briefcase className={`${ICON_SIZES.lg} ${COLOR_CLASSES.text.waterfallCompany}`} />
             <CardTitle>
@@ -118,7 +146,11 @@ export default function SettingsCards({ dictionary }: { readonly dictionary: Set
           </CardHeader>
           <CardContent>
             <Link href="/home/settings/subcontractors" className="w-full mt-2">
-              <Button variant="outline" className="w-full">
+              <Button 
+                variant="outline" 
+                className="w-full"
+                {...testId(SETTINGS_TEST_IDS.cards.subcontractorsButton)}
+              >
                 {dictionary.access || "Access"}
               </Button>
             </Link>
