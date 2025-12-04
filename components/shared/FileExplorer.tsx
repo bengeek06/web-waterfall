@@ -14,6 +14,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
+import { ICON_SIZES } from "@/lib/design-tokens";
 import {
   Folder,
   File,
@@ -579,7 +580,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
       >
         {isLoading && (
           <div className="flex items-center justify-center h-64" {...testId(FILE_EXPLORER_TEST_IDS.loadingSpinner)}>
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className={`${ICON_SIZES.xl} animate-spin text-muted-foreground`} />
           </div>
         )}
         
