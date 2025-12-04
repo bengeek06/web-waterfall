@@ -23,6 +23,7 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from 'sonner';
 import { COMPANY_TEST_IDS } from "@/lib/test-ids";
 
 // Mock useRouter - MUST return stable reference to avoid infinite loops
@@ -30,6 +31,15 @@ const mockPush = jest.fn();
 const mockRouter = { push: mockPush };
 jest.mock("next/navigation", () => ({
   useRouter: () => mockRouter,
+}));
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+  },
 }));
 
 // Mock fetchWithAuth
@@ -110,7 +120,7 @@ describe("Company", () => {
       render(<Company companyId="company-123" dictionary={mockDictionary} />);
 
       await waitFor(() => {
-        expect(screen.getByText("Error loading company information.")).toBeInTheDocument();
+        expect(toast.error).toHaveBeenCalled();
       });
     });
 

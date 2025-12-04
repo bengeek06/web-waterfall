@@ -12,11 +12,21 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import InitApp from './InitApp';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(),
+}));
+
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+  },
 }));
 
 // Mock fetch
@@ -224,7 +234,7 @@ describe('InitApp Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Erreur lors de l\'initialisation de l\'identité')).toBeInTheDocument();
+        expect(toast.error).toHaveBeenCalled();
       });
 
       expect(mockPush).not.toHaveBeenCalled();
