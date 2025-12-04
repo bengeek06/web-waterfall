@@ -67,7 +67,16 @@ const mockDictionary = {
   success: 'Initialisation réussie !',
   error_company: 'Erreur entreprise',
   error_user: 'Erreur utilisateur',
-  loading: 'Chargement...'
+  loading: 'Chargement...',
+  errors: {
+    network: 'Network error',
+    unauthorized: 'Unauthorized',
+    forbidden: 'Forbidden',
+    notFound: 'Not found',
+    serverError: 'Server error',
+    clientError: 'Client error',
+    unknown: 'Unknown error',
+  },
 };
 
 describe('InitApp Component', () => {

@@ -22,6 +22,15 @@ jest.mock('next/navigation', () => ({
 // Mock fetch
 global.fetch = jest.fn();
 
+// Mock sonner
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+    success: jest.fn(),
+    warning: jest.fn(),
+  },
+}));
+
 // Mock next/image
 jest.mock('next/image', () => ({
   __esModule: true,
@@ -55,6 +64,15 @@ const mockDictionary = {
   submit: 'Se connecter',
   invalid_email: 'Format d\'email invalide',
   login_failed: 'Échec de la connexion',
+  errors: {
+    network: 'Network error',
+    unauthorized: 'Unauthorized',
+    forbidden: 'Forbidden',
+    notFound: 'Not found',
+    serverError: 'Server error',
+    clientError: 'Client error',
+    unknown: 'Unknown error',
+  },
 };
 
 describe('Login Component', () => {

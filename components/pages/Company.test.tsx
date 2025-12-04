@@ -82,6 +82,15 @@ const mockDictionary = {
   validation: {
     name_required: "Company name is required.",
   },
+  errors: {
+    network: 'Network error',
+    unauthorized: 'Unauthorized',
+    forbidden: 'Forbidden',
+    notFound: 'Not found',
+    serverError: 'Server error',
+    clientError: 'Client error',
+    unknown: 'Unknown error',
+  },
 };
 
 describe("Company", () => {
