@@ -91,7 +91,7 @@ import { testId } from "@/lib/test-ids";
 
 // Types
 import type { BaseItem, AssociationConfig, GenericAssociationTableProps } from "./types";
-import { ICON_SIZES } from '@/lib/design-tokens';
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // ==================== HELPER FUNCTIONS ====================
 

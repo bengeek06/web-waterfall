@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { DASHBOARD_TEST_IDS, testId } from '@/lib/test-ids';
-import { ICON_SIZES, COLOR_CLASSES, SPACING } from '@/lib/design-tokens';
+import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 import { groupPermissions, type Permission, type PermissionGroup } from '@/components/pages/Policies.expansion';
 
 // ==================== TYPES ====================

@@ -42,7 +42,7 @@ import { Building2 } from "lucide-react";
 
 // Test IDs
 import { PAGES_TEST_IDS, testId } from "@/lib/test-ids";
-import { ICON_SIZES } from '@/lib/design-tokens';
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // ==================== TYPE DEFINITIONS ====================
 

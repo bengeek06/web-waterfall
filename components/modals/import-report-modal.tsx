@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ImportReport } from "@/lib/hooks/useBasicIO";
-import { ICON_SIZES } from '@/lib/design-tokens';
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { ABOUT_TEST_IDS, testId } from '@/lib/test-ids';
-import { ICON_SIZES, COLOR_CLASSES } from '@/lib/design-tokens';
+import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
 import { Dictionary } from '@/lib/utils/dictionaries';
 
 // ==================== TYPES ====================
