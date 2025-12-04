@@ -304,6 +304,8 @@ const policiesAssociation = {
 // ==================== COMPONENT ====================
 
 export default function RolesV2({ dictionary }: { readonly dictionary: RolesDictionary }) {
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
+  
   // ==================== POLICIES STATE (for filter) ====================
   const [availablePolicies, setAvailablePolicies] = useState<Policy[]>([]);
 
@@ -317,7 +319,7 @@ export default function RolesV2({ dictionary }: { readonly dictionary: RolesDict
           setAvailablePolicies(Array.isArray(data) ? data : (data.data || []));
         }
       } catch (error) {
-        console.error("Error fetching policies:", error);
+        handleError(error);
       }
     };
     fetchPolicies();
