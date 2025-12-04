@@ -46,6 +46,8 @@
 // ==================== IMPORTS ====================
 
 import React, { useState, useRef, useCallback } from "react";
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 import { Upload, X, Building2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/utils";
@@ -85,6 +87,7 @@ interface LogoUploadProps {
     success_remove: string;
     error_upload: string;
     error_remove: string;
+    errors: ErrorMessages;
   };
 }
 
@@ -139,6 +142,8 @@ export function LogoUpload({
   entityName = "logo",
   dictionary,
 }: Readonly<LogoUploadProps>) {
+  const { handleError } = useErrorHandler({ messages: dictionary.errors });
+  
   // ==================== STATE ====================
 
   const [preview, setPreview] = useState<string | undefined>(currentLogoUrl);
@@ -170,7 +175,7 @@ export function LogoUpload({
         await onUpload(file);
         toast.success(dictionary.success_upload.replace('{entity}', entityName));
       } catch (error) {
-        console.error("Upload error:", error);
+        handleError(error);
         toast.error(dictionary.error_upload.replace('{entity}', entityName));
         setPreview(currentLogoUrl); // Restore previous preview
       } finally {
@@ -220,7 +225,7 @@ export function LogoUpload({
       setPreview(undefined);
       toast.success(dictionary.success_remove.replace('{entity}', entityName));
     } catch (error) {
-      console.error("Remove error:", error);
+      handleError(error);
       toast.error(dictionary.error_remove.replace('{entity}', entityName));
     } finally {
       setIsUploading(false);

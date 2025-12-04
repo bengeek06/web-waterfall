@@ -10,5 +10,14 @@
   "success_upload": "{entity} uploaded successfully",
   "success_remove": "{entity} removed successfully",
   "error_upload": "Failed to upload {entity}",
-  "error_remove": "Failed to remove {entity}"
+  "error_remove": "Failed to remove {entity}",
+  "errors": {
+    "network": "Network error occurred. Please check your connection and try again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "Access to this resource is forbidden.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "A server error occurred. Please try again later.",
+    "clientError": "An error occurred. Please check your input and try again.",
+    "unknown": "An unexpected error occurred. Please try again."
+  }
 }
