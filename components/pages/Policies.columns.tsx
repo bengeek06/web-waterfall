@@ -9,13 +9,13 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-import React from 'react';
-import type { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from 'lucide-react';
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import { DASHBOARD_TEST_IDS, testId } from '@/lib/test-ids';
-import { ICON_SIZES } from '@/lib/design-tokens';
+import React from "react";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, ArrowUp, ArrowDown, Edit, Trash2, PlusSquare } from "lucide-react";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 export type Permission = {

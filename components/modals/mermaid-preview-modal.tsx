@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Download, Loader2 } from "lucide-react";
-import { ICON_SIZES } from '@/lib/design-tokens';
+import { ICON_SIZES } from "@/lib/design-tokens";
 
 type DiagramType = "flowchart" | "graph" | "mindmap";
 
