@@ -40,5 +40,14 @@
   "modified": "Modified",
   "type": "Type",
   "name": "Name",
-  "actions": "Actions"
+  "actions": "Actions",
+  "errors": {
+    "network": "Network error. Please check your connection and try again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "Access to this resource is forbidden.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "A server error occurred. Please try again later.",
+    "clientError": "An error occurred. Please check your input and try again.",
+    "unknown": "An unknown error occurred. Please try again."
+  }
 }
