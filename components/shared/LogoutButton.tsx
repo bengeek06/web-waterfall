@@ -11,6 +11,8 @@
 
 'use client';
 
+import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
+import type { ErrorMessages } from "@/lib/hooks/useErrorHandler";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { useRouter } from "next/navigation";
 import { cancelTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
@@ -19,10 +21,12 @@ interface LogoutButtonProps {
   children: React.ReactNode;
   className?: string;
   testId?: string;
+  errors: ErrorMessages;
 }
 
-export default function LogoutButton({ children, className, testId }: Readonly<LogoutButtonProps>) {
+export default function LogoutButton({ children, className, testId, errors }: Readonly<LogoutButtonProps>) {
   const router = useRouter();
+  const { handleError } = useErrorHandler({ messages: errors });
 
   const handleLogout = async () => {
     try {
@@ -36,7 +40,7 @@ export default function LogoutButton({ children, className, testId }: Readonly<L
       // Rediriger vers la page de login après le logout
       router.push('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
+      handleError(error);
       // Même en cas d'erreur, rediriger vers login (tokens probablement expirés)
       router.push('/login');
     }
