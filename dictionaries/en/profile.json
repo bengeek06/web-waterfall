@@ -24,5 +24,14 @@
   "modal_enter_email": "Enter email address",
   "modal_enter_phone": "Enter phone number",
   "modal_file_type_error": "Please select a valid image file",
-  "modal_file_size_error": "File size must be less than 5MB"
+  "modal_file_size_error": "File size must be less than 5MB",
+  "errors": {
+    "network": "Network error occurred. Please check your connection and try again.",
+    "unauthorized": "You are not authorized to perform this action.",
+    "forbidden": "Access to this resource is forbidden.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "A server error occurred. Please try again later.",
+    "clientError": "An error occurred. Please check your input and try again.",
+    "unknown": "An unexpected error occurred. Please try again."
+  }
 }

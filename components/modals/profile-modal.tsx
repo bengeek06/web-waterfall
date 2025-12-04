@@ -12,6 +12,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useErrorHandler } from '@/lib/hooks/useErrorHandler';
+import type { ErrorMessages } from '@/lib/hooks/useErrorHandler';
 import { User, Save, Camera, Upload } from 'lucide-react';
 import {
   Dialog,
@@ -44,6 +46,7 @@ interface ProfileDictionary {
   profile_first_name: string;
   profile_last_name: string;
   profile_email: string;
+  errors: ErrorMessages;
 }
 
 interface ProfileModalProps {
@@ -65,6 +68,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ children, className, testId, dictionary, userInfo }: ProfileModalProps) {
+  const { handleError } = useErrorHandler({ messages: dictionary?.errors || {} as ErrorMessages });
   const [open, setOpen] = useState(false);
   const [isLoading, setSaving] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -103,13 +107,13 @@ export default function ProfileModal({ children, className, testId, dictionary, 
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert(dictionary?.modal_file_type_error || 'Please select a valid image file');
+        handleError(new Error(dictionary?.modal_file_type_error || 'Please select a valid image file'));
         return;
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert(dictionary?.modal_file_size_error || 'File size must be less than 5MB');
+        handleError(new Error(dictionary?.modal_file_size_error || 'File size must be less than 5MB'));
         return;
       }
 
@@ -154,8 +158,7 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           globalThis.window.location.reload();
         } else {
           const errorData = await response.text();
-          console.error('Failed to update profile:', response.status, errorData);
-          alert(`Erreur lors de la mise à jour: ${response.status}`);
+          handleError(new Error(`Failed to update profile: ${response.status}`));
         }
       } else {
         // Use JSON for simple updates without avatar
@@ -184,12 +187,11 @@ export default function ProfileModal({ children, className, testId, dictionary, 
           globalThis.window.location.reload();
         } else {
           const errorData = await response.text();
-          console.error('Failed to update profile:', response.status, errorData);
-          alert(`Erreur lors de la mise à jour: ${response.status}`);
+          handleError(new Error(`Failed to update profile: ${response.status}`));
         }
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
+      handleError(error);
     } finally {
       setSaving(false);
     }
