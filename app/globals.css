@@ -217,10 +217,22 @@
     border-color: var(--success) !important;
   }
 
+  [data-sonner-toast][data-type="success"] [data-content],
+  [data-sonner-toast][data-type="success"] [data-title],
+  [data-sonner-toast][data-type="success"] [data-description] {
+    color: var(--success-foreground) !important;
+  }
+
   [data-sonner-toast][data-type="error"] {
     background-color: var(--error) !important;
     color: var(--error-foreground) !important;
     border-color: var(--error) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-content],
+  [data-sonner-toast][data-type="error"] [data-title],
+  [data-sonner-toast][data-type="error"] [data-description] {
+    color: var(--error-foreground) !important;
   }
 
   [data-sonner-toast][data-type="warning"] {
@@ -229,9 +241,21 @@
     border-color: var(--warning) !important;
   }
 
+  [data-sonner-toast][data-type="warning"] [data-content],
+  [data-sonner-toast][data-type="warning"] [data-title],
+  [data-sonner-toast][data-type="warning"] [data-description] {
+    color: var(--warning-foreground) !important;
+  }
+
   [data-sonner-toast][data-type="info"] {
     background-color: var(--info) !important;
     color: var(--info-foreground) !important;
     border-color: var(--info) !important;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-content],
+  [data-sonner-toast][data-type="info"] [data-title],
+  [data-sonner-toast][data-type="info"] [data-description] {
+    color: var(--info-foreground) !important;
   }
 }
