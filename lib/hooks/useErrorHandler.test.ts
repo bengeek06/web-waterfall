@@ -19,6 +19,7 @@ jest.mock('sonner', () => ({
   toast: {
     error: jest.fn(),
     warning: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
@@ -52,7 +53,7 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('Network error message', { duration: 5000 });
+      expect(toast.error).toHaveBeenCalledWith('Network error message', { duration: 7000 });
     });
 
     it('should handle regular Error as network error', () => {
@@ -63,8 +64,8 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
-      // Le message original de l'erreur est ajouté au message traduit
-      expect(toast.error).toHaveBeenCalledWith('Network error message\nFetch failed', { duration: 5000 });
+      // Le message original de l'erreur est maintenant utilisé directement
+      expect(toast.error).toHaveBeenCalledWith('Fetch failed', { duration: 7000 });
     });
 
     it('should handle unknown error type', () => {
@@ -74,7 +75,7 @@ describe('useErrorHandler', () => {
         result.current.handleError({ something: 'random' });
       });
 
-      expect(toast.error).toHaveBeenCalledWith('Unknown error message', { duration: 5000 });
+      expect(toast.error).toHaveBeenCalledWith('Unknown error message', { duration: 7000 });
     });
 
     it('should show warning toast for UNAUTHORIZED errors', () => {
@@ -85,10 +86,10 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
-      expect(toast.warning).toHaveBeenCalledWith('Unauthorized message', { duration: 5000 });
+      expect(toast.warning).toHaveBeenCalledWith('Unauthorized message', { duration: 7000 });
     });
 
-    it('should append server message if available', () => {
+    it('should use server message directly if available', () => {
       const { result } = renderHook(() => useErrorHandler({ messages: mockMessages }));
       const error = new HttpError(
         HttpErrorType.SERVER_ERROR,
@@ -102,9 +103,10 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
+      // Le message du serveur est utilisé directement
       expect(toast.error).toHaveBeenCalledWith(
-        'Server error message\nDatabase connection failed',
-        { duration: 5000 }
+        'Database connection failed',
+        { duration: 7000 }
       );
     });
 
@@ -145,7 +147,7 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
-      expect(toast.error).toHaveBeenCalledWith('Client error message', { duration: 3000 });
+      expect(toast.info).toHaveBeenCalledWith('Client error message', { duration: 3000 });
     });
   });
 

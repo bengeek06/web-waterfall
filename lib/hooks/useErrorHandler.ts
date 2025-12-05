@@ -31,7 +31,7 @@ export interface ErrorHandlerOptions {
   messages: ErrorMessages;
   /** Afficher un toast automatiquement (défaut: true) */
   showToast?: boolean;
-  /** Durée du toast en ms (défaut: 5000) */
+  /** Durée du toast en ms (défaut: 7000) */
   duration?: number;
   /** Action personnalisée pour certains types d'erreurs */
   onError?: (_error: HttpError) => void;
@@ -51,7 +51,7 @@ export interface ErrorHandlerOptions {
  * }
  */
 export function useErrorHandler(options: ErrorHandlerOptions) {
-  const { messages, showToast = true, duration = 5000, onError } = options;
+  const { messages, showToast = true, duration = 7000, onError } = options;
 
   /**
    * Récupère le message d'erreur traduit selon le type
@@ -95,25 +95,31 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
     // Message utilisateur traduit
     const userMessage = getErrorMessage(httpError);
     
-    // Ajouter le message du serveur seulement s'il est différent du message par défaut
-    // et ne commence pas par "HTTP Error:"
-    const hasCustomMessage = httpError.message && 
-                            !httpError.message.startsWith('HTTP Error:') &&
-                            httpError.message !== userMessage;
-    
-    const fullMessage = hasCustomMessage
-      ? `${userMessage}\n${httpError.message}`
+    // Utiliser le message du serveur s'il existe, sinon utiliser le message traduit générique
+    const displayMessage = httpError.message && 
+                          !httpError.message.startsWith('HTTP Error:') &&
+                          httpError.message !== userMessage
+      ? httpError.message
       : userMessage;
 
     // Afficher le toast si demandé
     if (showToast) {
       // Type de toast selon la sévérité
-      if (httpError.type === HttpErrorType.NETWORK || httpError.type === HttpErrorType.SERVER_ERROR) {
-        toast.error(fullMessage, { duration });
-      } else if (httpError.type === HttpErrorType.UNAUTHORIZED) {
-        toast.warning(fullMessage, { duration });
-      } else {
-        toast.error(fullMessage, { duration });
+      switch (httpError.type) {
+        case HttpErrorType.NETWORK:
+        case HttpErrorType.SERVER_ERROR:
+        case HttpErrorType.FORBIDDEN:
+          toast.error(displayMessage, { duration });
+          break;
+        case HttpErrorType.UNAUTHORIZED:
+        case HttpErrorType.NOT_FOUND:
+          toast.warning(displayMessage, { duration });
+          break;
+        case HttpErrorType.CLIENT_ERROR:
+          toast.info(displayMessage, { duration });
+          break;
+        default:
+          toast.error(displayMessage, { duration });
       }
     }
 
