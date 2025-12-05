@@ -9,10 +9,6 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-// TODO: Update tests to work with new logger format (structured logging)
-// Tests temporarily skipped while migrating from console.* to logger
-// See issue #71 - Remove console.log/warn/error statements
-
 // Mock logger before importing the module
 jest.mock('@/lib/utils/logger', () => ({
   __esModule: true,
@@ -30,7 +26,7 @@ import logger from '@/lib/utils/logger';
 // Mock fetch globally
 globalThis.fetch = jest.fn();
 
-describe.skip('tokenRefreshScheduler', () => {
+describe('tokenRefreshScheduler', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.clearAllTimers();
@@ -103,8 +99,8 @@ describe.skip('tokenRefreshScheduler', () => {
       await scheduleTokenRefresh();
 
       expect(loggerErrorMock).toHaveBeenCalledWith(
-        'Error scheduling token refresh:',
-        expect.any(Error)
+        { error: expect.any(Error) },
+        'Error scheduling token refresh'
       );
       expect(jest.getTimerCount()).toBe(0);
       
@@ -189,7 +185,10 @@ describe.skip('tokenRefreshScheduler', () => {
       await scheduleTokenRefresh(60);
       await jest.advanceTimersByTimeAsync(60000);
 
-      expect(loggerErrorMock).toHaveBeenCalledWith('Token refresh failed:', 401, 'Unauthorized');
+      expect(loggerErrorMock).toHaveBeenCalledWith(
+        { status: 401, statusText: 'Unauthorized' },
+        'Token refresh failed'
+      );
       expect(loggerErrorMock).toHaveBeenCalledWith(
         'Proactive refresh failed, user may be logged out on next request'
       );
@@ -264,7 +263,7 @@ describe.skip('tokenRefreshScheduler', () => {
       cancelTokenRefresh();
       
       // Ne devrait pas logger si rien n'était actif
-      expect(consoleLogSpy).not.toHaveBeenCalled();
+      expect(loggerInfoMock).not.toHaveBeenCalled();
       
       loggerDebugMock.mockClear();
       loggerInfoMock.mockClear();
