@@ -364,7 +364,7 @@ function TreeNode({
               e.stopPropagation();
               onAddChild(unit);
             }}
-            className="h-7 w-7 p-0"
+            className="p-0"
             title="Ajouter une sous-unité"
             {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeAddChildButton)}
           >
@@ -377,7 +377,7 @@ function TreeNode({
               e.stopPropagation();
               onEdit(unit);
             }}
-            className="h-7 w-7 p-0"
+            className="p-0"
             title="Modifier"
             {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeEditButton)}
           >
@@ -390,7 +390,7 @@ function TreeNode({
               e.stopPropagation();
               onDelete(unit.id);
             }}
-            className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+            className="p-0 text-destructive hover:text-destructive"
             title="Supprimer"
             {...testId(ORGANIZATION_TREE_TEST_IDS.treeNodeDeleteButton)}
           >
@@ -995,7 +995,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                             onClick={() => handleEditPosition(position)}
                             {...testId(ORGANIZATION_TREE_TEST_IDS.positionEditButton)}
                           >
-                            <Edit className="h-3 w-3 mr-1" />
+                            <Edit className={`${ICON_SIZES.xs} mr-1`} />
                             {dictionary.positions.edit}
                           </Button>
                           <Button
@@ -1005,7 +1005,7 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
                             onClick={() => handleDeletePosition(position.id)}
                             {...testId(ORGANIZATION_TREE_TEST_IDS.positionDeleteButton)}
                           >
-                            <Trash2 className="h-3 w-3 mr-1" />
+                            <Trash2 className={`${ICON_SIZES.xs} mr-1`} />
                             {dictionary.positions.delete}
                           </Button>
                         </div>
