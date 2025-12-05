@@ -102,6 +102,15 @@ const mockRolesDictionary = {
   search_placeholder: "Rechercher...",
   add_association: "Ajouter",
   remove_association: "Retirer",
+  errors: {
+    network: 'Erreur réseau',
+    unauthorized: 'Non autorisé',
+    forbidden: 'Accès interdit',
+    notFound: 'Ressource introuvable',
+    serverError: 'Erreur serveur',
+    clientError: 'Erreur client',
+    unknown: 'Erreur inconnue',
+  },
 };
 
 describe('RolesV2 Component', () => {
