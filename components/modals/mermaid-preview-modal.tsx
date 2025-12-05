@@ -50,6 +50,7 @@ type MermaidPreviewModalProps = {
     mermaid_download: string;
     mermaid_loading: string;
     mermaid_error: string;
+    mermaid_no_diagram: string;
     errors: ErrorMessages;
   };
 };
@@ -481,7 +482,7 @@ export default function MermaidPreviewModal({
             )}
             {!isLoading && !error && !svgContent && (
               <div className="flex items-center justify-center h-full min-h-[400px]">
-                <p className="text-sm text-muted-foreground">No diagram</p>
+                <p className="text-sm text-muted-foreground">{dictionary.mermaid_no_diagram}</p>
               </div>
             )}
           </div>

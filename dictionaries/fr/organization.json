@@ -27,7 +27,8 @@
   "mermaid_mindmap": "Carte mentale",
   "mermaid_download": "Télécharger PNG",
   "mermaid_loading": "Génération du diagramme...",
-  "mermaid_error": "Erreur de génération du diagramme",
+  "mermaid_error": "Erreur lors de la génération du diagramme",
+  "mermaid_no_diagram": "Aucun diagramme",
   "actions": {
     "add_root": "Ajouter une unité",
     "add_child": "Ajouter sous-unité",

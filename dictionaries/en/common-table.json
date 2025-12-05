@@ -23,5 +23,11 @@
   "confirm_delete": "Are you sure you want to delete this item?",
   "confirm_delete_title": "Confirm Deletion",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "clear_filter": "Clear filter",
+  "clear_selection": "Clear selection",
+  "more_pages": "More pages",
+  "previous_slide": "Previous slide",
+  "next_slide": "Next slide",
+  "no_diagram": "No diagram"
 }
