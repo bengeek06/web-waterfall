@@ -44,6 +44,8 @@ export function useZodForm<T extends FieldValues>({
 }: UseZodFormProps<T>): UseFormReturn<T> {
   return useForm<T>({
     ...formConfig,
+    // Type assertion needed due to @hookform/resolvers zodResolver type incompatibility with Zod v3
+    // The resolver works correctly at runtime, type mismatch is a known issue
     resolver: zodResolver(schema as any),
-  }) as UseFormReturn<T>;
+  });
 }

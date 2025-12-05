@@ -66,6 +66,13 @@ type Position = {
   description?: string;
 };
 
+type UserRole = {
+  id: string | number;
+  user_id: string | number;
+  role_id?: string | number;
+  role?: Role;
+};
+
 type User = {
   id: string | number;
   email: string;
@@ -78,7 +85,7 @@ type User = {
   has_avatar?: boolean;
   position_id?: string;
   position?: Position;
-  roles?: Role[];
+  roles?: UserRole[];
   last_login_at?: string;
   created_at?: string;
 };
@@ -297,8 +304,7 @@ function createUsersColumns(
         // UserRoles are junction objects: { id: junction_id, user_id, role_id, role: { id, name } }
         // We need to compare with role_id or role.id, not the junction id
         return userRoles.some(userRole => {
-          const roleId = (userRole as { role_id?: string | number; role?: { id: string | number } }).role_id 
-            ?? (userRole as { role?: { id: string | number } }).role?.id;
+          const roleId = userRole.role_id ?? userRole.role?.id;
           return filterValue.includes(String(roleId));
         });
       },
@@ -579,8 +585,8 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
 
 
   // Transform form data to API payload (add position_id)
-  const transformFormData = (data: UserFormData): Partial<User> => {
-    const payload: Partial<User> = {
+  const transformFormData = (data: UserFormData): Partial<User> & { password?: string } => {
+    const payload: Partial<User> & { password?: string } = {
       email: data.email,
       first_name: data.first_name || undefined,
       last_name: data.last_name || undefined,
@@ -596,7 +602,7 @@ export default function UsersV2({ dictionary }: { readonly dictionary: UsersDict
     
     // Add password only for creation (when it's provided)
     if (data.password) {
-      (payload as Record<string, unknown>).password = data.password;
+      payload.password = data.password;
     }
     
     return payload;
