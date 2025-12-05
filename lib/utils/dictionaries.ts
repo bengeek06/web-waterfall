@@ -61,6 +61,7 @@ import subcontractors_fr from '../../dictionaries/fr/subcontractors.json';
 import customers_fr from '../../dictionaries/fr/customers.json';
 import logoUpload_fr from '../../dictionaries/fr/logo-upload.json';
 import about_fr from '../../dictionaries/fr/about.json';
+import breadcrumb_fr from '../../dictionaries/fr/breadcrumb.json';
 
 import common_en from '../../dictionaries/en/common.json';
 import navigation_en from '../../dictionaries/en/navigation.json';
@@ -81,6 +82,7 @@ import subcontractors_en from '../../dictionaries/en/subcontractors.json';
 import customers_en from '../../dictionaries/en/customers.json';
 import logoUpload_en from '../../dictionaries/en/logo-upload.json';
 import about_en from '../../dictionaries/en/about.json';
+import breadcrumb_en from '../../dictionaries/en/breadcrumb.json';
 
 export type Locale = 'fr' | 'en';
 
@@ -106,6 +108,7 @@ const dictionaries = {
     customers: customers_fr,
     logo_upload: logoUpload_fr,
     about: about_fr,
+    breadcrumb: breadcrumb_fr,
   },
   en: {
     ...common_en,
@@ -127,6 +130,7 @@ const dictionaries = {
     customers: customers_en,
     logo_upload: logoUpload_en,
     about: about_en,
+    breadcrumb: breadcrumb_en,
   },
 } as const;
 

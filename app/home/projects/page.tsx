@@ -1,27 +1,17 @@
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
+
   return (
     <main>
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <span>Projets</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      <PageBreadcrumb
+        pathname="/home/projects"
+        dictionary={dictionary.breadcrumb}
+      />
       {/* Page projets vide */}
     </main>
   );

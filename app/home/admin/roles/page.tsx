@@ -1,12 +1,6 @@
 import Roles from "@/components/pages/RolesV2";
 import Policies from "@/components/pages/PoliciesV2";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { getDictionary } from "@/lib/utils/dictionaries";
 import { getUserLanguage } from "@/lib/utils/locale";
 
@@ -16,23 +10,14 @@ export default async function RolesAdminPage() {
   
   return (
     <div className="p-6 space-y-10">
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home/admin">Administration</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <span>{dictionary.roles.page_title}</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      <PageBreadcrumb
+        pathname="/home/admin/roles"
+        dictionary={dictionary.breadcrumb}
+        siblings={[
+          { label: dictionary.breadcrumb.users, href: "/home/admin/users" },
+          { label: dictionary.breadcrumb.roles, href: "/home/admin/roles" },
+        ]}
+      />
       <Roles dictionary={{ ...dictionary.roles, errors: dictionary.errors }} />
       <Policies dictionary={{ ...dictionary.policies, errors: dictionary.errors }} />
     </div>

@@ -1,0 +1,13 @@
+{
+  "home": "Accueil",
+  "admin": "Administration",
+  "users": "Utilisateurs",
+  "roles": "Rôles",
+  "settings": "Paramètres",
+  "company": "Entreprise",
+  "organization": "Organisation",
+  "customers": "Clients",
+  "subcontractors": "Sous-traitants",
+  "projects": "Projets",
+  "workspace": "Espace de travail"
+}

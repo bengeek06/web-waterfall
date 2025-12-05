@@ -28,6 +28,7 @@ export * from './settings';
 export * from './file-explorer';
 export * from './organization-tree';
 export * from './profile';
+export * from './page-breadcrumb';
 
 // Re-export helper function
 export { testId } from './auth';
@@ -47,6 +48,7 @@ import { SETTINGS_TEST_IDS } from './settings';
 import { FILE_EXPLORER_TEST_IDS } from './file-explorer';
 import { ORGANIZATION_TREE_TEST_IDS } from './organization-tree';
 import { PROFILE_TEST_IDS } from './profile';
+import { PAGE_BREADCRUMB_TEST_IDS } from './page-breadcrumb';
 
 export const TEST_IDS = {
   auth: AUTH_TEST_IDS,
@@ -63,4 +65,5 @@ export const TEST_IDS = {
   fileExplorer: FILE_EXPLORER_TEST_IDS,
   organizationTree: ORGANIZATION_TREE_TEST_IDS,
   profile: PROFILE_TEST_IDS,
+  pageBreadcrumb: PAGE_BREADCRUMB_TEST_IDS,
 } as const;

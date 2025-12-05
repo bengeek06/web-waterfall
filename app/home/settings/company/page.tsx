@@ -9,13 +9,7 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import Company from "@/components/pages/Company";
 import { getDictionary } from "@/lib/utils/dictionaries";
 import { getLocale } from "@/lib/utils/locale";
@@ -38,23 +32,16 @@ export default async function CompanyInfoPage() {
 
   return (
     <main>
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home/settings">Paramètres</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <span>Informations de l&apos;entreprise</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      <PageBreadcrumb
+        pathname="/home/settings/company"
+        dictionary={dict.breadcrumb}
+        siblings={[
+          { label: dict.breadcrumb.company, href: "/home/settings/company" },
+          { label: dict.breadcrumb.customers, href: "/home/settings/customers" },
+          { label: dict.breadcrumb.subcontractors, href: "/home/settings/subcontractors" },
+          { label: dict.breadcrumb.organization, href: "/home/settings/organization" },
+        ]}
+      />
       <div className="max-w-4xl mx-auto">
         <Company companyId={companyId} dictionary={dict.company} />
       </div>
