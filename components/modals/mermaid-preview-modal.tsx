@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Download, Loader2 } from "lucide-react";
 import { ICON_SIZES } from "@/lib/design-tokens";
+import logger from '@/lib/utils/logger';
 
 type DiagramType = "flowchart" | "graph" | "mindmap";
 
@@ -80,7 +81,7 @@ export default function MermaidPreviewModal({
     const preview = previewRef.current;
     const svgElement = preview.querySelector('svg');
     if (!svgElement) {
-      console.log('No SVG element found');
+      logger.debug('No SVG element found');
       return;
     }
     

@@ -18,6 +18,7 @@ import {
   checkPermissions 
 } from '@/lib/utils/permissions';
 import { fetchWithAuth } from '@/lib/auth/fetchWithAuth';
+import logger from '@/lib/utils/logger';
 
 interface UsePermissionsReturn {
   permissions: Permission[];
@@ -101,7 +102,7 @@ export function usePermissions(): UsePermissionsReturn {
       } catch (err) {
         setError(err instanceof Error ? err : new Error(String(err)));
         // En cas d'erreur, on ne bloque pas l'UI mais on log
-        console.error('Error fetching permissions:', err);
+        logger.error({ err }, 'Error fetching permissions');
         setPermissions([]);
       } finally {
         setLoading(false);

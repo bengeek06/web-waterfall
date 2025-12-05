@@ -13,6 +13,7 @@
 
 import { useState, useEffect } from "react";
 import type { Permission } from "@/lib/utils/permissions";
+import logger from '@/lib/utils/logger';
 
 interface UseAvailablePermissionsResult {
   availablePermissions: Permission[];
@@ -71,7 +72,7 @@ export function useAvailablePermissions(): UseAvailablePermissionsResult {
       
       setAvailablePermissions(permissions);
     } catch (err) {
-      console.error("Erreur lors du chargement des permissions disponibles:", err);
+      logger.error({ err }, 'Erreur lors du chargement des permissions disponibles');
       setError(err instanceof Error ? err : new Error(String(err)));
     } finally {
       setLoading(false);

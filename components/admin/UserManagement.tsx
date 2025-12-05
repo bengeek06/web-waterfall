@@ -45,6 +45,7 @@ import { ICON_SIZES } from "@/lib/design-tokens";
 
 // Utils
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
+import logger from '@/lib/utils/logger';
 
 // ==================== TYPES ====================
 type UserManagementProps = {
@@ -160,7 +161,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
       // Le backend retourne {data: [...], pagination: {...}}
       const usersData = Array.isArray(data) ? data : (data.data || data.users || []);
       
-      console.log('📊 Users data:', { raw: data, normalized: usersData });
+      logger.debug({ raw: data, normalized: usersData }, '📊 Users data');
       
       // Fetch user roles and position for each user
       const usersWithRolesAndPosition = await Promise.all(
@@ -189,7 +190,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
                   ? allRolesData
                   : (allRolesData.roles || []);
                 
-                console.log('📊 Roles data:', { raw: allRolesData, normalized: allRoles });
+                logger.debug({ raw: allRolesData, normalized: allRoles }, '📊 Roles data');
                 
                 roles = userRoles
                   .map((ur: { role_id: string }) => {
@@ -198,7 +199,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
                   })
                   .filter((r: { id: string; name: string } | null): r is { id: string; name: string } => r !== null);
               } else if (rolesRes.status === 404) {
-                console.warn('⚠️ Guardian /roles endpoint not found (404) - roles will be empty');
+                logger.warn('⚠️ Guardian /roles endpoint not found (404) - roles will be empty');
               }
             }
             
@@ -212,13 +213,13 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
                   position = { id: positionData.id, title: positionData.title };
                 }
               } catch (error) {
-                console.error(`Error fetching position for user ${user.id}:`, error);
+                logger.error({ error, userId: user.id }, `Error fetching position for user`);
               }
             }
             
             return { ...user, roles, position };
           } catch (error) {
-            console.error(`Error fetching roles/position for user ${user.id}:`, error);
+            logger.error({ error, userId: user.id }, `Error fetching roles/position for user`);
             return { ...user, roles: [], position: undefined };
           }
         })
@@ -377,7 +378,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
       a.remove();
       globalThis.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Export error:', err);
+      logger.error({ err }, 'Export error');
       toast.error(dictionary.error_export);
     }
   }
@@ -519,7 +520,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
         setIsImportReportOpen(true);
         fetchUsers();
       } catch (err) {
-        console.error('Import error:', err);
+        logger.error({ err }, 'Import error');
         toast.error(dictionary.error_import + ': ' + err);
       }
     };

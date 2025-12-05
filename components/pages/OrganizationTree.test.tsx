@@ -9,18 +9,8 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-// @ts-nocheck
-
-describe.skip('OrganizationTree', () => {
-  // Skipped due to mermaid import issues in Jest environment
-  it('placeholder', () => {
-    expect(true).toBe(true);
-  });
-});
-
-/*
 import { render, screen, waitFor } from '@testing-library/react';
-import OrganizationTree from './organization-tree';
+import OrganizationTree from './OrganizationTree';
 
 // Mock next/navigation
 jest.mock('next/navigation', () => ({
@@ -32,6 +22,12 @@ jest.mock('@/lib/auth/fetchWithAuth', () => ({
   fetchWithAuth: jest.fn(),
 }));
 
+// Mock MermaidPreviewModal to avoid mermaid import issues in Jest
+jest.mock('@/components/modals/mermaid-preview-modal', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mermaid-modal">Mermaid Modal</div>,
+}));
+
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
   Building2: () => <div data-testid="building-icon">Building Icon</div>,
@@ -40,6 +36,10 @@ jest.mock('lucide-react', () => ({
   Plus: () => <div data-testid="plus-icon">Plus</div>,
   Edit: () => <div data-testid="edit-icon">Edit</div>,
   Trash2: () => <div data-testid="trash-icon">Trash</div>,
+  Download: () => <div data-testid="download-icon">Download</div>,
+  Upload: () => <div data-testid="upload-icon">Upload</div>,
+  Image: () => <div data-testid="image-icon">Image</div>,
+  Eye: () => <div data-testid="eye-icon">Eye</div>,
 }));
 
 const mockRouter = {
@@ -105,17 +105,27 @@ const mockDictionary = {
     confirm_delete_unit: 'Supprimer cette unité ?',
     confirm_delete_position: 'Supprimer cette position ?',
   },
+  errors: {
+    network: 'Erreur réseau. Vérifiez votre connexion.',
+    unauthorized: 'Non autorisé',
+    forbidden: 'Accès interdit',
+    notFound: 'Ressource introuvable',
+    serverError: 'Erreur serveur',
+    clientError: 'Erreur client',
+    unknown: 'Erreur inconnue',
+  },
 };
 
-describe('OrganizationTree Component', () => {
-  const { fetchWithAuth } = require('@/lib/auth/fetchWithAuth');
+const { fetchWithAuth } = require('@/lib/auth/fetchWithAuth');
+const { useRouter } = require('next/navigation');
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (fetchWithAuth as jest.Mock).mockClear();
-    (require('next/navigation').useRouter as jest.Mock).mockReturnValue(mockRouter);
-  });
+beforeEach(() => {
+  jest.clearAllMocks();
+  (fetchWithAuth as jest.Mock).mockClear();
+  (useRouter as jest.Mock).mockReturnValue(mockRouter);
+});
 
+describe('OrganizationTree', () => {
   describe('Rendering', () => {
     it('should render the component with title', async () => {
       (fetchWithAuth as jest.Mock).mockResolvedValueOnce({
@@ -181,4 +191,4 @@ describe('OrganizationTree Component', () => {
     });
   });
 });
-*/
+

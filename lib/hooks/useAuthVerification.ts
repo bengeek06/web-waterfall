@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { AUTH_ROUTES } from "@/lib/api-routes";
+import logger from '@/lib/utils/logger';
 
 /**
  * Hook pour vérifier la validité du token JWT au chargement
@@ -49,7 +50,7 @@ export function useAuthVerification() {
         const initCheckGuardian = await fetch("/api/guardian/init-app", { cache: "no-store" });
         
         if (!initCheckIdentity.ok || !initCheckGuardian.ok) {
-          console.warn("Cannot check initialization status");
+          logger.warn('Cannot check initialization status');
           router.push("/");
           return;
         }
@@ -59,7 +60,7 @@ export function useAuthVerification() {
 
         // Si l'application n'est pas initialisée, rediriger vers /init-app
         if (!dataIdentity.initialized || !dataGuardian.initialized) {
-          console.log("Application not initialized, redirecting to /init-app");
+          logger.info('Application not initialized, redirecting to /init-app');
           router.push("/init-app");
           return;
         }
@@ -76,11 +77,11 @@ export function useAuthVerification() {
           setIsVerifying(false);
         } else {
           // Si la requête échoue malgré la tentative de refresh, rediriger vers login
-          console.warn("Authentication verification failed, redirecting to login");
+          logger.warn('Authentication verification failed, redirecting to login');
           router.push("/login");
         }
       } catch (error) {
-        console.error("Error during authentication verification:", error);
+        logger.error({ error }, 'Error during authentication verification');
         router.push("/login");
       }
     }
