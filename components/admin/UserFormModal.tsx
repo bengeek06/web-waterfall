@@ -47,6 +47,7 @@ import { COLOR_CLASSES, SPACING, ICON_SIZES } from "@/lib/design-tokens";
 
 // Utils
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
+import logger from '@/lib/utils/logger';
 
 // Types
 export type User = {
@@ -155,7 +156,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           setAvailableRoles(Array.isArray(roles) ? roles : []);
         }
       } catch (error) {
-        console.error("Error loading roles:", error);
+        logger.error({ error }, 'Error loading roles');
       } finally {
         setIsLoadingRoles(false);
       }
@@ -174,7 +175,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
           setAvailablePositions(Array.isArray(positions) ? positions : []);
         }
       } catch (error) {
-        console.error("Error loading positions:", error);
+        logger.error({ error }, 'Error loading positions');
       } finally {
         setIsLoadingPositions(false);
       }
@@ -340,7 +341,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error('Server error response:', res.status, errorData); // Debug log
+        logger.debug({ status: res.status, errorData }, 'Server error response');
         
         // Handle backend validation errors with field-specific messages
         if (errorData.errors && typeof errorData.errors === 'object') {
@@ -376,7 +377,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error submitting user form:", error);
+      logger.error({ error }, 'Error submitting user form');
       setServerError(dictionary.errors.save_failed);
       setIsSubmitting(false);
     }
@@ -387,7 +388,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
       // Get existing user roles
       const existingRolesRes = await fetchWithAuth(GUARDIAN_ROUTES.userRoles);
       if (!existingRolesRes.ok) {
-        console.error("Failed to fetch existing user roles");
+        logger.error('Failed to fetch existing user roles');
         return;
       }
 
@@ -423,7 +424,7 @@ export function UserFormModal({ user, isOpen, onClose, onSuccess, dictionary }: 
         });
       }
     } catch (error) {
-      console.error("Error managing user roles:", error);
+      logger.error({ error }, 'Error managing user roles');
       // Don't throw - we don't want to block the user creation/update
     }
   };

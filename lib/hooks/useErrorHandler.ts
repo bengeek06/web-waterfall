@@ -14,6 +14,7 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { HttpError, HttpErrorType } from '@/lib/client/retryWithBackoff';
+import logger from '@/lib/utils/logger';
 
 export interface ErrorMessages {
   network: string;
@@ -117,7 +118,7 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
     }
 
     // Logger l'erreur pour le debugging
-    console.error('[ErrorHandler]', httpError.type, httpError.status, httpError.message);
+    logger.error({ type: httpError.type, status: httpError.status, message: httpError.message }, '[ErrorHandler]');
 
     // Action personnalisée
     if (onError) {

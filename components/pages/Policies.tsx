@@ -28,6 +28,7 @@ import { COLOR_CLASSES, ICON_SIZES } from "@/lib/design-tokens";
 import { useZodForm } from "@/lib/hooks";
 import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { policySchema, type PolicyFormData } from "@/lib/validation";
+import logger from '@/lib/utils/logger';
 
 // ==================== TYPES ====================
 type PoliciesDictionary = {
@@ -172,7 +173,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
               GUARDIAN_ROUTES.policyPermissions(policy.id.toString())
             );
             if (!policyPermsRes.ok) {
-              console.warn(`Failed to fetch permissions for policy ${policy.id}`);
+              logger.warn({ policyId: policy.id }, `Failed to fetch permissions for policy`);
               return { ...policy, permissions: [] };
             }
             const policyPermsData = await policyPermsRes.json();
@@ -181,7 +182,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
               : policyPermsData?.permissions || [];
             return { ...policy, permissions };
           } catch (err) {
-            console.warn(`Error fetching permissions for policy ${policy.id}:`, err);
+            logger.warn({ err, policyId: policy.id }, `Error fetching permissions for policy`);
             return { ...policy, permissions: [] };
           }
         })
@@ -241,7 +242,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
 
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("Policy submit error:", errorText);
+        logger.error({ status: res.status, errorText }, 'Policy submit error');
         throw new Error(editingPolicy ? dictionary.error_update : dictionary.error_create);
       }
 
@@ -333,7 +334,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       );
       fetchData();
     } catch (err) {
-      console.error("Error deleting permission group:", err);
+      logger.error({ err }, 'Error deleting permission group');
       handleError(err);
     }
   }, [fetchData, handleError]);
@@ -367,7 +368,7 @@ export default function Policies({ dictionary }: { readonly dictionary: Policies
       setShowPermissionDialog(false);
       fetchData();
     } catch (err) {
-      console.error("Error adding permissions:", err);
+      logger.error({ err }, 'Error adding permissions');
       handleError(err);
     }
   };

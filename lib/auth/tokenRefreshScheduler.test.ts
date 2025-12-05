@@ -9,7 +9,19 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
+// Mock logger before importing the module
+jest.mock('@/lib/utils/logger', () => ({
+  __esModule: true,
+  default: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
 import { scheduleTokenRefresh, cancelTokenRefresh, initTokenRefresh } from './tokenRefreshScheduler';
+import logger from '@/lib/utils/logger';
 
 // Mock fetch globally
 globalThis.fetch = jest.fn();
@@ -46,7 +58,7 @@ describe('tokenRefreshScheduler', () => {
 
     it('should not schedule if token info request fails', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const loggerWarnMock = logger.warn as jest.Mock;
       
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -55,15 +67,15 @@ describe('tokenRefreshScheduler', () => {
 
       await scheduleTokenRefresh();
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Cannot get token info, refresh not scheduled');
+      expect(loggerWarnMock).toHaveBeenCalledWith('Cannot get token info, refresh not scheduled');
       expect(jest.getTimerCount()).toBe(0);
       
-      consoleWarnSpy.mockRestore();
+      loggerWarnMock.mockClear();
     });
 
     it('should not schedule if token is already expired', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const loggerWarnMock = logger.warn as jest.Mock;
       
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -72,27 +84,27 @@ describe('tokenRefreshScheduler', () => {
 
       await scheduleTokenRefresh();
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Token expired, cannot schedule refresh');
+      expect(loggerWarnMock).toHaveBeenCalledWith('Token expired, cannot schedule refresh');
       expect(jest.getTimerCount()).toBe(0);
       
-      consoleWarnSpy.mockRestore();
+      loggerWarnMock.mockClear();
     });
 
     it('should handle fetch errors gracefully', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const loggerErrorMock = logger.error as jest.Mock;
       
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       await scheduleTokenRefresh();
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error scheduling token refresh:',
-        expect.any(Error)
+      expect(loggerErrorMock).toHaveBeenCalledWith(
+        { error: expect.any(Error) },
+        'Error scheduling token refresh'
       );
       expect(jest.getTimerCount()).toBe(0);
       
-      consoleErrorSpy.mockRestore();
+      loggerErrorMock.mockClear();
     });
 
     it('should cancel previous timer before scheduling new one', async () => {
@@ -113,7 +125,8 @@ describe('tokenRefreshScheduler', () => {
 
     it('should trigger refresh at the right time', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const loggerDebugMock = logger.debug as jest.Mock;
+      const loggerInfoMock = logger.info as jest.Mock;
       
       // Premier appel : récupérer les infos du token
       mockFetch.mockResolvedValueOnce({
@@ -144,15 +157,17 @@ describe('tokenRefreshScheduler', () => {
         credentials: 'include',
       });
       
-      expect(consoleLogSpy).toHaveBeenCalledWith('Proactive token refresh triggered');
+      expect(loggerDebugMock).toHaveBeenCalledWith('Proactive token refresh triggered');
       
-      consoleLogSpy.mockRestore();
+      loggerDebugMock.mockClear();
+      loggerInfoMock.mockClear();
     });
 
     it('should log error if refresh fails', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+      const loggerDebugMock = logger.debug as jest.Mock;
+      const loggerInfoMock = logger.info as jest.Mock;
+      const loggerErrorMock = logger.error as jest.Mock;
       
       // Premier appel : récupérer les infos du token
       mockFetch.mockResolvedValueOnce({
@@ -170,18 +185,23 @@ describe('tokenRefreshScheduler', () => {
       await scheduleTokenRefresh(60);
       await jest.advanceTimersByTimeAsync(60000);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Token refresh failed:', 401, 'Unauthorized');
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(loggerErrorMock).toHaveBeenCalledWith(
+        { status: 401, statusText: 'Unauthorized' },
+        'Token refresh failed'
+      );
+      expect(loggerErrorMock).toHaveBeenCalledWith(
         'Proactive refresh failed, user may be logged out on next request'
       );
       
-      consoleLogSpy.mockRestore();
-      consoleErrorSpy.mockRestore();
+      loggerDebugMock.mockClear();
+      loggerInfoMock.mockClear();
+      loggerErrorMock.mockClear();
     });
 
     it('should reschedule after successful refresh', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const loggerDebugMock = logger.debug as jest.Mock;
+      const loggerInfoMock = logger.info as jest.Mock;
       
       // Premier appel : récupérer les infos du token initial
       mockFetch.mockResolvedValueOnce({
@@ -208,14 +228,16 @@ describe('tokenRefreshScheduler', () => {
       expect(mockFetch).toHaveBeenCalledTimes(3);
       expect(jest.getTimerCount()).toBe(1); // Un nouveau timer a été créé
       
-      consoleLogSpy.mockRestore();
+      loggerDebugMock.mockClear();
+      loggerInfoMock.mockClear();
     });
   });
 
   describe('cancelTokenRefresh', () => {
     it('should cancel scheduled refresh', async () => {
       const mockFetch = globalThis.fetch as jest.Mock;
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const loggerDebugMock = logger.debug as jest.Mock;
+      const loggerInfoMock = logger.info as jest.Mock;
       
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -228,20 +250,23 @@ describe('tokenRefreshScheduler', () => {
       cancelTokenRefresh();
       
       expect(jest.getTimerCount()).toBe(0);
-      expect(consoleLogSpy).toHaveBeenCalledWith('Token refresh cancelled');
+      expect(loggerInfoMock).toHaveBeenCalledWith('Token refresh cancelled');
       
-      consoleLogSpy.mockRestore();
+      loggerDebugMock.mockClear();
+      loggerInfoMock.mockClear();
     });
 
     it('should handle cancel when no timer is active', () => {
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      const loggerDebugMock = logger.debug as jest.Mock;
+      const loggerInfoMock = logger.info as jest.Mock;
       
       cancelTokenRefresh();
       
       // Ne devrait pas logger si rien n'était actif
-      expect(consoleLogSpy).not.toHaveBeenCalled();
+      expect(loggerInfoMock).not.toHaveBeenCalled();
       
-      consoleLogSpy.mockRestore();
+      loggerDebugMock.mockClear();
+      loggerInfoMock.mockClear();
     });
   });
 

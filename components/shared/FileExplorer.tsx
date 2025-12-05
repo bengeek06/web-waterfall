@@ -58,6 +58,7 @@ import { Label } from "@/components/ui/label";
 
 import { STORAGE_ROUTES } from "@/lib/api-routes/storage";
 import { FILE_EXPLORER_TEST_IDS, testId } from "@/lib/test-ids";
+import logger from '@/lib/utils/logger';
 
 // ==================== TYPES ====================
 
@@ -331,7 +332,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
       }
       
       const responseData = await res.json();
-      console.log("Folder created:", responseData);
+      logger.debug({ responseData }, 'Folder created');
 
       setShowCreateFolderDialog(false);
       setNewFolderName("");

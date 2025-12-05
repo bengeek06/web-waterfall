@@ -13,6 +13,7 @@ import { useState, useCallback, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { getServiceRoute } from "@/lib/api-routes";
 import type { BaseItem, UseAssociationsOptions, UseAssociationsReturn } from "./types";
+import logger from '@/lib/utils/logger';
 
 /**
  * Convert plural name to singular
@@ -94,7 +95,7 @@ export function useAssociations<TAssociated extends BaseItem = BaseItem>({
       
       return items as TAssociated[];
     } catch (err) {
-      console.error(`Error fetching all ${config.name}:`, err);
+      logger.error({ err, name: config.name }, `Error fetching all items`);
       throw err;
     }
   }, [config.service, config.path, config.name]);
@@ -115,14 +116,14 @@ export function useAssociations<TAssociated extends BaseItem = BaseItem>({
         }
         
         if (!response.ok) {
-          console.warn(`Failed to fetch ${config.name} for id ${id}: ${response.status}`);
+          logger.warn({ id, name: config.name, status: response.status }, `Failed to fetch items for id`);
           return [];
         }
         
         const data = await response.json();
         return (Array.isArray(data) ? data : (data[config.name] || [])) as TAssociated[];
       } catch (err) {
-        console.error(`Error fetching ${config.name} for id ${id}:`, err);
+        logger.error({ err, id, name: config.name }, `Error fetching items for id`);
         return [];
       }
     } else if (config.type === "one-to-many" && config.foreignKey) {
@@ -198,7 +199,7 @@ export function useAssociations<TAssociated extends BaseItem = BaseItem>({
     
     const failed = results.filter(r => !r.success);
     if (failed.length > 0) {
-      console.warn(`Failed to add some ${config.name}:`, failed.map(f => f.itemId));
+      logger.warn({ failedIds: failed.map(f => f.itemId), name: config.name }, `Failed to add some items`);
     }
     
     // Refresh to get updated data
@@ -236,7 +237,7 @@ export function useAssociations<TAssociated extends BaseItem = BaseItem>({
       // Update local state optimistically
       setAssociatedItems(prev => prev.filter(item => item.id !== itemId));
     } catch (err) {
-      console.error(`Error removing ${config.name}:`, err);
+      logger.error({ err, name: config.name }, `Error removing item`);
       throw err;
     }
   }, [parentId, config, buildJunctionUrl]);

@@ -12,6 +12,7 @@
 "use client";
 
 import { retryWithBackoff, classifyError, HttpErrorType } from '@/lib/client/retryWithBackoff';
+import logger from '@/lib/utils/logger';
 
 // État partagé pour éviter les refreshs multiples simultanés
 let isRefreshing = false;
@@ -32,14 +33,14 @@ async function refreshToken(): Promise<boolean> {
         maxRetries: 2,
         initialDelay: 500,
         onRetry: (attempt, delay) => {
-          console.log(`Token refresh retry attempt ${attempt} in ${delay}ms`);
+          logger.debug({ attempt, delay }, `Token refresh retry attempt ${attempt} in ${delay}ms`);
         }
       }
     );
 
     if (!response.ok) {
       const error = classifyError(response);
-      console.error('Token refresh failed:', error.type, error.status);
+      logger.error({ errorType: error.type, status: error.status }, 'Token refresh failed');
       return false;
     }
 
@@ -47,15 +48,15 @@ async function refreshToken(): Promise<boolean> {
     
     // Le refresh est réussi si on a un message ou access_token
     if (data.message || data.access_token) {
-      console.log('Token refreshed successfully');
+      logger.info('Token refreshed successfully');
       return true;
     }
     
-    console.error('Token refresh returned unexpected response');
+    logger.error('Token refresh returned unexpected response');
     return false;
   } catch (error) {
     const httpError = error instanceof Error ? classifyError(error) : undefined;
-    console.error('Error refreshing token:', httpError?.type || error);
+    logger.error({ errorType: httpError?.type, error }, 'Error refreshing token');
     return false;
   }
 }
@@ -170,7 +171,7 @@ export async function fetchWithAuth(
     },
     onRetry: (attempt, delay, error) => {
       const httpError = classifyError(error);
-      console.warn(`Request retry attempt ${attempt} in ${delay}ms (${httpError.type})`);
+      logger.warn({ attempt, delay, errorType: httpError.type }, `Request retry attempt ${attempt} in ${delay}ms`);
     }
   });
 }

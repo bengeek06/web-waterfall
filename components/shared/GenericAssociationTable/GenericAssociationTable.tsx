@@ -88,6 +88,7 @@ import { useErrorHandler } from "@/lib/hooks/useErrorHandler";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { getServiceRoute } from "@/lib/api-routes";
 import { testId } from "@/lib/test-ids";
+import logger from '@/lib/utils/logger';
 
 // Types
 import type { BaseItem, AssociationConfig, GenericAssociationTableProps } from "./types";
@@ -519,7 +520,7 @@ export function GenericAssociationTable<
             requestBody = { [bodyField]: itemId };
           }
           
-          console.log(`[DEBUG] POST to ${url} with body:`, requestBody);
+          logger.debug({ url, requestBody }, `[DEBUG] POST request`);
           const response = await fetchWithAuth(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -532,9 +533,9 @@ export function GenericAssociationTable<
           }
           
           if (!response.ok) {
-            console.warn(`Failed to add ${selectedAssociation.name} ${itemId}`, await response.text());
+            logger.warn({ name: selectedAssociation.name, itemId, error: await response.text() }, `Failed to add item`);
           } else {
-            console.log(`[DEBUG] Successfully added ${selectedAssociation.name} ${itemId} to ${selectedItem.id}`);
+            logger.debug({ name: selectedAssociation.name, itemId, selectedItemId: selectedItem.id }, `[DEBUG] Successfully added item`);
           }
         })
       );

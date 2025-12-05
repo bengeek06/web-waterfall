@@ -14,6 +14,8 @@
  * Import from here to access all API endpoints
  */
 
+import logger from '@/lib/utils/logger';
+
 export * from './auth';
 export * from './identity';
 export * from './guardian';
@@ -53,7 +55,7 @@ export function getServiceRoute(service: string, path: string): string {
   const base = SERVICE_BASES[service];
   
   if (!base) {
-    console.warn(`Unknown service: ${service}, falling back to direct path`);
+    logger.warn({ service }, `Unknown service, falling back to direct path`);
     return path.startsWith('/') ? `/api/${service}${path}` : `/api/${service}/${path}`;
   }
   
