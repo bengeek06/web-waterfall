@@ -1,0 +1,13 @@
+{
+  "home": "Home",
+  "admin": "Administration",
+  "users": "Users",
+  "roles": "Roles",
+  "settings": "Settings",
+  "company": "Company",
+  "organization": "Organization",
+  "customers": "Customers",
+  "subcontractors": "Subcontractors",
+  "projects": "Projects",
+  "workspace": "Workspace"
+}

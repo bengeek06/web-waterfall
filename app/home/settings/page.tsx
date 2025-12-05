@@ -9,31 +9,21 @@
  * For commercial licensing inquiries, contact: benjamin@waterfall-project.pro
  */
 
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import SettingsCards from "@/components/cards/SettingsCards";
+import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
 
 export default async function SettingsPage() {
+  const userLanguage = await getUserLanguage();
+  const dictionary = await getDictionary(userLanguage);
+
   return (
     <main>
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <span>Paramètres</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      <PageBreadcrumb
+        pathname="/home/settings"
+        dictionary={dictionary.breadcrumb}
+      />
       <SettingsCards dictionary={{}} />
     </main>
   );

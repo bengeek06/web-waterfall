@@ -11,13 +11,20 @@
 
 import { FileExplorer } from "@/components/shared/FileExplorer";
 import { getDictionary } from "@/lib/utils/dictionaries";
+import { getUserLanguage } from "@/lib/utils/locale";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 
 export default async function WorkspacePage() {
-  const dict = await getDictionary("fr");
+  const userLanguage = await getUserLanguage();
+  const dict = await getDictionary(userLanguage);
   const { errors, ...workspaceDict } = dict.workspace;
 
   return (
     <div className="container mx-auto p-6">
+      <PageBreadcrumb
+        pathname="/home/workspace"
+        dictionary={dict.breadcrumb}
+      />
       <div className="mb-6">
         <h1 className="text-3xl font-bold">{dict.workspace.workspace}</h1>
         <p className="text-muted-foreground mt-2">{dict.workspace.workspace_description}</p>

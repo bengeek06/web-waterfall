@@ -1,13 +1,7 @@
 import React from "react";
 import { getDictionary } from "@/lib/utils/dictionaries";
 import { getUserLanguage } from "@/lib/utils/locale";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { AdminCards } from "@/components/cards/AdminCards";
 
 
@@ -17,19 +11,10 @@ export default async function AdminPage() {
     
   return (
     <div>
-      <div className="flex justify-center mb-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/home">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <span>Administration</span>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
+      <PageBreadcrumb
+        pathname="/home/admin"
+        dictionary={dictionary.breadcrumb}
+      />
       <AdminCards dictionary={dictionary.admin_page} />
     </div>
   );
