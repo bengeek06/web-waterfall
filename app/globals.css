@@ -77,6 +77,16 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
+  /* Toast notification colors */
+  --success: oklch(0.55 0.15 145); /* Vert */
+  --success-foreground: oklch(0.98 0.01 145);
+  --error: oklch(0.55 0.22 25); /* Rouge */
+  --error-foreground: oklch(0.98 0.01 25);
+  --warning: oklch(0.65 0.18 85); /* Jaune/Orange */
+  --warning-foreground: oklch(0.15 0.02 85);
+  --info: oklch(0.55 0.15 250); /* Bleu */
+  --info-foreground: oklch(0.98 0.01 250);
+
   /* Waterfall institutional colors */
   --waterfall-primary-dark: #2c3e50;    /* Bleu foncé institutionnel (header, boutons) */
   --waterfall-primary-hover: #1a252f;   /* Bleu très foncé (hover bouton) */
@@ -140,6 +150,16 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+
+  /* Toast notification colors - dark mode */
+  --success: oklch(0.6 0.17 145); /* Vert plus clair */
+  --success-foreground: oklch(0.98 0.01 145);
+  --error: oklch(0.65 0.24 25); /* Rouge plus clair */
+  --error-foreground: oklch(0.98 0.01 25);
+  --warning: oklch(0.7 0.2 85); /* Jaune/Orange plus clair */
+  --warning-foreground: oklch(0.15 0.02 85);
+  --info: oklch(0.6 0.17 250); /* Bleu plus clair */
+  --info-foreground: oklch(0.98 0.01 250);
 
   /* Waterfall institutional colors - dark mode adaptations */
   --waterfall-primary-dark: #4a5f7f;    /* Bleu plus clair en dark mode */
