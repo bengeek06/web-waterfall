@@ -95,7 +95,11 @@ import { ICON_SIZES, SPACING } from "@/lib/design-tokens";
 
 // ==================== TYPES ====================
 
-export interface GenericDataTableProps<T> {
+type WithId = {
+  id?: string | number;
+};
+
+export interface GenericDataTableProps<T extends WithId> {
   /** Column definitions */
   columns: ColumnDef<T>[];
   
@@ -202,7 +206,7 @@ export interface GenericDataTableProps<T> {
  * />
  * ```
  */
-export function GenericDataTable<T>({
+export function GenericDataTable<T extends WithId>({
   columns,
   data,
   isLoading = false,
@@ -312,8 +316,7 @@ export function GenericDataTable<T>({
     id: 'expand',
     header: '',
     cell: ({ row }) => {
-      const item = row.original as { id?: string | number };
-      const itemId = item.id;
+      const itemId = row.original.id;
       if (!itemId) return null;
       
       return (
@@ -399,7 +402,7 @@ export function GenericDataTable<T>({
     
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const selectedIds = selectedRows
-      .map(row => (row.original as { id?: string | number }).id)
+      .map(row => row.original.id)
       .filter((id): id is string | number => id !== undefined);
     
     if (selectedIds.length === 0) return;
@@ -591,8 +594,7 @@ export function GenericDataTable<T>({
               <>
                 {table.getRowModel().rows?.length ? (
                   table.getRowModel().rows.map((row) => {
-                    const item = row.original as { id?: string | number };
-                    const itemId = item.id;
+                    const itemId = row.original.id;
                     const isExpanded = enableRowExpansion && itemId && expanded[itemId];
                     
                     return (

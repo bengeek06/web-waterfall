@@ -81,6 +81,7 @@ const mockDictionary = {
   mermaid_download: 'Télécharger',
   mermaid_loading: 'Chargement...',
   mermaid_error: 'Erreur',
+  mermaid_no_diagram: 'Aucun diagramme',
   actions: {
     add_root: 'Ajouter une unité racine',
     add_child: 'Ajouter une sous-unité',
