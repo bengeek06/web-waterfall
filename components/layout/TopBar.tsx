@@ -61,7 +61,8 @@ export default async function TopBar() {
               alt="Waterfall Logo"
               width={120}
               height={40}
-              className="h-8 w-auto"
+              style={{ height: 'auto', width: 'auto' }}
+              className="h-8"
               priority
               {...testId(COMMON_TEST_IDS.topBar.logo)}
             />
