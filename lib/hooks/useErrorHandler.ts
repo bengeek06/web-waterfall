@@ -109,9 +109,9 @@ export function useErrorHandler(options: ErrorHandlerOptions) {
         case HttpErrorType.NETWORK:
         case HttpErrorType.SERVER_ERROR:
         case HttpErrorType.FORBIDDEN:
+        case HttpErrorType.UNAUTHORIZED:
           toast.error(displayMessage, { duration });
           break;
-        case HttpErrorType.UNAUTHORIZED:
         case HttpErrorType.NOT_FOUND:
           toast.warning(displayMessage, { duration });
           break;

@@ -78,7 +78,7 @@ describe('useErrorHandler', () => {
       expect(toast.error).toHaveBeenCalledWith('Unknown error message', { duration: 7000 });
     });
 
-    it('should show warning toast for UNAUTHORIZED errors', () => {
+    it('should show error toast for UNAUTHORIZED errors', () => {
       const { result } = renderHook(() => useErrorHandler({ messages: mockMessages }));
       const error = new HttpError(HttpErrorType.UNAUTHORIZED, 401);
 
@@ -86,7 +86,7 @@ describe('useErrorHandler', () => {
         result.current.handleError(error);
       });
 
-      expect(toast.warning).toHaveBeenCalledWith('Unauthorized message', { duration: 7000 });
+      expect(toast.error).toHaveBeenCalledWith('Unauthorized message', { duration: 7000 });
     });
 
     it('should use server message directly if available', () => {

@@ -27,6 +27,7 @@ import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
 // Validation
 import { useZodForm, useErrorHandler } from "@/lib/hooks";
 import { loginSchema, LoginFormData } from "@/lib/validation";
+import { classifyError } from "@/lib/client/retryWithBackoff";
 
 // Token refresh scheduler
 import { initTokenRefresh } from "@/lib/auth/tokenRefreshScheduler";
@@ -87,7 +88,20 @@ export default function Login({ dictionary }: Readonly<LoginProps>) {
 				body: JSON.stringify(data),
 			});
 
-			if (!res.ok) throw new Error("Login failed");
+			if (!res.ok) {
+				// Extraire le message d'erreur du serveur
+				const httpError = classifyError(res);
+				try {
+					const errorData = await res.json();
+					const serverMessage = errorData.message || errorData.error || errorData.detail || '';
+					if (serverMessage) {
+						httpError.message = serverMessage;
+					}
+				} catch {
+					// Pas de JSON, garder le message par défaut
+				}
+				throw httpError;
+			}
 
 			// Initialiser le refresh automatique du token après connexion réussie
 			await initTokenRefresh();
