@@ -20,6 +20,7 @@ import { UserFormModal } from "./UserFormModal";
 import { UserDeleteDialog } from "./UserDeleteDialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Upload, Download } from "lucide-react";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -377,7 +378,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
       globalThis.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Export error:', err);
-      globalThis.alert(dictionary.error_export);
+      toast.error(dictionary.error_export);
     }
   }
 
@@ -519,7 +520,7 @@ export function UserManagement({ dictionary }: Readonly<UserManagementProps>) {
         fetchUsers();
       } catch (err) {
         console.error('Import error:', err);
-        globalThis.alert(dictionary.error_import + ': ' + err);
+        toast.error(dictionary.error_import + ': ' + err);
       }
     };
 

@@ -53,6 +53,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -148,6 +158,7 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
   // Dialogs
   const [showCreateFolderDialog, setShowCreateFolderDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [newItemName, setNewItemName] = useState("");
   const [selectedItem, setSelectedItem] = useState<FileItem | null>(null);
@@ -345,15 +356,16 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
   const handleDelete = async (item: FileItem) => {
     if (!userId) return;
     
-    const confirmed = globalThis.confirm(
-      item.is_folder ? dictionary.confirm_delete_folder : dictionary.confirm_delete
-    );
-    
-    if (!confirmed) return;
+    setSelectedItem(item);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userId || !selectedItem) return;
 
     try {
       // Use the file_id from the item, or the id field
-      const fileId = item.file_id || item.id;
+      const fileId = selectedItem.file_id || selectedItem.id;
       if (!fileId) {
         handleError(new Error("Cannot delete: missing file ID"));
         return;
@@ -370,6 +382,8 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
 
       if (!res.ok) throw new Error("Delete failed");
 
+      setShowDeleteDialog(false);
+      setSelectedItem(null);
       fetchFiles();
     } catch (error) {
       handleError(error);
@@ -740,6 +754,28 @@ export function FileExplorer({ dictionary, errors }: Readonly<FileExplorerProps>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {selectedItem?.is_folder ? dictionary.confirm_delete_folder : dictionary.confirm_delete}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {dictionary.delete_warning || "This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setSelectedItem(null)}>
+              {dictionary.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete}>
+              {dictionary.delete || "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

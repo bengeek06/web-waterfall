@@ -44,6 +44,9 @@ const mockRolesDictionary = {
   delete_policy_confirm_message: "Supprimer la politique",
   delete_cancel: "Annuler",
   delete_confirm: "Supprimer",
+  cancel: "Annuler",
+  delete: "Supprimer",
+  remove: "Retirer",
   error_fetch: "Erreur lors de la récupération des rôles",
   error_create: "Erreur lors de l'enregistrement du rôle",
   error_update: "Erreur lors de la mise à jour du rôle",
@@ -425,7 +428,13 @@ describe('Roles Component', () => {
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.deleteButton('1'));
       fireEvent.click(deleteButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer ce rôle ?');
+      // Wait for AlertDialog to appear and click confirm
+      await waitFor(() => {
+        expect(screen.getByText(mockRolesDictionary.delete_confirm_message)).toBeInTheDocument();
+      });
+
+      const confirmButton = screen.getByText(mockRolesDictionary.delete);
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -438,8 +447,6 @@ describe('Roles Component', () => {
     });
 
     it('should not delete role if user cancels confirmation', async () => {
-      window.confirm = jest.fn(() => false);
-
       render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
@@ -449,7 +456,13 @@ describe('Roles Component', () => {
       const deleteButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.deleteButton('1'));
       fireEvent.click(deleteButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer ce rôle ?');
+      // Wait for AlertDialog to appear and click cancel
+      await waitFor(() => {
+        expect(screen.getByText(mockRolesDictionary.delete_confirm_message)).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByText(mockRolesDictionary.cancel);
+      fireEvent.click(cancelButton);
 
       // Should not call delete endpoint
       await waitFor(() => {
@@ -777,7 +790,13 @@ describe('Roles Component', () => {
       const removePolicyButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.removePolicyButton('1', '1'));
       fireEvent.click(removePolicyButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer la politique "Admin Policy" de ce rôle ?');
+      // Wait for AlertDialog to appear and click confirm
+      await waitFor(() => {
+        expect(screen.getByText(/Supprimer la politique "Admin Policy" de ce rôle/)).toBeInTheDocument();
+      });
+
+      const confirmButton = screen.getByText(mockRolesDictionary.remove);
+      fireEvent.click(confirmButton);
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
@@ -790,8 +809,6 @@ describe('Roles Component', () => {
     });
 
     it('should not remove policy if user cancels confirmation', async () => {
-      window.confirm = jest.fn(() => false);
-
       render(<Roles dictionary={mockRolesDictionary} />);
 
       await waitFor(() => {
@@ -808,7 +825,13 @@ describe('Roles Component', () => {
       const removePolicyButton = screen.getByTestId(DASHBOARD_TEST_IDS.roles.removePolicyButton('1', '1'));
       fireEvent.click(removePolicyButton);
 
-      expect(window.confirm).toHaveBeenCalledWith('Supprimer la politique "Admin Policy" de ce rôle ?');
+      // Wait for AlertDialog to appear and click cancel
+      await waitFor(() => {
+        expect(screen.getByText(/Supprimer la politique "Admin Policy" de ce rôle/)).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByText(mockRolesDictionary.cancel);
+      fireEvent.click(cancelButton);
 
       // Should not call delete endpoint
       await waitFor(() => {

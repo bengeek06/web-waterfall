@@ -49,6 +49,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -93,6 +103,9 @@ type RolesDictionary = {
   delete_policy_confirm_message: string;
   delete_cancel: string;
   delete_confirm: string;
+  cancel: string;
+  delete: string;
+  remove: string;
   error_fetch: string;
   error_create: string;
   error_update: string;
@@ -178,6 +191,12 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
   } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+
+  // Delete confirmations
+  const [showDeleteRoleDialog, setShowDeleteRoleDialog] = useState(false);
+  const [deletingRoleId, setDeletingRoleId] = useState<string | number | null>(null);
+  const [showDeletePolicyDialog, setShowDeletePolicyDialog] = useState(false);
+  const [deletingPolicyData, setDeletingPolicyData] = useState<{roleId: string | number, policyId: string | number, policyName: string} | null>(null);
 
   // ==================== DATA FETCHING ====================
 
@@ -306,9 +325,14 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
   }
 
   async function handleDeleteRole(roleId: string | number) {
-    if (!globalThis.confirm(dictionary.delete_confirm_message)) return;
+    setDeletingRoleId(roleId);
+    setShowDeleteRoleDialog(true);
+  }
+
+  async function confirmDeleteRole() {
+    if (!deletingRoleId) return;
     try {
-      const res = await fetchWithAuth(GUARDIAN_ROUTES.role(roleId.toString()), {
+      const res = await fetchWithAuth(GUARDIAN_ROUTES.role(deletingRoleId.toString()), {
         method: "DELETE",
       });
       if (res.status === 401) {
@@ -316,6 +340,8 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
         return;
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
+      setShowDeleteRoleDialog(false);
+      setDeletingRoleId(null);
       fetchData();
     } catch (err) {
       console.error("handleDeleteRole error:", err);
@@ -404,9 +430,16 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
   }
 
   async function handleRemovePolicy(roleId: string | number, policyId: string | number, policyName: string) {
-    if (!globalThis.confirm(`${dictionary.delete_policy_confirm_message} "${policyName}" de ce rôle ?`)) return;
+    setDeletingPolicyData({ roleId, policyId, policyName });
+    setShowDeletePolicyDialog(true);
+  }
+
+  async function confirmRemovePolicy() {
+    if (!deletingPolicyData) return;
     try {
-      await removePolicyWithoutConfirm(roleId, policyId);
+      await removePolicyWithoutConfirm(deletingPolicyData.roleId, deletingPolicyData.policyId);
+      setShowDeletePolicyDialog(false);
+      setDeletingPolicyData(null);
       fetchData();
     } catch {
       setError(dictionary.error_delete);
@@ -1107,6 +1140,48 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Role Confirmation Dialog */}
+      <AlertDialog open={showDeleteRoleDialog} onOpenChange={setShowDeleteRoleDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dictionary.delete_confirm_message}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the role.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingRoleId(null)}>
+              {dictionary.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteRole}>
+              {dictionary.delete}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Policy from Role Confirmation Dialog */}
+      <AlertDialog open={showDeletePolicyDialog} onOpenChange={setShowDeletePolicyDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deletingPolicyData && `${dictionary.delete_policy_confirm_message} "${deletingPolicyData.policyName}" de ce rôle ?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will remove the policy from the role.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingPolicyData(null)}>
+              {dictionary.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemovePolicy}>
+              {dictionary.remove}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
