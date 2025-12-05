@@ -208,3 +208,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Sonner toast colors */
+@layer components {
+  [data-sonner-toast][data-type="success"] {
+    background-color: var(--success) !important;
+    color: var(--success-foreground) !important;
+    border-color: var(--success) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    background-color: var(--error) !important;
+    color: var(--error-foreground) !important;
+    border-color: var(--error) !important;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    background-color: var(--warning) !important;
+    color: var(--warning-foreground) !important;
+    border-color: var(--warning) !important;
+  }
+
+  [data-sonner-toast][data-type="info"] {
+    background-color: var(--info) !important;
+    color: var(--info-foreground) !important;
+    border-color: var(--info) !important;
+  }
+}
