@@ -35,6 +35,7 @@ export default async function InitAppPage() {
           height={66}
           priority
           className="mb-4"
+          style={{ width: '240px', height: '66px' }}
         />
         <p className="text-lg text-[var(--waterfall-primary-dark)] font-medium">
           {dictionary.description}
