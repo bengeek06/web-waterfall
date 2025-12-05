@@ -48,6 +48,8 @@ interface MultiSelectFilterProps {
   searchPlaceholder?: string;
   /** Empty state text */
   emptyText?: string;
+  /** Clear button aria-label for accessibility */
+  clearLabel?: string;
   /** Test ID for E2E testing */
   testId?: string;
   /** Additional CSS classes */
@@ -83,6 +85,7 @@ export function MultiSelectFilter({
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   emptyText = "No results found.",
+  clearLabel = "Clear selection",
   testId,
   className,
 }: Readonly<MultiSelectFilterProps>) {
@@ -148,7 +151,7 @@ export function MultiSelectFilter({
                 className="rounded-sm opacity-50 hover:opacity-100"
               >
                 <X className={ICON_SIZES.sm} />
-                <span className="sr-only">Clear selection</span>
+                <span className="sr-only">{clearLabel}</span>
               </span>
             )}
             <ChevronsUpDown className={cn(ICON_SIZES.sm, "opacity-50")} />

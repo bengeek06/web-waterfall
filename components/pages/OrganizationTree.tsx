@@ -128,6 +128,7 @@ type OrganizationTreeProps = {
     mermaid_download: string;
     mermaid_loading: string;
     mermaid_error: string;
+    mermaid_no_diagram: string;
     actions: {
       add_root: string;
       add_child: string;

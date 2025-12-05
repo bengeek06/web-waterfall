@@ -28,6 +28,7 @@
   "mermaid_download": "Download PNG",
   "mermaid_loading": "Generating diagram...",
   "mermaid_error": "Error generating diagram",
+  "mermaid_no_diagram": "No diagram",
   "actions": {
     "add_root": "Add Unit",
     "add_child": "Add Child",

@@ -27,6 +27,8 @@ interface TextFilterProps {
   onChange: (_newValue: string) => void;
   /** Placeholder text */
   placeholder?: string;
+  /** Clear button aria-label for accessibility */
+  clearLabel?: string;
   /** Test ID for E2E testing */
   testId?: string;
   /** Additional CSS classes */
@@ -57,6 +59,7 @@ export function TextFilter({
   value,
   onChange,
   placeholder = "Filter...",
+  clearLabel = "Clear filter",
   testId,
   className,
 }: Readonly<TextFilterProps>) {
@@ -79,7 +82,7 @@ export function TextFilter({
           {...(testId ? makeTestId(`${testId}-clear`) : {})}
         >
           <X className={ICON_SIZES.sm} />
-          <span className="sr-only">Clear filter</span>
+          <span className="sr-only">{clearLabel}</span>
         </Button>
       )}
     </div>
