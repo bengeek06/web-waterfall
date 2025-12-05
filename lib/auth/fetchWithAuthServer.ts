@@ -12,6 +12,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { retryWithBackoff, classifyError, HttpErrorType } from '@/lib/server/retryWithBackoffServer';
+import logger from '@/lib/utils/logger';
 
 /**
  * Version server-side de fetchWithAuth pour Server Components
@@ -99,7 +100,7 @@ export async function fetchWithAuthServer(
           maxRetries: 2,
           initialDelay: 500,
           onRetry: (attempt, delay) => {
-            console.log(`[Server] Token refresh retry attempt ${attempt} in ${delay}ms`);
+            logger.debug({ attempt, delay }, `[Server] Token refresh retry attempt ${attempt} in ${delay}ms`);
           }
         }
       );
@@ -124,7 +125,7 @@ export async function fetchWithAuthServer(
         }
       } else {
         const error = classifyError(refreshResponse);
-        console.error('[Server] Token refresh failed:', error.type, error.status);
+        logger.error({ errorType: error.type, status: error.status }, '[Server] Token refresh failed');
       }
     }
     
@@ -146,7 +147,7 @@ export async function fetchWithAuthServer(
     },
     onRetry: (attempt, delay, error) => {
       const httpError = classifyError(error);
-      console.warn(`[Server] Request retry attempt ${attempt} in ${delay}ms (${httpError.type})`);
+      logger.warn({ attempt, delay, errorType: httpError.type }, `[Server] Request retry attempt ${attempt} in ${delay}ms`);
     }
   });
 }
@@ -180,7 +181,7 @@ export async function fetchWithAuthServerJSON<T = unknown>(
       // Pas de JSON, garder le message par défaut
     }
     
-    console.error('[Server] HTTP Error:', httpError.type, httpError.status, httpError.message);
+    logger.error({ errorType: httpError.type, status: httpError.status, message: httpError.message }, '[Server] HTTP Error');
     throw httpError;
   }
 

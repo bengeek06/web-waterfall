@@ -66,6 +66,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Download, Upload } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth/fetchWithAuth";
 import { ICON_SIZES, COLOR_CLASSES } from "@/lib/design-tokens";
+import logger from "@/lib/utils/logger";
 
 // ==================== TYPE DEFINITIONS ====================
 
@@ -231,7 +232,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
           try {
             const rolePolsRes = await fetchWithAuth(GUARDIAN_ROUTES.rolePolicies(role.id.toString()));
             if (!rolePolsRes.ok) {
-              console.warn(`Failed to fetch policies for role ${role.id}`);
+              logger.warn({ roleId: role.id }, `Failed to fetch policies for role ${role.id}`);
               return { ...role, policies: [] };
             }
             const rolePolsData = await rolePolsRes.json();
@@ -241,7 +242,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
             }
             return { ...role, policies: rolePolicies };
           } catch (err) {
-            console.warn(`Error fetching policies for role ${role.id}:`, err);
+            logger.warn({ roleId: role.id, error: err }, `Error fetching policies for role ${role.id}`);
             return { ...role, policies: [] };
           }
         })
@@ -294,13 +295,13 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
       }
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("Erreur API roles:", errorText);
+        logger.error({ errorText }, "Erreur API roles");
         throw new Error(dictionary.error_create);
       }
       setShowRoleDialog(false);
       fetchData();
     } catch (err) {
-      console.error("handleRoleSubmit error:", err);
+      logger.error({ error: err }, "handleRoleSubmit error");
       setError(editingRole ? dictionary.error_update : dictionary.error_create);
     }
   }
@@ -318,7 +319,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
       if (!res.ok) throw new Error(dictionary.error_delete);
       fetchData();
     } catch (err) {
-      console.error("handleDeleteRole error:", err);
+      logger.error({ error: err }, "handleDeleteRole error");
       setError(dictionary.error_delete);
     }
   }
@@ -352,20 +353,19 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
   async function handleAddPoliciesToRole() {
     if (!selectedRole || selectedPoliciesToAdd.size === 0) return;
     try {
-      console.log("Adding policies to role:", selectedRole.id);
-      console.log("Selected policies:", Array.from(selectedPoliciesToAdd));
+      logger.debug({ roleId: selectedRole.id, policies: Array.from(selectedPoliciesToAdd) }, "Adding policies to role");
       
       // Send a POST per policy
       const results = await Promise.all(
         Array.from(selectedPoliciesToAdd).map(async (policyId) => {
           const url = GUARDIAN_ROUTES.rolePolicies(selectedRole.id.toString());
-          console.log(`Posting policy ${policyId} to ${url}`);
+          logger.debug({ policyId, url }, `Posting policy ${policyId}`);
           const res = await fetchWithAuth(url, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ policy_id: policyId }),
           });
-          console.log(`Response for policy ${policyId}:`, res.status);
+          logger.debug({ policyId, status: res.status }, `Response for policy ${policyId}`);
           if (res.status === 401) {
             globalThis.location.href = "/login";
             return null;
@@ -381,7 +381,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
       setSelectedPoliciesToAdd(new Set());
       fetchData();
     } catch (err) {
-      console.error("handleAddPoliciesToRole error:", err);
+      logger.error({ error: err }, "handleAddPoliciesToRole error");
       setError(dictionary.error_create);
     }
   }
@@ -398,7 +398,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
       }
       if (!res.ok) throw new Error(dictionary.error_delete);
     } catch (err) {
-      console.error("removePolicyWithoutConfirm error:", err);
+      logger.error({ error: err }, "removePolicyWithoutConfirm error");
       throw err;
     }
   }
@@ -501,7 +501,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
       a.remove();
       globalThis.URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('Export error:', err);
+      logger.error({ error: err }, 'Export error');
       setError(dictionary.error_export);
     } finally {
       setIsExporting(false);
@@ -622,7 +622,7 @@ export default function Roles({ dictionary }: { readonly dictionary: RolesDictio
         setShowImportReport(true);
         fetchData();
       } catch (err) {
-        console.error('Import error:', err);
+        logger.error({ error: err }, 'Import error');
         setError(dictionary.error_import + ': ' + err);
       } finally {
         setIsImporting(false);

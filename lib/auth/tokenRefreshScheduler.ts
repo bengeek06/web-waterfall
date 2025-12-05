@@ -11,6 +11,8 @@
 
 "use client";
 
+import logger from "@/lib/utils/logger";
+
 let refreshTimer: NodeJS.Timeout | null = null;
 
 /**
@@ -19,17 +21,17 @@ let refreshTimer: NodeJS.Timeout | null = null;
  */
 async function refreshToken(): Promise<boolean> {
   try {
-    console.log('Attempting token refresh...');
+    logger.debug('Attempting token refresh...');
     const response = await fetch('/api/auth/refresh', {
       method: 'POST',
       credentials: 'include',
     });
 
     if (!response.ok) {
-      console.error('Token refresh failed:', response.status, response.statusText);
+      logger.error({ status: response.status, statusText: response.statusText }, 'Token refresh failed');
       try {
         const errorData = await response.json();
-        console.error('Refresh error details:', errorData);
+        logger.error({ errorData }, 'Refresh error details');
       } catch {
         // Response might not be JSON
       }
@@ -37,20 +39,20 @@ async function refreshToken(): Promise<boolean> {
     }
 
     const data = await response.json();
-    console.log('Token refresh response:', data);
+    logger.debug({ data }, 'Token refresh response');
     
     // Le refresh est réussi si on a un message ou access_token
     if (data.message || data.access_token) {
-      console.log('Token refreshed successfully');
+      logger.info('Token refreshed successfully');
       // Après un refresh réussi, re-scheduler avec le nouveau token
       await scheduleTokenRefresh();
       return true;
     }
     
-    console.error('Token refresh returned unexpected response:', data);
+    logger.error({ data }, 'Token refresh returned unexpected response');
     return false;
   } catch (error) {
-    console.error('Error refreshing token:', error);
+    logger.error({ error }, 'Error refreshing token');
     return false;
   }
 }
@@ -76,7 +78,7 @@ export async function scheduleTokenRefresh(refreshBeforeSeconds = 60): Promise<v
     });
 
     if (!response.ok) {
-      console.warn('Cannot get token info, refresh not scheduled');
+      logger.warn('Cannot get token info, refresh not scheduled');
       return;
     }
 
@@ -84,25 +86,25 @@ export async function scheduleTokenRefresh(refreshBeforeSeconds = 60): Promise<v
     
     // Si le token est déjà expiré ou invalide, ne pas scheduler
     if (expiresIn <= 0) {
-      console.warn('Token expired, cannot schedule refresh');
+      logger.warn('Token expired, cannot schedule refresh');
       return;
     }
 
     // Calculer quand faire le refresh (en millisecondes)
     const refreshIn = Math.max(0, expiresIn - refreshBeforeSeconds) * 1000;
 
-    console.log(`Token refresh scheduled in ${Math.floor(refreshIn / 1000)}s (expires in ${expiresIn}s)`);
+    logger.info(`Token refresh scheduled in ${Math.floor(refreshIn / 1000)}s (expires in ${expiresIn}s)`);
 
     refreshTimer = setTimeout(async () => {
-      console.log('Proactive token refresh triggered');
+      logger.debug('Proactive token refresh triggered');
       const success = await refreshToken();
       
       if (!success) {
-        console.error('Proactive refresh failed, user may be logged out on next request');
+        logger.error('Proactive refresh failed, user may be logged out on next request');
       }
     }, refreshIn);
   } catch (error) {
-    console.error('Error scheduling token refresh:', error);
+    logger.error({ error }, 'Error scheduling token refresh');
   }
 }
 
@@ -114,7 +116,7 @@ export function cancelTokenRefresh(): void {
   if (refreshTimer) {
     clearTimeout(refreshTimer);
     refreshTimer = null;
-    console.log('Token refresh cancelled');
+    logger.info('Token refresh cancelled');
   }
 }
 

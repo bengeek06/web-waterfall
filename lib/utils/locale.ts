@@ -11,6 +11,7 @@
 
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
+import logger from '@/lib/utils/logger';
 
 // ==================== TYPES ====================
 interface JWTPayload {
@@ -35,7 +36,7 @@ export async function getUserId(): Promise<string | null> {
     const decoded = jwtDecode<JWTPayload>(token);
     return decoded.user_id || decoded.sub || null;
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    logger.error({ error }, 'Error decoding JWT');
     return null;
   }
 }
@@ -54,7 +55,7 @@ export async function getCompanyId(): Promise<string | null> {
     const decoded = jwtDecode<JWTPayload>(token);
     return decoded.company_id || null;
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    logger.error({ error }, 'Error decoding JWT');
     return null;
   }
 }
@@ -92,14 +93,14 @@ export async function getUserLanguage(): Promise<'en' | 'fr'> {
     });
     
     if (!response.ok) {
-      console.error('Failed to fetch user language:', response.statusText);
+      logger.error({ status: response.status, statusText: response.statusText }, 'Failed to fetch user language');
       return 'fr';
     }
     
     const user = await response.json();
     return user.language || 'fr';
   } catch (error) {
-    console.error('Error fetching user language:', error);
+    logger.error({ error }, 'Error fetching user language');
     return 'fr';
   }
 }
@@ -121,7 +122,7 @@ export async function updateUserLanguage(language: 'en' | 'fr'): Promise<boolean
   const token = cookieStore.get('access_token')?.value;
   
   if (!token) {
-    console.error('Cannot update language: user not authenticated');
+    logger.error('Cannot update language: user not authenticated');
     return false;
   }
   
@@ -146,13 +147,13 @@ export async function updateUserLanguage(language: 'en' | 'fr'): Promise<boolean
     });
     
     if (!response.ok) {
-      console.error('Failed to update user language:', response.statusText);
+      logger.error({ status: response.status, statusText: response.statusText }, 'Failed to update user language');
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('Error updating user language:', error);
+    logger.error({ error }, 'Error updating user language');
     return false;
   }
 }
