@@ -13,8 +13,6 @@
  * Admin components barrel export
  */
 
-export { UserManagement } from './UserManagement';
-export { UserFormModal } from './UserFormModal';
-export { default as UserDataTable } from './UserDataTable';
-export { UserDeleteDialog } from './UserDeleteDialog';
-export type { User } from './UserDataTable';
+// Note: Legacy admin components (UserManagement, UserFormModal, etc.) have been removed.
+// Use the V2 versions in components/pages/ instead (UsersV2.tsx, RolesV2.tsx, etc.)
+

@@ -15,10 +15,43 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { Button } from "@/components/ui/button";
 import { DASHBOARD_TEST_IDS, testId } from "@/lib/test-ids";
 import { ICON_SIZES, COLOR_CLASSES, SPACING } from "@/lib/design-tokens";
-import type { Policy, Permission, PoliciesDictionary } from "./Policies.columns";
 
-// Re-export types for external use
-export type { Permission, Policy } from './Policies.columns';
+// ==================== TYPES ====================
+export type Permission = {
+  id: string | number;
+  service: string;
+  resource_name: string;
+  description: string;
+  operation: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type Policy = {
+  id: string | number;
+  name: string;
+  description?: string;
+  permissions: Permission[];
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type PoliciesDictionary = {
+  table_name: string;
+  table_description: string;
+  table_permissions: string;
+  table_created_at: string;
+  table_updated_at: string;
+  table_actions: string;
+  edit_tooltip: string;
+  delete_tooltip: string;
+  add_permission_tooltip: string;
+  operation_read: string;
+  operation_create: string;
+  operation_update: string;
+  operation_delete: string;
+  operation_list?: string;
+};
 
 // ==================== OPERATION ICONS ====================
 function getOperationIcons(dictionary: Pick<PoliciesDictionary, 'operation_read' | 'operation_create' | 'operation_update' | 'operation_delete'> & { operation_list?: string }) {
