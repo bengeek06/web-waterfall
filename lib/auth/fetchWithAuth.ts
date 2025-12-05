@@ -197,9 +197,10 @@ export async function fetchWithAuthJSON<T = unknown>(
     // Tenter de récupérer un message d'erreur du serveur
     try {
       const errorData = await response.json();
-      const serverMessage = errorData.message || errorData.error || '';
+      const serverMessage = errorData.message || errorData.error || errorData.detail || '';
       if (serverMessage) {
-        httpError.message = `HTTP ${httpError.status}: ${serverMessage}`;
+        // Utiliser directement le message du serveur sans préfixe
+        httpError.message = serverMessage;
       }
     } catch {
       // Pas de JSON, garder le message par défaut

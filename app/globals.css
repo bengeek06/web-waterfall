@@ -77,6 +77,16 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
+  /* Toast notification colors */
+  --success: oklch(0.55 0.15 145); /* Vert */
+  --success-foreground: oklch(0.98 0.01 145);
+  --error: oklch(0.55 0.22 25); /* Rouge */
+  --error-foreground: oklch(0.98 0.01 25);
+  --warning: oklch(0.65 0.18 85); /* Jaune/Orange */
+  --warning-foreground: oklch(0.15 0.02 85);
+  --info: oklch(0.55 0.15 250); /* Bleu */
+  --info-foreground: oklch(0.98 0.01 250);
+
   /* Waterfall institutional colors */
   --waterfall-primary-dark: #2c3e50;    /* Bleu foncé institutionnel (header, boutons) */
   --waterfall-primary-hover: #1a252f;   /* Bleu très foncé (hover bouton) */
@@ -141,6 +151,16 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
 
+  /* Toast notification colors - dark mode */
+  --success: oklch(0.6 0.17 145); /* Vert plus clair */
+  --success-foreground: oklch(0.98 0.01 145);
+  --error: oklch(0.65 0.24 25); /* Rouge plus clair */
+  --error-foreground: oklch(0.98 0.01 25);
+  --warning: oklch(0.7 0.2 85); /* Jaune/Orange plus clair */
+  --warning-foreground: oklch(0.15 0.02 85);
+  --info: oklch(0.6 0.17 250); /* Bleu plus clair */
+  --info-foreground: oklch(0.98 0.01 250);
+
   /* Waterfall institutional colors - dark mode adaptations */
   --waterfall-primary-dark: #4a5f7f;    /* Bleu plus clair en dark mode */
   --waterfall-primary-hover: #5a7599;   /* Bleu hover adapté */
@@ -186,5 +206,56 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Sonner toast colors */
+@layer components {
+  [data-sonner-toast][data-type="success"] {
+    background-color: var(--success) !important;
+    color: var(--success-foreground) !important;
+    border-color: var(--success) !important;
+  }
+
+  [data-sonner-toast][data-type="success"] [data-content],
+  [data-sonner-toast][data-type="success"] [data-title],
+  [data-sonner-toast][data-type="success"] [data-description] {
+    color: var(--success-foreground) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    background-color: var(--error) !important;
+    color: var(--error-foreground) !important;
+    border-color: var(--error) !important;
+  }
+
+  [data-sonner-toast][data-type="error"] [data-content],
+  [data-sonner-toast][data-type="error"] [data-title],
+  [data-sonner-toast][data-type="error"] [data-description] {
+    color: var(--error-foreground) !important;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    background-color: var(--warning) !important;
+    color: var(--warning-foreground) !important;
+    border-color: var(--warning) !important;
+  }
+
+  [data-sonner-toast][data-type="warning"] [data-content],
+  [data-sonner-toast][data-type="warning"] [data-title],
+  [data-sonner-toast][data-type="warning"] [data-description] {
+    color: var(--warning-foreground) !important;
+  }
+
+  [data-sonner-toast][data-type="info"] {
+    background-color: var(--info) !important;
+    color: var(--info-foreground) !important;
+    border-color: var(--info) !important;
+  }
+
+  [data-sonner-toast][data-type="info"] [data-content],
+  [data-sonner-toast][data-type="info"] [data-title],
+  [data-sonner-toast][data-type="info"] [data-description] {
+    color: var(--info-foreground) !important;
   }
 }
