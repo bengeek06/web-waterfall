@@ -27,6 +27,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -428,6 +438,10 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   const [parentUnit, setParentUnit] = useState<OrganizationUnit | null>(null);
   const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
   const [editingPosition, setEditingPosition] = useState<Position | null>(null);
+  const [showDeleteUnitDialog, setShowDeleteUnitDialog] = useState(false);
+  const [deletingUnitId, setDeletingUnitId] = useState<string | null>(null);
+  const [showDeletePositionDialog, setShowDeletePositionDialog] = useState(false);
+  const [deletingPositionId, setDeletingPositionId] = useState<string | null>(null);
 
   // Import/Export states
   const [isExporting, setIsExporting] = useState(false);
@@ -597,21 +611,26 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   };
 
   const handleDelete = async (unitId: string) => {
-    if (!confirm(dictionary.messages.confirm_delete_unit)) {
-      return;
-    }
+    setDeletingUnitId(unitId);
+    setShowDeleteUnitDialog(true);
+  };
+
+  const confirmDeleteUnit = async () => {
+    if (!deletingUnitId) return;
 
     try {
-      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(unitId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.organizationUnit(deletingUnitId), {
         method: "DELETE",
       });
 
       if (res.ok) {
         await reloadUnits();
-        if (selectedUnit?.id === unitId) {
+        if (selectedUnit?.id === deletingUnitId) {
           setSelectedUnit(null);
         }
       }
+      setShowDeleteUnitDialog(false);
+      setDeletingUnitId(null);
     } catch (err) {
       handleError(err instanceof Error ? err : new Error("Error deleting unit"));
     }
@@ -629,18 +648,23 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
   };
 
   const handleDeletePosition = async (positionId: string) => {
-    if (!confirm(dictionary.messages.confirm_delete_position)) {
-      return;
-    }
+    setDeletingPositionId(positionId);
+    setShowDeletePositionDialog(true);
+  };
+
+  const confirmDeletePosition = async () => {
+    if (!deletingPositionId) return;
 
     try {
-      const res = await fetchWithAuth(IDENTITY_ROUTES.position(positionId), {
+      const res = await fetchWithAuth(IDENTITY_ROUTES.position(deletingPositionId), {
         method: "DELETE",
       });
 
       if (res.ok) {
         await reloadPositions();
       }
+      setShowDeletePositionDialog(false);
+      setDeletingPositionId(null);
     } catch (err) {
       handleError(err instanceof Error ? err : new Error("Error deleting position"));
     }
@@ -1077,6 +1101,46 @@ export default function OrganizationTree({ companyId, dictionary }: Organization
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Unit Confirmation Dialog */}
+      <AlertDialog open={showDeleteUnitDialog} onOpenChange={setShowDeleteUnitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dictionary.messages.confirm_delete_unit}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the organization unit.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingUnitId(null)}>
+              {dictionary.unit_modal.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteUnit}>
+              {dictionary.actions.delete}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Position Confirmation Dialog */}
+      <AlertDialog open={showDeletePositionDialog} onOpenChange={setShowDeletePositionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{dictionary.messages.confirm_delete_position}</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the position.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingPositionId(null)}>
+              {dictionary.position_modal.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeletePosition}>
+              {dictionary.positions.delete}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

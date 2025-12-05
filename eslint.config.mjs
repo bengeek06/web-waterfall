@@ -68,6 +68,21 @@ const eslintConfig = [
       "no-undef": "off",
       // Allow React hooks setState in effects with proper dependencies
       "react-hooks/exhaustive-deps": "warn",
+      // Restrict usage of native browser dialogs (use AlertDialog and toast instead)
+      "no-restricted-globals": ["error", 
+        {
+          "name": "alert",
+          "message": "Use toast notifications from sonner instead of alert()"
+        },
+        {
+          "name": "confirm",
+          "message": "Use AlertDialog component from @/components/ui/alert-dialog instead of confirm()"
+        },
+        {
+          "name": "prompt",
+          "message": "Use Dialog component with Input from @/components/ui/dialog instead of prompt()"
+        }
+      ],
     },
   },
   {
