@@ -117,19 +117,19 @@ export function ImportReportModal({
             {dictionary.title}
             {isSuccess && (
               <Badge variant="default" className="ml-2 bg-green-600">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
+                <CheckCircle2 className={`${ICON_SIZES.xs} mr-1`} />
                 Success
               </Badge>
             )}
             {isPartialSuccess && (
               <Badge variant="default" className="ml-2 bg-yellow-600">
-                <AlertTriangle className="h-3 w-3 mr-1" />
+                <AlertTriangle className={`${ICON_SIZES.xs} mr-1`} />
                 Partial
               </Badge>
             )}
             {!isSuccess && !isPartialSuccess && (
               <Badge variant="destructive" className="ml-2">
-                <XCircle className="h-3 w-3 mr-1" />
+                <XCircle className={`${ICON_SIZES.xs} mr-1`} />
                 Failed
               </Badge>
             )}
